@@ -217,7 +217,7 @@ export default function HabitsPage() {
   const [newNote, setNewNote] = useState("");
   const isMobile = useIsMobile();
 
-  const habits = useMemo(() => allTasks.filter(task => task.isHabit), [allTasks]);
+  const habits = useMemo(() => (Array.isArray(allTasks) ? allTasks : []).filter(task => task.isHabit), [allTasks]);
   const sortedHabits = useMemo(() => {
     return [...habits].sort((a,b) => (b.priority === 'high' ? 1 : -1) - (a.priority === 'high' ? 1: -1) || calculateStreak(b) - calculateStreak(a));
   }, [habits]);
@@ -229,7 +229,7 @@ export default function HabitsPage() {
     
     // Reselect habit if it still exists
     if (selectedHabit) {
-      const refreshedSelected = tasks.find(h => h.id === selectedHabit.id);
+      const refreshedSelected = (Array.isArray(tasks) ? tasks : []).find(h => h.id === selectedHabit.id);
       setSelectedHabit(refreshedSelected || null);
     }
     
@@ -239,8 +239,8 @@ export default function HabitsPage() {
   useEffect(() => {
     const tasks = getAllTasks();
     setAllTasks(tasks);
-    if (!isMobile && tasks.filter(t=>t.isHabit).length > 0) {
-        const sorted = [...tasks.filter(t=>t.isHabit)].sort((a,b) => (b.priority === 'high' ? 1 : -1) - (a.priority === 'high' ? 1: -1) || calculateStreak(b) - calculateStreak(a));
+    if (!isMobile && (Array.isArray(tasks) ? tasks : []).filter(t=>t.isHabit).length > 0) {
+        const sorted = [...(Array.isArray(tasks) ? tasks : []).filter(t=>t.isHabit)].sort((a,b) => (b.priority === 'high' ? 1 : -1) - (a.priority === 'high' ? 1: -1) || calculateStreak(b) - calculateStreak(a));
         setSelectedHabit(sorted[0]);
     }
     setLoading(false);
@@ -248,7 +248,7 @@ export default function HabitsPage() {
 
   useEffect(() => {
     if (selectedHabit) {
-        const freshHabit = allTasks.find(h => h.id === selectedHabit.id);
+        const freshHabit = (Array.isArray(allTasks) ? allTasks : []).find(h => h.id === selectedHabit.id);
         if (freshHabit) {
             if (JSON.stringify(freshHabit) !== JSON.stringify(selectedHabit)) {
                 setSelectedHabit(freshHabit);

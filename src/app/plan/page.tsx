@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { getAllTasks, getDailyPlan, updateDailyPlan } from "@/lib/data";
+import { getAllTasks, getDailyPlan, updateDailyPlanAsync } from "@/lib/data";
 import { Task, Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { PlusCircle, ArrowLeftCircle, GripVertical, Loader2 } from "lucide-react";
@@ -84,8 +84,8 @@ export default function PlanPage() {
     refreshData();
   }, []);
   
-  const dailyTasks = dailyTaskIds.map(id => allTasks.find(t => t.id === id)).filter((t): t is Task => !!t);
-  const backlogTasks = allTasks.filter(task => 
+  const dailyTasks = dailyTaskIds.map(id => (Array.isArray(allTasks) ? allTasks : []).find(t => t.id === id)).filter((t): t is Task => !!t);
+  const backlogTasks = (Array.isArray(allTasks) ? allTasks : []).filter(task => 
     task.status !== 'done' && 
     !task.isHabit && 
     !dailyTaskIds.includes(task.id)
@@ -93,13 +93,13 @@ export default function PlanPage() {
 
   const addToDailyPlan = (taskId: string) => {
     const newDailyIds = [...dailyTaskIds, taskId];
-    updateDailyPlan(newDailyIds);
+    updateDailyPlanAsync(newDailyIds);
     refreshData();
   };
 
   const removeFromDailyPlan = (taskId: string) => {
     const newDailyIds = dailyTaskIds.filter(id => id !== taskId);
-    updateDailyPlan(newDailyIds);
+    updateDailyPlanAsync(newDailyIds);
     refreshData();
   };
 
@@ -127,7 +127,7 @@ export default function PlanPage() {
   const handleDragEnd = () => {
     if (dragItem.current === null) return;
     
-    updateDailyPlan(dailyTaskIds);
+    updateDailyPlanAsync(dailyTaskIds);
     
     dragItem.current = null;
     dragOverItem.current = null;
