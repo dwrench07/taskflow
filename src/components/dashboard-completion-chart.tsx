@@ -27,14 +27,14 @@ export function DashboardCompletionChart({ allTasks }: { allTasks: Task[] }) {
     const daysInWeek = Array.from({ length: 7 }).map((_, i) => addDays(weekStart, i));
     
     return daysInWeek.map(day => {
-        const tasksCompleted = allTasks.filter(task => 
+        const tasksCompleted = (Array.isArray(allTasks) ? allTasks : []).filter(task => 
             task.status === "done" && 
             !task.isHabit &&
             task.endDate && 
             isSameDay(parseISO(task.endDate), day)
         ).length;
         
-        const habitsCompleted = allTasks.filter(task => 
+        const habitsCompleted = (Array.isArray(allTasks) ? allTasks : []).filter(task => 
             task.isHabit &&
             task.completionHistory?.some(d => isSameDay(parseISO(d), day))
         ).length;

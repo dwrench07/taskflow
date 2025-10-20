@@ -135,7 +135,7 @@ export default function CalendarPage() {
 
     const events: CalendarEventData[] = [];
 
-    allTasks.forEach((task) => {
+    (Array.isArray(allTasks) ? allTasks : []).forEach((task) => {
       if (task.isHabit) {
           const dailyStatusEntry = task.dailyStatus?.find(ds => isSameDay(parseISO(ds.date), day));
           events.push({ 
@@ -199,7 +199,7 @@ export default function CalendarPage() {
   }
 
   const getHabitStatsForDay = (day: Date) => {
-      const habits = allTasks.filter(t => t.isHabit);
+      const habits = (Array.isArray(allTasks) ? allTasks : []).filter(t => t.isHabit);
       const totalHabits = habits.length;
       const completedHabits = habits.filter(h => h.completionHistory?.some(d => isSameDay(parseISO(d), day))).length;
       return { totalHabits, completedHabits };
@@ -207,7 +207,7 @@ export default function CalendarPage() {
 
   const allTags = useMemo(() => {
     const tagSet = new Set<string>();
-    allTasks.forEach(task => {
+    (Array.isArray(allTasks) ? allTasks : []).forEach(task => {
         task.tags?.forEach(tag => tagSet.add(tag));
         task.subtasks?.forEach(subtask => {
             subtask.tags?.forEach(tag => tagSet.add(tag));

@@ -5,13 +5,13 @@ import { calculateStreak } from "@/lib/habits";
 import { Task } from "@/lib/types";
 
 export function DashboardOverview({ allTasks }: { allTasks: Task[] }) {
-  const nonHabitTasks = allTasks.filter(t => !t.isHabit);
+  const nonHabitTasks = (Array.isArray(allTasks) ? allTasks : []).filter(t => !t.isHabit);
   const todoCount = nonHabitTasks.filter((t) => t.status === "todo").length;
   const inProgressCount = nonHabitTasks.filter((t) => t.status === "in-progress").length;
   
   const tasksDueToday = nonHabitTasks.filter(t => t.endDate && isToday(parseISO(t.endDate))).length;
 
-  const habits = allTasks.filter(t => t.isHabit);
+  const habits = (Array.isArray(allTasks) ? allTasks : []).filter(t => t.isHabit);
   const totalHabitsWithGoals = habits.filter(h => h.streakGoal && h.streakGoal > 0).length;
   const habitGoalsMet = habits.filter(h => h.streakGoal && calculateStreak(h) >= h.streakGoal).length;
 

@@ -6,16 +6,16 @@ import { Task } from "@/lib/types";
 
 export function DashboardStats({ allTasks }: { allTasks: Task[] }) {
   const stats = useMemo(() => {
-    const totalTasksCompleted = allTasks.filter(
+    const totalTasksCompleted = (Array.isArray(allTasks) ? allTasks : []).filter(
       (task) => !task.isHabit && task.status === "done"
     ).length;
 
-    const totalSubtasksCompleted = allTasks.reduce((acc, task) => {
+    const totalSubtasksCompleted = (Array.isArray(allTasks) ? allTasks : []).reduce((acc, task) => {
       if (!task.subtasks) return acc;
       return acc + task.subtasks.filter((subtask) => subtask.completed).length;
     }, 0);
 
-    const totalHabitCompletions = allTasks.reduce((acc, task) => {
+    const totalHabitCompletions = (Array.isArray(allTasks) ? allTasks : []).reduce((acc, task) => {
       if (task.isHabit && task.completionHistory) {
         return acc + task.completionHistory.length;
       }

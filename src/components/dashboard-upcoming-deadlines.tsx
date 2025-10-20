@@ -20,7 +20,7 @@ const priorityStyles: Record<Priority, string> = {
 export function DashboardUpcomingDeadlines({ allTasks }: { allTasks: Task[] }) {
 
   const upcomingTasks = useMemo(() => {
-    return allTasks
+    return (Array.isArray(allTasks) ? allTasks : [])
       .filter(task => 
         task.endDate && 
         task.status !== 'done' && 
