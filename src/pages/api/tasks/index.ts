@@ -1,23 +1,27 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { ensureCouchConnected } from '../../../lib/data';
+import { getAllTasksAsync, addTaskAsync } from '../../../lib/data-service';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
   try {
-    const db = await ensureCouchConnected();
-    if (!db) {
-      return res.status(500).json({ error: 'Database connection failed' });
+    switch (req.method) {
+      case 'GET':
+        const tasks = await getAllTasksAsync();
+        return res.status(200).json(tasks);
+
+      case 'POST':
+        const newTask = req.body;
+        if (!newTask || typeof newTask !== 'object') {
+          return res.status(400).json({ error: 'Invalid task data' });
+        }
+
+        const createdTask = await addTaskAsync(newTask);
+        return res.status(201).json(createdTask);
+
+      default:
+        return res.status(405).json({ error: 'Method not allowed' });
     }
-
-    const tasks = await db.list({ include_docs: true });
-    const allTasks = tasks.rows.map((row: any) => row.doc);
-
-    return res.status(200).json(allTasks);
   } catch (error: any) {
-    console.error('[API] Error fetching tasks:', error.message ?? error);
-    return res.status(500).json({ error: 'Failed to fetch tasks' });
+    console.error(`[API] Error handling tasks:`, error.message ?? error);
+    return res.status(500).json({ error: `Failed to ${req.method?.toLowerCase()} tasks` });
   }
 }

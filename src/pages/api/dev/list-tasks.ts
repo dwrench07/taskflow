@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getAllTasksAsync } from '../../../lib/data';
+import { getAllTasksAsync } from '../../../lib/data-service';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    console.log("********** In list-tasks.ts **********");
+  console.log("********** In list-tasks.ts **********");
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
