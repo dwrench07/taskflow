@@ -58,13 +58,13 @@ let allTasks: Task[] = [
     tags: ['team', 'meeting'],
     completionHistory: ['2024-08-01T00:00:00.000Z', '2024-08-02T00:00:00.000Z'],
     dailyStatus: [
-        { date: '2024-08-01T00:00:00.000Z', status: 'changes observed' },
-        { date: '2024-08-02T00:00:00.000Z', status: 'no changes' },
+      { date: '2024-08-01T00:00:00.000Z', status: 'changes observed' },
+      { date: '2024-08-02T00:00:00.000Z', status: 'no changes' },
     ],
     subtasks: [],
     notes: [],
   },
-    {
+  {
     id: 'habit-2',
     title: 'Weekly Review',
     description: 'Review the past week and plan the next.',
@@ -82,18 +82,18 @@ let allTasks: Task[] = [
 ];
 
 let allTemplates: TaskTemplate[] = [
-    {
-        id: "template-1",
-        title: "New Employee Onboarding",
-        description: "A standard checklist for onboarding a new team member.",
-        priority: "medium",
-        tags: ["hr", "onboarding"],
-        subtasks: [
-            { id: "tsub-1-1", title: "Set up hardware (laptop, monitor)", tags: ["it"] },
-            { id: "tsub-1-2", title: "Grant access to required systems", tags: ["it", "security"] },
-            { id: "tsub-1-3", title: "Schedule team introduction meeting" },
-        ]
-    }
+  {
+    id: "template-1",
+    title: "New Employee Onboarding",
+    description: "A standard checklist for onboarding a new team member.",
+    priority: "medium",
+    tags: ["hr", "onboarding"],
+    subtasks: [
+      { id: "tsub-1-1", title: "Set up hardware (laptop, monitor)", tags: ["it"] },
+      { id: "tsub-1-2", title: "Grant access to required systems", tags: ["it", "security"] },
+      { id: "tsub-1-3", title: "Schedule team introduction meeting" },
+    ]
+  }
 ]
 
 let dailyPlan: string[] = ['task-1'];
@@ -124,42 +124,42 @@ export function configureDbNames(names: { tasks?: string; templates?: string; me
 
 // New: allow setting Couch credentials at runtime (useful for debugging / REPL)
 export function configureCouchCredentials(opts: { url?: string; user?: string; pass?: string; host?: string }): void {
-	// set explicit couchUrl if provided
-	if (opts.url) {
-		couchUrl = opts.url;
-	}
-	// if user/pass/host provided, build a basic URL for local testing
-	if ((opts.user && opts.pass) || opts.host) {
-		const hostPart = opts.host ?? '127.0.0.1:5984';
-		const user = opts.user ?? '';
-		const pass = opts.pass ?? '';
-		if (user && pass) {
-			couchUrl = `http://${encodeURIComponent(user)}:${encodeURIComponent(pass)}@${hostPart}`;
-		} else if (opts.url) {
-			// noop, already set
-		}
-	}
-	// force a re-init on next call
-	useCouch = false;
-	nanoClient = null;
-	tasksDb = null;
-	templatesDb = null;
-	metaDb = null;
-	dbLog('info', 'configureCouchCredentials: configured couchUrl (redacted)', { hasUrl: !!couchUrl });
-	console.info('[data] configureCouchCredentials: call initCouchIfConfigured() now (server-side) to connect');
+  // set explicit couchUrl if provided
+  if (opts.url) {
+    couchUrl = opts.url;
+  }
+  // if user/pass/host provided, build a basic URL for local testing
+  if ((opts.user && opts.pass) || opts.host) {
+    const hostPart = opts.host ?? '127.0.0.1:5984';
+    const user = opts.user ?? '';
+    const pass = opts.pass ?? '';
+    if (user && pass) {
+      couchUrl = `http://${encodeURIComponent(user)}:${encodeURIComponent(pass)}@${hostPart}`;
+    } else if (opts.url) {
+      // noop, already set
+    }
+  }
+  // force a re-init on next call
+  useCouch = false;
+  nanoClient = null;
+  tasksDb = null;
+  templatesDb = null;
+  metaDb = null;
+  dbLog('info', 'configureCouchCredentials: configured couchUrl (redacted)', { hasUrl: !!couchUrl });
+  console.info('[data] configureCouchCredentials: call initCouchIfConfigured() now (server-side) to connect');
 }
 
 // NEW: convenience helper to attempt an immediate init and return the tasks DB handle (or null)
 // Call from server REPL: await ensureCouchConnected()
 export async function ensureCouchConnected(): Promise<any | null> {
-	dbLog('debug', 'ensureCouchConnected: ENTRY');
-	const db = await initCouchIfConfigured();
-	if (!db) {
-		dbLog('warn', 'ensureCouchConnected: init returned null (CouchDB not available)');
-		return null;
-	}
-	dbLog('info', 'ensureCouchConnected: tasks DB ready', { dbName: tasksDbName });
-	return db;
+  dbLog('debug', 'ensureCouchConnected: ENTRY');
+  const db = await initCouchIfConfigured();
+  if (!db) {
+    dbLog('warn', 'ensureCouchConnected: init returned null (CouchDB not available)');
+    return null;
+  }
+  dbLog('info', 'ensureCouchConnected: tasks DB ready', { dbName: tasksDbName });
+  return db;
 }
 
 function couchToTask(doc: any): Task {
@@ -174,22 +174,22 @@ function taskToCouchDoc(task: Task) {
 
 // NEW: simple DB logging helper
 function dbLog(level: 'debug' | 'info' | 'warn', msg: string, meta?: any): void {
-	// keep logs short but timestamped
-	const prefix = `[data][db] ${new Date().toISOString()}`;
-	if (level === 'debug') {
-		console.debug(prefix, msg, meta ?? '');
-		// mirror for environments that don't show debug by default
-		console.log(prefix, msg, meta ?? '');
-	} else if (level === 'warn') {
-		console.warn(prefix, msg, meta ?? '');
-		// also output as info for higher visibility
+  // keep logs short but timestamped
+  const prefix = `[data][db] ${new Date().toISOString()}`;
+  if (level === 'debug') {
+    console.debug(prefix, msg, meta ?? '');
+    // mirror for environments that don't show debug by default
+    console.log(prefix, msg, meta ?? '');
+  } else if (level === 'warn') {
+    console.warn(prefix, msg, meta ?? '');
+    // also output as info for higher visibility
     console.trace(prefix, msg, meta ?? '');
-		console.log(prefix, 'WARN:', msg, meta ?? '');
-	} else {
-		console.info(prefix, msg, meta ?? '');
-		// mirror to plain log as well
-		console.log(prefix, msg, meta ?? '');
-	}
+    console.log(prefix, 'WARN:', msg, meta ?? '');
+  } else {
+    console.info(prefix, msg, meta ?? '');
+    // mirror to plain log as well
+    console.log(prefix, msg, meta ?? '');
+  }
 }
 
 // Refresh in-memory cache from Couch (called after init)
@@ -248,7 +248,7 @@ async function refreshCacheFromCouch(): Promise<void> {
 
 // --- Async DB-backed implementations (used internally and for callers that await) ---
 export async function getAllTasksAsync(): Promise<Task[]> {
-	// If running in the browser, don't attempt to init the server-side nano client.
+  // If running in the browser, don't attempt to init the server-side nano client.
   if (typeof window !== 'undefined') {
     try {
       const res = await fetch('/api/dev/list-tasks', {
@@ -267,20 +267,20 @@ export async function getAllTasksAsync(): Promise<Task[]> {
     return
   }
 
-	// ask init for a usable DB handle (server only). init returns the tasksDb or null.
-	const db = await initCouchIfConfigured();
-	if (!db) {
-		// no DB available (init failed) -> return in-memory
-		return JSON.parse(JSON.stringify(allTasks));
-	}
+  // ask init for a usable DB handle (server only). init returns the tasksDb or null.
+  const db = await initCouchIfConfigured();
+  if (!db) {
+    // no DB available (init failed) -> return in-memory
+    return JSON.parse(JSON.stringify(allTasks));
+  }
 
-	try {
-		const resp = await db.list({ include_docs: true });
+  try {
+    const resp = await db.list({ include_docs: true });
     console.log("*************************************", resp)
-		return resp.rows.filter((r: any) => r.doc).map((r: any) => couchToTask(r.doc));
-	} catch (err) {
-		return JSON.parse(JSON.stringify(allTasks));
-	}
+    return resp.rows.filter((r: any) => r.doc).map((r: any) => couchToTask(r.doc));
+  } catch (err) {
+    return JSON.parse(JSON.stringify(allTasks));
+  }
 }
 
 export async function updateTaskAsync(updatedTask: Task): Promise<void> {
@@ -294,9 +294,9 @@ export async function updateTaskAsync(updatedTask: Task): Promise<void> {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedTask),
       });
-            console.log("Finished the fetch catch in add task async");
+      console.log("Finished the fetch catch in add task async");
       if (res.ok) {
-              console.log("Entered the Ok catch in add task async");
+        console.log("Entered the Ok catch in add task async");
         const created = await res.json();
         dbLog('info', 'addTaskAsync: server API created task', created?.id ?? '(unknown)');
         allTasks.push(created); // Reflect in-memory for UI
@@ -350,9 +350,9 @@ export async function addTaskAsync(newTask: Omit<Task, 'id'>): Promise<Task> {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newTask),
       });
-            console.log("Finished the fetch catch in add task async");
+      console.log("Finished the fetch catch in add task async");
       if (res.ok) {
-              console.log("Entered the Ok catch in add task async");
+        console.log("Entered the Ok catch in add task async");
         const created = await res.json();
         dbLog('info', 'addTaskAsync: server API created task', created?.id ?? '(unknown)');
         allTasks.push(created); // Reflect in-memory for UI
@@ -588,8 +588,9 @@ async function initCouchIfConfigured(): Promise<any | null> {
   // prefer explicit couchUrl (set via configureCouchCredentials or env)
   let url = couchUrl ?? envUrl ?? defaultLocal;
   // if (!couchUrl && !envUrl && envUser && envPass) {
-    const hostPart = envHost ?? '127.0.0.1:5984';
-    url = `http://dnannuri:dnannuri@${hostPart}`;
+  const hostPart = envHost ?? '127.0.0.1:5984';
+  url = `http://admin:admin@${hostPart}`;
+  console.log("url for couch DB : ", url)
   // }
 
   dbLog('info', 'initCouchIfConfigured: attempting CouchDB connection to (redacted)', { hasUrl: !!url, hostHint: url?.split('@').pop?.() ?? url });
@@ -808,9 +809,9 @@ export function deleteTemplate(templateId: string): void {
 // NEW: server API endpoint used by browser to persist tasks (avoids direct client-to-Couch CORS)
 let serverApiUrl = '/api/dev/add-task';
 export function configureServerApiUrl(url: string): void {
-	// simple override for local development
-	serverApiUrl = url;
-	dbLog('info', 'configureServerApiUrl: set', { serverApiUrl });
+  // simple override for local development
+  serverApiUrl = url;
+  dbLog('info', 'configureServerApiUrl: set', { serverApiUrl });
 }
 // // NEW: server API endpoint used by browser to persist tasks (avoids direct client-to-Couch CORS)
 // let serverApiUrl = '/api/dev/add-task';
