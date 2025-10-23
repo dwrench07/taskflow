@@ -1,0 +1,30 @@
+# Development Dockerfile with hot reload
+FROM node:20-alpine AS base
+
+# Install dependencies only when needed
+FROM base AS deps
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Install dependencies based on the preferred package manager
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+# Development image with hot reload
+FROM base AS development
+WORKDIR /app
+
+# Copy node_modules from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copy source code
+COPY . .
+
+EXPOSE 9002
+
+ENV NODE_ENV=development
+ENV HOSTNAME="0.0.0.0"
+ENV PORT=9002
+
+# Use the dev script with turbopack for fast development
+CMD ["npm", "run", "dev"]

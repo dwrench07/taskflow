@@ -1,0 +1,76 @@
+services:
+  # CouchDB Service
+  couchdb:
+    image: couchdb:3.3
+    container_name: taskflow-couchdb
+    restart: unless-stopped
+    ports:
+      - "5984:5984"
+    environment:
+      COUCHDB_USER: admin
+      COUCHDB_PASSWORD: password
+    volumes:
+      - couchdb_data:/opt/couchdb/data
+      - couchdb_config:/opt/couchdb/etc/local.d
+    networks:
+      - taskflow-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5984/_up"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # Next.js Application
+  taskflow-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: taskflow-nextjs
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # CouchDB Configuration
+      COUCHDB_URL: http://admin:password@couchdb:5984
+      COUCHDB_USER: admin
+      COUCHDB_PASS: password
+      COUCHDB_HOST: couchdb:5984
+      COUCHDB_TASKS_DB: tasks
+      COUCHDB_TEMPLATES_DB: templates
+      COUCHDB_META_DB: meta
+      # Next.js Configuration
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      PORT: 3000
+    depends_on:
+      couchdb:
+        condition: service_healthy
+    networks:
+      - taskflow-network
+
+  # Optional: CouchDB Admin Interface (Fauxton)
+  # Uncomment if you want a web interface for CouchDB management
+  # fauxton:
+  #   image: couchdb:3.3
+  #   container_name: taskflow-fauxton
+  #   restart: unless-stopped
+  #   ports:
+  #     - "5985:5984"
+  #   environment:
+  #     COUCHDB_USER: admin
+  #     COUCHDB_PASSWORD: password
+  #   depends_on:
+  #     - couchdb
+  #   networks:
+  #     - taskflow-network
+
+volumes:
+  couchdb_data:
+    driver: local
+  couchdb_config:
+    driver: local
+
+networks:
+  taskflow-network:
+    driver: bridge
