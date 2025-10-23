@@ -36,9 +36,6 @@ services:
     environment:
       # CouchDB Configuration
       COUCHDB_URL: http://admin:admin@couchdb-dev:5984
-      COUCHDB_USER: admin
-      COUCHDB_PASS: admin
-      COUCHDB_HOST: couchdb-dev:5984
       COUCHDB_TASKS_DB: tasks_dev
       COUCHDB_TEMPLATES_DB: templates_dev
       COUCHDB_META_DB: meta_dev

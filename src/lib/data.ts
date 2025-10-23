@@ -123,31 +123,31 @@ export function configureDbNames(names: { tasks?: string; templates?: string; me
 }
 
 // New: allow setting Couch credentials at runtime (useful for debugging / REPL)
-export function configureCouchCredentials(opts: { url?: string; user?: string; pass?: string; host?: string }): void {
-  // set explicit couchUrl if provided
-  if (opts.url) {
-    couchUrl = opts.url;
-  }
-  // if user/pass/host provided, build a basic URL for local testing
-  if ((opts.user && opts.pass) || opts.host) {
-    const hostPart = opts.host ?? '127.0.0.1:5984';
-    const user = opts.user ?? '';
-    const pass = opts.pass ?? '';
-    if (user && pass) {
-      couchUrl = `http://${encodeURIComponent(user)}:${encodeURIComponent(pass)}@${hostPart}`;
-    } else if (opts.url) {
-      // noop, already set
-    }
-  }
-  // force a re-init on next call
-  useCouch = false;
-  nanoClient = null;
-  tasksDb = null;
-  templatesDb = null;
-  metaDb = null;
-  dbLog('info', 'configureCouchCredentials: configured couchUrl (redacted)', { hasUrl: !!couchUrl });
-  console.info('[data] configureCouchCredentials: call initCouchIfConfigured() now (server-side) to connect');
-}
+// export function configureCouchCredentials(opts: { url?: string; user?: string; pass?: string; host?: string }): void {
+//   // set explicit couchUrl if provided
+//   if (opts.url) {
+//     couchUrl = opts.url;
+//   }
+//   // if user/pass/host provided, build a basic URL for local testing
+//   if ((opts.user && opts.pass) || opts.host) {
+//     const hostPart = opts.host ?? '127.0.0.1:5984';
+//     const user = opts.user ?? '';
+//     const pass = opts.pass ?? '';
+//     if (user && pass) {
+//       couchUrl = `http://${encodeURIComponent(user)}:${encodeURIComponent(pass)}@${hostPart}`;
+//     } else if (opts.url) {
+//       // noop, already set
+//     }
+//   }
+//   // force a re-init on next call
+//   useCouch = false;
+//   nanoClient = null;
+//   tasksDb = null;
+//   templatesDb = null;
+//   metaDb = null;
+//   dbLog('info', 'configureCouchCredentials: configured couchUrl (redacted)', { hasUrl: !!couchUrl });
+//   console.info('[data] configureCouchCredentials: call initCouchIfConfigured() now (server-side) to connect');
+// }
 
 // NEW: convenience helper to attempt an immediate init and return the tasks DB handle (or null)
 // Call from server REPL: await ensureCouchConnected()
@@ -580,17 +580,15 @@ async function initCouchIfConfigured(): Promise<any | null> {
     typeof process !== 'undefined' ? (process.env.COUCHDB_URL as string | undefined) : undefined;
 
   // read credentials from env (do NOT hardcode in production)
-  const envUser = typeof process !== 'undefined' ? (process.env.COUCHDB_USER as string | undefined) : undefined;
-  const envPass = typeof process !== 'undefined' ? (process.env.COUCHDB_PASS as string | undefined) : undefined;
-  const envHost = typeof process !== 'undefined' ? (process.env.COUCHDB_HOST as string | undefined) : undefined;
+  // const envUser = typeof process !== 'undefined' ? (process.env.COUCHDB_USER as string | undefined) : undefined;
+  // const envPass = typeof process !== 'undefined' ? (process.env.COUCHDB_PASS as string | undefined) : undefined;
+  // const envHost = typeof process !== 'undefined' ? (process.env.COUCHDB_HOST as string | undefined) : undefined;
 
   const defaultLocal = 'http://127.0.0.1:5984';
   // prefer explicit couchUrl (set via configureCouchCredentials or env)
   let url = couchUrl ?? envUrl ?? defaultLocal;
   // if (!couchUrl && !envUrl && envUser && envPass) {
-  const hostPart = envHost ?? '127.0.0.1:5984';
-  url = `http://admin:admin@${hostPart}`;
-  console.log("url for couch DB : ", url)
+  //   url = `http://${encodeURIComponent(envUser)}:${encodeURIComponent(envPass)}@${envHost ?? '127.0.0.1:5984'}`;
   // }
 
   dbLog('info', 'initCouchIfConfigured: attempting CouchDB connection to (redacted)', { hasUrl: !!url, hostHint: url?.split('@').pop?.() ?? url });
