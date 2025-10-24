@@ -716,14 +716,14 @@ function TasksPageContent() {
                 <Card>
                   <CardHeader>
                     <div className="flex justify-between items-start">
-                      <div>
-                        <div className="flex items-center gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-4 mb-2">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="outline" className={cn("capitalize w-fit", statusStyles[selectedTask.status])}>
+                              <Badge variant="outline" className={cn("capitalize cursor-pointer hover:bg-accent", statusStyles[selectedTask.status])}>
                                 {statusLabels[selectedTask.status]}
-                                <ChevronDown className="ml-2 h-4 w-4" />
-                              </Button>
+                                <ChevronDown className="ml-1 h-3 w-3" />
+                              </Badge>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
                               <DropdownMenuRadioGroup value={selectedTask.status} onValueChange={(value) => handleStatusChange(value as Status)}>
@@ -737,8 +737,39 @@ function TasksPageContent() {
                             {selectedTask.priority}
                           </Badge>
                         </div>
-                        <CardTitle className="text-2xl pt-2">{selectedTask.title}</CardTitle>
-                        <p className="text-muted-foreground pt-1">{selectedTask.description}</p>
+                        {/* Tags displayed at the top with margin */}
+                        {selectedTask.tags && selectedTask.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mb-4 mt-4">
+                            {selectedTask.tags.map(tag => (
+                              <Badge
+                                key={tag}
+                                variant="secondary"
+                                className="bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-900 dark:to-purple-900 text-violet-800 dark:text-violet-200 border-violet-200 dark:border-violet-700 text-xs"
+                              >
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                        <CardTitle className="text-2xl mb-2">{selectedTask.title}</CardTitle>
+
+                        {/* Concise date display */}
+                        {(selectedTask.startDate || selectedTask.endDate) && (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                            <CalendarIcon className="h-4 w-4" />
+                            <span>
+                              {selectedTask.startDate && selectedTask.endDate ? (
+                                `${format(new Date(selectedTask.startDate), "do MMM")} - ${format(new Date(selectedTask.endDate), "do MMM")}`
+                              ) : selectedTask.startDate ? (
+                                `Starts ${format(new Date(selectedTask.startDate), "do MMM")}`
+                              ) : selectedTask.endDate ? (
+                                `Due ${format(new Date(selectedTask.endDate), "do MMM")}`
+                              ) : null}
+                            </span>
+                          </div>
+                        )}
+
+                        <p className="text-muted-foreground">{selectedTask.description}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <Dialog open={isEditingFormOpen} onOpenChange={setIsEditingFormOpen}>
@@ -788,50 +819,8 @@ function TasksPageContent() {
                     </div>
                   </CardHeader>
 
-                  <CardContent>
-                    <Separator className="my-2" />
-                    <div className="py-4">
-                      <h4 className="font-semibold mb-2">Tags</h4>
-                      <div className="flex flex-wrap gap-1.5">
-                        {selectedTask.tags && selectedTask.tags.length > 0 ? (
-                          selectedTask.tags.map(tag => (
-                            <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
-                          ))
-                        ) : (
-                          <p className="text-sm text-muted-foreground">No tags assigned</p>
-                        )}
-                      </div>
-                    </div>
-                    <Separator className="my-2" />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-                      <div>
-                        <h4 className="font-semibold mb-2">Start Date & Time</h4>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 p-2 rounded-md">
-                          <CalendarIcon className="h-4 w-4" />
-                          <span>
-                            {selectedTask.startDate
-                              ? format(new Date(selectedTask.startDate), "PPP p")
-                              : "No start date set"
-                            }
-                          </span>
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="font-semibold mb-2">End Date & Time</h4>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 p-2 rounded-md">
-                          <CalendarIcon className="h-4 w-4" />
-                          <span>
-                            {selectedTask.endDate
-                              ? format(new Date(selectedTask.endDate), "PPP p")
-                              : "No end date set"
-                            }
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Separator className="my-2" />
-                    <div className="py-4">
+                  <CardContent className="space-y-6">
+                    <div className="border-t border-muted-foreground/10 pt-6">
                       <h4 className="font-semibold my-3">Subtasks</h4>
                       <div className="space-y-2">
                         {selectedTask?.subtasks?.map(subtask => (
