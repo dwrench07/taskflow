@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { addTaskAsync } from '../../../lib/data';
+import { updateTaskAsync } from '../../../lib/data-service';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'PUT') {
@@ -7,15 +7,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const newTask = req.body;
-    if (!newTask || typeof newTask !== 'object') {
-      return res.status(400).json({ error: 'Invalid task data' });
+    const updatedTask = req.body;
+    if (!updatedTask || typeof updatedTask !== 'object' || !updatedTask.id) {
+      return res.status(400).json({ error: 'Invalid task data or missing task ID' });
     }
 
-    const createdTask = await addTaskAsync(newTask);
-    return res.status(201).json(createdTask);
+    await updateTaskAsync(updatedTask);
+    return res.status(200).json(updatedTask);
   } catch (error: any) {
-    console.error('[API] add-task error:', error.message ?? error);
-    return res.status(500).json({ error: 'Failed to add task' });
+    console.error('[API] update-task error:', error.message ?? error);
+    return res.status(500).json({ error: 'Failed to update task' });
   }
 }
