@@ -1,27 +1,26 @@
-version: "3.8"
-
 services:
-  # CouchDB Service for Development
-  couchdb-dev:
-    image: couchdb:3.3
-    container_name: taskflow-couchdb-dev
+  # MongoDB Service for Development
+  mongodb-dev:
+    image: mongo:7.0
+    container_name: taskflow-mongodb-dev
     restart: unless-stopped
     ports:
-      - "5984:5984"
+      - "27017:27017"
     environment:
-      COUCHDB_USER: admin
-      COUCHDB_PASSWORD: admin
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: devpassword
+      MONGO_INITDB_DATABASE: taskflow_dev
     volumes:
-      - couchdb_dev_data:/opt/couchdb/data
-      - couchdb_dev_config:/opt/couchdb/etc/local.d
+      - mongodb_dev_data:/data/db
+      - mongodb_dev_config:/data/configdb
     networks:
       - taskflow-dev-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5984/_up"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
+    # healthcheck:
+    #   test: ["CMD", "mongosh", "--eval", "db.runCommand('ping').ok"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 30s
 
   # Next.js Development Server
   taskflow-dev:
@@ -34,11 +33,17 @@ services:
     ports:
       - "9002:9002" # Using the port from package.json dev script
     environment:
-      # CouchDB Configuration
-      COUCHDB_URL: http://admin:admin@couchdb-dev:5984
-      COUCHDB_TASKS_DB: tasks_dev
-      COUCHDB_TEMPLATES_DB: templates_dev
-      COUCHDB_META_DB: meta_dev
+      # Database Configuration
+      DB_TYPE: mongodb
+      MONGODB_URI: mongodb://admin:devpassword@mongodb-dev:27017/taskflow_dev?authSource=admin
+      MONGODB_HOST: mongodb-dev
+      MONGODB_PORT: 27017
+      MONGODB_USERNAME: admin
+      MONGODB_PASSWORD: devpassword
+      MONGODB_DATABASE: taskflow_dev
+      MONGODB_TASKS_COLLECTION: tasks_dev
+      MONGODB_TEMPLATES_COLLECTION: templates_dev
+      MONGODB_DAILY_PLANS_COLLECTION: dailyPlans_dev
       # Next.js Development Configuration
       NODE_ENV: development
       HOSTNAME: 0.0.0.0
@@ -48,16 +53,16 @@ services:
       - .:/app
       - /app/node_modules
       - /app/.next
-    depends_on:
-      couchdb-dev:
-        condition: service_healthy
+    # depends_on:
+    #   mongodb-dev:
+    #     condition: service_healthy
     networks:
       - taskflow-dev-network
 
 volumes:
-  couchdb_dev_data:
+  mongodb_dev_data:
     driver: local
-  couchdb_dev_config:
+  mongodb_dev_config:
     driver: local
 
 networks:

@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { addTaskAsync } from '../../../lib/data';
+import { addTaskAsync } from '../../../lib/data-service';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
