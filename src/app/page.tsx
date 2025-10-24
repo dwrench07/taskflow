@@ -8,10 +8,18 @@ import { DashboardUpcomingDeadlines } from "@/components/dashboard-upcoming-dead
 import { DashboardCompletionChart } from "@/components/dashboard-completion-chart";
 import { DashboardStats } from "@/components/dashboard-stats";
 import { getAllTasks } from "@/lib/data";
+import { useEffect, useState } from "react";
+import { Task } from "@/lib/types";
 
 export default function DashboardPage() {
-  // Since data is local, we can fetch it directly.
-  const allTasks = getAllTasks();
+  const [allTasks, setAllTasks] = useState<Task[]>([]);
+  useEffect(() => {
+    const loadAllTasks = async () => {
+      const tasks = await getAllTasks();
+      setAllTasks(tasks);
+    }
+    loadAllTasks();
+  }, []);
 
   return (
     <div className="flex flex-col gap-8">

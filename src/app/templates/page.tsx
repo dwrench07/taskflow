@@ -70,10 +70,10 @@ export default function TemplatesPage() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
-  const refreshData = () => {
+  const refreshData = async () => {
     setLoading(true);
-    const templatesData = getAllTemplates();
-    const tasksData = getAllTasks();
+    const templatesData = await getAllTemplates();
+    const tasksData = await getAllTasks();
     setTemplates(templatesData);
     setAllTasks(tasksData);
     
@@ -86,13 +86,16 @@ export default function TemplatesPage() {
   };
 
   useEffect(() => {
-    const templatesData = getAllTemplates();
-    setTemplates(templatesData);
-    setAllTasks(getAllTasks());
-    if (!isMobile && templatesData.length > 0) {
-      setSelectedTemplate(templatesData[0]);
+    const loadData = async () => {
+        const templatesData = await getAllTemplates();
+        setTemplates(templatesData);
+        setAllTasks(await getAllTasks());
+        if (!isMobile && templatesData.length > 0) {
+          setSelectedTemplate(templatesData[0]);
+        }
+        setLoading(false);
     }
-    setLoading(false);
+    loadData();
   }, [isMobile]);
 
   const allTags = useMemo(() => {
@@ -111,23 +114,23 @@ export default function TemplatesPage() {
     return Array.from(tagSet).sort();
   }, [templates, allTasks]);
 
-  const handleAddTemplate = (newTemplateData: Omit<TaskTemplate, 'id'>) => {
-    const addedTemplate = addTemplate(newTemplateData);
-    refreshData();
+  const handleAddTemplate = async (newTemplateData: Omit<TaskTemplate, 'id'>) => {
+    const addedTemplate = await addTemplate(newTemplateData);
+    await refreshData();
     setSelectedTemplate(addedTemplate);
     toast({ title: "Template created!", description: "Your new task template has been saved."});
   };
 
-  const handleUpdateTemplate = (updatedTemplate: TaskTemplate) => {
-    updateTemplate(updatedTemplate);
-    refreshData();
+  const handleUpdateTemplate = async (updatedTemplate: TaskTemplate) => {
+    await updateTemplate(updatedTemplate);
+    await refreshData();
     toast({ title: "Template updated!", description: "Your changes have been saved."});
   };
 
-  const handleDeleteTemplate = (templateId: string) => {
-    deleteTemplate(templateId);
+  const handleDeleteTemplate = async (templateId: string) => {
+    await deleteTemplate(templateId);
     setSelectedTemplate(null);
-    refreshData();
+    await refreshData();
     toast({ title: "Template deleted!", variant: "destructive" });
   };
   

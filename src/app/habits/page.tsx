@@ -222,9 +222,9 @@ export default function HabitsPage() {
     return [...habits].sort((a,b) => (b.priority === 'high' ? 1 : -1) - (a.priority === 'high' ? 1: -1) || calculateStreak(b) - calculateStreak(a));
   }, [habits]);
 
-  const refreshHabits = () => {
+  const refreshHabits = async () => {
     setLoading(true);
-    const tasks = getAllTasks();
+    const tasks = await getAllTasks();
     setAllTasks(tasks);
     
     // Reselect habit if it still exists
@@ -237,13 +237,16 @@ export default function HabitsPage() {
   };
   
   useEffect(() => {
-    const tasks = getAllTasks();
-    setAllTasks(tasks);
-    if (!isMobile && (Array.isArray(tasks) ? tasks : []).filter(t=>t.isHabit).length > 0) {
-        const sorted = [...(Array.isArray(tasks) ? tasks : []).filter(t=>t.isHabit)].sort((a,b) => (b.priority === 'high' ? 1 : -1) - (a.priority === 'high' ? 1: -1) || calculateStreak(b) - calculateStreak(a));
-        setSelectedHabit(sorted[0]);
+    const loadTasks = async () => {
+        const tasks = await getAllTasks();
+        setAllTasks(tasks);
+        if (!isMobile && (Array.isArray(tasks) ? tasks : []).filter(t=>t.isHabit).length > 0) {
+            const sorted = [...(Array.isArray(tasks) ? tasks : []).filter(t=>t.isHabit)].sort((a,b) => (b.priority === 'high' ? 1 : -1) - (a.priority === 'high' ? 1: -1) || calculateStreak(b) - calculateStreak(a));
+            setSelectedHabit(sorted[0]);
+        }
+        setLoading(false);
     }
-    setLoading(false);
+    loadTasks();
   }, [isMobile]);
 
   useEffect(() => {
@@ -273,7 +276,7 @@ export default function HabitsPage() {
     return statusEntry?.status || 'not recorded';
   }
 
-  const handleToggleCompletion = (habitId: string) => {
+  const handleToggleCompletion = async (habitId: string) => {
     const habit = habits.find(h => h.id === habitId);
     if (!habit) return;
 
@@ -295,7 +298,7 @@ export default function HabitsPage() {
     }
     
     const updatedHabit = { ...habit, completionHistory: newCompletionHistory, lastCompletedDate: newLastCompletedDate };
-    updateTask(updatedHabit);
+    await updateTask(updatedHabit);
 
     refreshHabits();
     toast(toastMessage);
@@ -326,7 +329,7 @@ export default function HabitsPage() {
     toast({ title: "Observation recorded", description: `Status for "${habit.title}" set to "${status}".`});
   }
 
-  const handleCreateHabit = (data: HabitFormValues) => {
+  const handleCreateHabit = async (data: HabitFormValues) => {
     const newHabit: Omit<Task, 'id'> = {
         title: data.title,
         description: data.description || "",
@@ -341,26 +344,26 @@ export default function HabitsPage() {
         completionHistory: [],
         dailyStatus: [],
     };
-    addTask(newHabit);
-    refreshHabits();
+    await addTask(newHabit);
+    await refreshHabits();
     toast({ title: "Habit created!", description: `"${data.title}" has been added.`});
   }
 
-  const handleUpdateHabit = (data: HabitFormValues) => {
+  const handleUpdateHabit = async (data: HabitFormValues) => {
     if (!editingHabit) return;
     const updatedHabit = { ...editingHabit, ...data };
-    updateTask(updatedHabit);
-    refreshHabits();
+    await updateTask(updatedHabit);
+    await refreshHabits();
     setEditingHabit(undefined);
     toast({ title: "Habit updated!", description: `"${data.title}" has been saved.`});
   }
 
-  const handleDeleteHabit = (habitId: string) => {
+  const handleDeleteHabit = async (habitId: string) => {
     deleteTask(habitId);
     if (selectedHabit?.id === habitId) {
       setSelectedHabit(null);
     }
-    refreshHabits();
+    await refreshHabits();
     toast({ title: "Habit deleted!", variant: "destructive" });
   }
 
@@ -368,14 +371,14 @@ export default function HabitsPage() {
     setSelectedHabit(habit);
   }
   
-  const handleSaveNote = () => {
+  const handleSaveNote = async () => {
     if (!selectedHabit || newNote.trim() === "") return;
     const updatedHabit = {
       ...selectedHabit,
       notes: [...(selectedHabit.notes || []), newNote],
     };
-    updateTask(updatedHabit);
-    refreshHabits();
+    await updateTask(updatedHabit);
+    await refreshHabits();
     setNewNote("");
      toast({
         title: "Note Saved",

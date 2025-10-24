@@ -18,9 +18,9 @@ export default function ProfilePage() {
   const [newTag, setNewTag] = useState("");
   const { toast } = useToast();
 
-  const refreshTasks = () => {
+  const refreshTasks = async () => {
     setLoading(true);
-    const tasks = getAllTasks();
+    const tasks = await getAllTasks();
     setTasks(tasks);
     setLoading(false);
   }
@@ -40,7 +40,7 @@ export default function ProfilePage() {
     return Array.from(tagSet).sort((a, b) => a.localeCompare(b));
   }, [tasks]);
 
-  const handleUpdateTag = (oldTag: string, newTag: string) => {
+  const handleUpdateTag = async (oldTag: string, newTag: string) => {
     if (!newTag || oldTag === newTag) {
         setIsEditing(null);
         return;
@@ -56,10 +56,10 @@ export default function ProfilePage() {
             ...st,
             tags: st.tags?.map(t => t === oldTag ? newTag : t)
         }));
-        updateTask({ ...task, tags: newTags, subtasks: newSubtasks });
+        await updateTask({ ...task, tags: newTags, subtasks: newSubtasks });
     }
 
-    refreshTasks();
+    await refreshTasks();
     setIsEditing(null);
     toast({ title: "Tag updated successfully!" });
   };

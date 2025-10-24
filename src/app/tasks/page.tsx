@@ -165,9 +165,11 @@ function CreateFromTemplateDialog({ onSelectTemplate, onOpenChange }: { onSelect
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // In a real app, this would be an async call.
-    const data = getAllTemplates();
-    setTemplates(data);
+    const loadTemplates = async () => {
+      const templates = await getAllTemplates();
+      setTemplates(templates);
+    }
+    loadTemplates();
     setLoading(false);
   }, [])
 
@@ -283,7 +285,6 @@ function TasksPageContent() {
   
   const refreshTasks = async () => {
     setLoading(true);
-    // In a real app, this would be an async call.
     const tasks = await getAllTasks();
     setAllTasks(tasks);
     setLoading(false);
@@ -392,22 +393,22 @@ useEffect(() => {
     setSelectedTask(freshSelectedTask || null);
   };
 
-  const handleAddTask = (newTaskData: Omit<Task, 'id' | 'subtasks' | 'notes' | 'status'> & {status?: Status}) => {
+  const handleAddTask = async (newTaskData: Omit<Task, 'id' | 'subtasks' | 'notes' | 'status'> & {status?: Status}) => {
     const taskToAdd: Omit<Task, 'id'> = {
         ...newTaskData,
         status: 'todo',
         subtasks: [],
         notes: [],
     };
-    const addedTask = addTask(taskToAdd);
+    const addedTask = await addTask(taskToAdd);
     refreshTasks();
     setSelectedTask(addedTask);
     router.push(`/tasks?taskId=${addedTask.id}`, { scroll: false });
   }
   
-  const handleDeleteTask = (taskId: string) => {
-    deleteTaskInData(taskId);
-    refreshTasks();
+  const handleDeleteTask = async (taskId: string) => {
+    await deleteTaskInData(taskId);
+    await refreshTasks();
     setSelectedTask(null);
     router.replace('/tasks', { scroll: false });
     toast({
@@ -417,7 +418,7 @@ useEffect(() => {
     });
   }
 
-  const handleCreateTaskFromTemplate = (template: TaskTemplate) => {
+  const handleCreateTaskFromTemplate = async (template: TaskTemplate) => {
     const newSubtasks: Subtask[] = template.subtasks.map(tsub => ({
         id: `sub-${Date.now()}-${tsub.id}`,
         title: tsub.title,
@@ -435,10 +436,10 @@ useEffect(() => {
         notes: [`Created from template: "${template.title}"`],
     };
 
-    const addedTask = addTask(taskToAdd);
-    refreshTasks();
+    const addedTask = await addTask(taskToAdd);
     setSelectedTask(addedTask);
     setIsTemplateDialogOpen(false);
+    await refreshTasks();
     router.push(`/tasks?taskId=${addedTask.id}`, { scroll: false });
     toast({
         title: "Task created from template!",
