@@ -1,3 +1,5 @@
+# TODO: fix Build failed because of webpack errors
+
 services:
   # MongoDB Service
   mongodb:
@@ -27,7 +29,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: development
     container_name: taskflow-nextjs
     restart: unless-stopped
     ports:

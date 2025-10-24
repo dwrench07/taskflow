@@ -29,7 +29,7 @@ export class MongoDBAdapter implements DatabaseAdapter {
             });
 
             const connectionString = this.config.connectionString ||
-                `mongodb://${this.config.username}:${this.config.password}@${this.config.host}:${this.config.port}/${this.config.databaseName}?authSource=admin`;
+                `mongodb://${this.config.username}:${this.config.password}@${this.config.host}:${this.config.port}/${this.config.databaseName}?authSource=${this.config.username}`;
 
             this.client = new MongoClient(connectionString, {
                 maxPoolSize: 10,
