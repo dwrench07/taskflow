@@ -1,6 +1,5 @@
 /**
  * Data service layer that uses the database abstraction
- * This replaces the old CouchDB-specific data.ts implementation
  */
 
 import type { Task, TaskTemplate } from './types';

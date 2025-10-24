@@ -49,7 +49,7 @@ export interface DatabaseAdapter {
  * Database configuration interface
  */
 export interface DatabaseConfig {
-    type: 'mongodb' | 'couchdb' | 'memory';
+    type: 'mongodb' | 'memory';
     connectionString?: string;
     host?: string;
     port?: number;

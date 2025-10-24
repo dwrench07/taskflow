@@ -22,7 +22,7 @@ function createConfig(): AppConfig {
     const env = (process.env.NODE_ENV || 'development') as 'development' | 'production' | 'test';
 
     // Database configuration
-    const dbType = (process.env.DB_TYPE || 'memory') as 'mongodb' | 'couchdb' | 'memory';
+    const dbType = (process.env.DB_TYPE || 'memory') as 'mongodb' | 'memory';
 
     let databaseConfig: DatabaseConfig;
 
