@@ -21,10 +21,10 @@ import {
 import { Badge } from "./ui/badge"
 
 interface TagInputProps {
-    tags: string[];
-    allTags: string[];
-    onUpdateTags: (tags: string[]) => Promise<void>;
-    placeholder?: string;
+  tags: string[];
+  allTags: string[];
+  onUpdateTags: (tags: string[]) => Promise<void>;
+  placeholder?: string;
 }
 
 export function TagInput({ tags, allTags, onUpdateTags, placeholder }: TagInputProps) {
@@ -55,73 +55,73 @@ export function TagInput({ tags, allTags, onUpdateTags, placeholder }: TagInputP
 
   return (
     <div className="w-full">
-        <div className="flex flex-wrap gap-1 mb-2">
-            {tags.map(tag => (
-                <Badge key={tag} variant="secondary" className="flex items-center gap-1">
-                    {tag}
-                    <button onClick={() => handleRemoveTag(tag)} className="rounded-full hover:bg-muted-foreground/20">
-                        <XIcon className="h-3 w-3" />
-                    </button>
-                </Badge>
-            ))}
-        </div>
-         <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-                <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={open}
-                className="w-full justify-between font-normal text-muted-foreground"
-                >
-                {placeholder || "Select tags..."}
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                <Command>
-                    <CommandInput 
-                        placeholder="Search or create tag..."
-                        value={inputValue}
-                        onValueChange={setInputValue}
+      <div className="flex flex-wrap gap-1 mb-2">
+        {tags.map(tag => (
+          <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+            {tag}
+            <button onClick={() => handleRemoveTag(tag)} className="rounded-full hover:bg-muted-foreground/20">
+              <XIcon className="h-3 w-3" />
+            </button>
+          </Badge>
+        ))}
+      </div>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-full justify-between font-normal text-muted-foreground"
+          >
+            {placeholder || "Select tags..."}
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+          <Command>
+            <CommandInput
+              placeholder="Search or create tag..."
+              value={inputValue}
+              onValueChange={setInputValue}
+            />
+            <CommandList>
+              <CommandGroup>
+                {inputValue.trim() && !filteredTags.includes(inputValue.trim()) && (
+                  <CommandItem
+                    onSelect={() => handleCreate(inputValue)}
+                    className="flex items-center gap-2"
+                    value={`create-${inputValue}`}
+                  >
+                    <PlusCircle className="h-4 w-4" />
+                    Create "{inputValue}"
+                  </CommandItem>
+                )}
+                {filteredTags.map((tag) => (
+                  <CommandItem
+                    key={tag}
+                    value={tag}
+                    onSelect={async (currentValue) => {
+                      await handleSelect(currentValue)
+                      setOpen(false)
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        tags.includes(tag) ? "opacity-100" : "opacity-0"
+                      )}
                     />
-                    <CommandList>
-                        <CommandEmpty>
-                            {inputValue.trim() ? (
-                                <CommandItem
-                                    onSelect={() => handleCreate(inputValue)}
-                                    className="flex items-center gap-2"
-                                    >
-                                    <PlusCircle className="h-4 w-4" />
-                                    Create "{inputValue}"
-                                </CommandItem>
-                            ) : (
-                                "No tags found."
-                            )}
-                        </CommandEmpty>
-                        <CommandGroup>
-                        {filteredTags.map((tag) => (
-                            <CommandItem
-                                key={tag}
-                                value={tag}
-                                onSelect={async (currentValue) => {
-                                    await handleSelect(currentValue)
-                                    setOpen(false)
-                                }}
-                            >
-                            <Check
-                                className={cn(
-                                "mr-2 h-4 w-4",
-                                tags.includes(tag) ? "opacity-100" : "opacity-0"
-                                )}
-                            />
-                            {tag}
-                            </CommandItem>
-                        ))}
-                        </CommandGroup>
-                    </CommandList>
-                </Command>
-            </PopoverContent>
-        </Popover>
+                    {tag}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+              <CommandEmpty>
+                No tags found.
+              </CommandEmpty>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
     </div>
   )
 }

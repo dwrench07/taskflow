@@ -383,11 +383,12 @@ useEffect(() => {
         });
     });
     return Array.from(tagSet).sort();
+
   }, [allTasks]);
 
 
   const handleUpdateTask = async (updatedTask: Task) => {
-    updateTaskInData(updatedTask);
+    await updateTaskInData(updatedTask);
     const freshTasks = await refreshTasks();
     const freshSelectedTask = freshTasks.find(t => t.id === updatedTask.id);
     setSelectedTask(freshSelectedTask || null);
