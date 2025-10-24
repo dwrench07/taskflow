@@ -71,10 +71,10 @@ export default function PlanPage() {
   const dragItem = useRef<string | null>(null);
   const dragOverItem = useRef<string | null>(null);
 
-  const refreshData = () => {
+  const refreshData = async () => {
     setLoading(true);
-    const tasks = getAllTasks();
-    const planIds = getDailyPlan();
+    const tasks = await getAllTasks();
+    const planIds = await getDailyPlan();
     setAllTasks(tasks);
     setDailyTaskIds(planIds);
     setLoading(false);

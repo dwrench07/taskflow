@@ -118,9 +118,9 @@ export default function CalendarPage() {
   const { toast } = useToast();
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
 
-  const refreshTasks = () => {
+  const refreshTasks = async () => {
     setLoading(true);
-    const tasks = getAllTasks();
+    const tasks = await getAllTasks();
     setAllTasks(tasks);
     setLoading(false);
   };
