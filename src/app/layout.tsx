@@ -31,9 +31,9 @@ export default function RootLayout({
       ?.split("=")[1];
 
     // Allow access to the login page without authentication
-    if (!sessionToken && pathname !== "/login") {
-      router.push("/login");
-    }
+    // if (!sessionToken && pathname !== "/login") {
+    //   router.push("/login");
+    // }
   }, [router, pathname]);
 
   return (
