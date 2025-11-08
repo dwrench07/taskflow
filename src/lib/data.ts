@@ -105,7 +105,6 @@ export async function deleteTemplate(templateId: string): Promise<void> {
   }
 }
 
-
 export async function updateDailyPlanAsync(newTaskIds: string[]): Promise<void> {
   const response = await fetch('/api/daily-plan', {
     method: 'PUT',
@@ -115,5 +114,28 @@ export async function updateDailyPlanAsync(newTaskIds: string[]): Promise<void> 
 
   if (!response.ok) {
     throw new Error(`Failed to update daily plan: ${response.statusText}`);
+  }
+}
+
+export async function getDailyPlan(userId: string) {
+  try {
+    console.log("Fetching daily plan for userId:", userId); // Log userId for debugging
+    const response = await fetch(`/api/daily-plan?userId=${encodeURIComponent(userId)}`);
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error("User not found");
+      }
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to fetch daily plan");
+      } else {
+        throw new Error(`Unexpected response: ${response.statusText}`);
+      }
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error in getDailyPlan:", error);
+    throw error;
   }
 }
