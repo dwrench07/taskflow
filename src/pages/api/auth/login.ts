@@ -4,6 +4,7 @@
  */
 
 import type { DatabaseConfig } from './database/types';
+import type { NextApiRequest, NextApiResponse } from 'next';
 
 export interface AppConfig {
     env: 'development' | 'production' | 'test';
@@ -99,4 +100,29 @@ if (isServer) {
         },
         features: config.features,
     });
+}
+
+function getDbAdapter() {
+    // TODO: return your DatabaseAdapter instance (e.g. import your DB adapter singleton)
+    throw new Error('getDbAdapter not implemented: return your DatabaseAdapter instance');
+}
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    if (req.method !== 'POST') {
+        res.setHeader('Allow', ['POST']);
+        return res.status(405).end('Method Not Allowed');
+    }
+
+    const { email, password } = req.body || {};
+    if (!email || !password) return res.status(400).json({ error: 'email and password required' });
+
+    try {
+        const db = getDbAdapter();
+        const result = await loginUser(db, email, password);
+        if (!result) return res.status(401).json({ error: 'Invalid credentials' });
+        return res.status(200).json(result); // expected { user, token }
+    } catch (err: any) {
+        console.error('Login error', err);
+        return res.status(500).json({ error: err.message || 'Internal error' });
+    }
 }

@@ -60,6 +60,7 @@ export interface DatabaseConfig {
         tasks: string;
         templates: string;
         dailyPlans: string;
+        users_dev: string;
     };
 }
 

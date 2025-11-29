@@ -36,7 +36,7 @@ services:
     environment:
       # Database Configuration
       DB_TYPE: mongodb
-      MONGODB_URI: mongodb://admin:password@mongodb:27017/taskflow?authSource=admin
+      MONGODB_URI: mongodb+srv://drn1709_db_user:bPqatqb0aLFelntr@mongodbtestcluster.imwa8zn.mongodb.net/?appName=MongoDBTestCluster
       MONGODB_HOST: mongodb
       MONGODB_PORT: 27017
       MONGODB_USERNAME: admin

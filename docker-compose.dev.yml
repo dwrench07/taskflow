@@ -35,11 +35,11 @@ services:
     environment:
       # Database Configuration
       DB_TYPE: mongodb
-      MONGODB_URI: mongodb+srv://drn1709_db_user:${MONGODB_PASSWORD_DEV}@mongodbtestcluster.imwa8zn.mongodb.net/?appName=MongoDBTestCluster
+      MONGODB_URI: mongodb+srv://drn1709_db_user:bPqatqb0aLFelntr@mongodbtestcluster.imwa8zn.mongodb.net/?appName=MongoDBTestCluster
       MONGODB_HOST: mongodb-dev 
       MONGODB_PORT: 27017
       MONGODB_USERNAME: drn1709_db_user
-      MONGODB_PASSWORD: ${MONGODB_PASSWORD_DEV}
+      MONGODB_PASSWORD: bPqatqb0aLFelntr
       MONGODB_DATABASE: taskflow_dev
       MONGODB_TASKS_COLLECTION: tasks_dev
       MONGODB_TEMPLATES_COLLECTION: templates_dev
