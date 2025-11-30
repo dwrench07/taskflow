@@ -74,10 +74,10 @@ export class MongoDBAdapter implements DatabaseAdapter {
     }
 
     // Task operations
-    async getAllTasks(): Promise<Task[]> {
+    async getAllTasks(userId: string | null = null): Promise<Task[]> {
         this.ensureConnected();
         try {
-            const tasks = await this.tasksCollection!.find({}).toArray();
+            const tasks = await this.tasksCollection!.find({userId}).toArray();
             return tasks.map(this.convertFromMongo);
         } catch (error) {
             this.logger.error('Failed to get all tasks', error);
@@ -85,10 +85,10 @@ export class MongoDBAdapter implements DatabaseAdapter {
         }
     }
 
-    async getTask(id: string): Promise<Task | null> {
+    async getTask(id: string, userId: string | null = null): Promise<Task | null> {
         this.ensureConnected();
         try {
-            const task = await this.tasksCollection!.findOne({ _id: id });
+            const task = await this.tasksCollection!.findOne({ _id: id, userId });
             return task ? this.convertFromMongo(task) : null;
         } catch (error) {
             this.logger.error('Failed to get task', { id, error });
@@ -96,10 +96,10 @@ export class MongoDBAdapter implements DatabaseAdapter {
         }
     }
 
-    async addTask(task: Task): Promise<Task> {
+    async addTask(task: Task, userId: string | null = null): Promise<Task> {
         this.ensureConnected();
         try {
-            const taskToInsert = this.convertToMongo(task);
+            const taskToInsert = this.convertToMongo({...task, userId});
             const result = await this.tasksCollection!.insertOne(taskToInsert);
 
             if (!result.acknowledged) {
@@ -113,7 +113,7 @@ export class MongoDBAdapter implements DatabaseAdapter {
         }
     }
 
-    async updateTask(task: Task): Promise<Task> {
+    async updateTask(task: Task, userId: string | null = null): Promise<Task> {
         this.ensureConnected();
         try {
             const taskToUpdate = this.convertToMongo(task);
@@ -140,10 +140,10 @@ export class MongoDBAdapter implements DatabaseAdapter {
         }
     }
 
-    async deleteTask(id: string): Promise<boolean> {
+    async deleteTask(id: string, userId: string | null = null): Promise<boolean> {
         this.ensureConnected();
         try {
-            const result = await this.tasksCollection!.deleteOne({ _id: id });
+            const result = await this.tasksCollection!.deleteOne({ _id: id, userId });
             return result.deletedCount > 0;
         } catch (error) {
             this.logger.error('Failed to delete task', { id, error });
@@ -152,10 +152,10 @@ export class MongoDBAdapter implements DatabaseAdapter {
     }
 
     // Template operations
-    async getAllTemplates(): Promise<TaskTemplate[]> {
+    async getAllTemplates(userId: string | null = null): Promise<TaskTemplate[]> {
         this.ensureConnected();
         try {
-            const templates = await this.templatesCollection!.find({}).toArray();
+            const templates = await this.templatesCollection!.find({userId}).toArray();
             return templates.map(this.convertFromMongo);
         } catch (error) {
             this.logger.error('Failed to get all templates', error);
@@ -163,10 +163,10 @@ export class MongoDBAdapter implements DatabaseAdapter {
         }
     }
 
-    async getTemplate(id: string): Promise<TaskTemplate | null> {
+    async getTemplate(id: string, userId: string | null = null): Promise<TaskTemplate | null> {
         this.ensureConnected();
         try {
-            const template = await this.templatesCollection!.findOne({ _id: id });
+            const template = await this.templatesCollection!.findOne({ _id: id, userId });
             return template ? this.convertFromMongo(template) : null;
         } catch (error) {
             this.logger.error('Failed to get template', { id, error });
@@ -174,7 +174,7 @@ export class MongoDBAdapter implements DatabaseAdapter {
         }
     }
 
-    async addTemplate(template: TaskTemplate): Promise<TaskTemplate> {
+    async addTemplate(template: TaskTemplate, userId: string | null = null): Promise<TaskTemplate> {
         this.ensureConnected();
         try {
             const templateToInsert = this.convertToMongo(template);
@@ -191,7 +191,7 @@ export class MongoDBAdapter implements DatabaseAdapter {
         }
     }
 
-    async updateTemplate(template: TaskTemplate): Promise<TaskTemplate> {
+    async updateTemplate(template: TaskTemplate, userId: string | null = null): Promise<TaskTemplate> {
         this.ensureConnected();
         try {
             const templateToUpdate = this.convertToMongo(template);
@@ -218,10 +218,10 @@ export class MongoDBAdapter implements DatabaseAdapter {
         }
     }
 
-    async deleteTemplate(id: string): Promise<boolean> {
+    async deleteTemplate(id: string, userId: string | null = null): Promise<boolean> {
         this.ensureConnected();
         try {
-            const result = await this.templatesCollection!.deleteOne({ _id: id });
+            const result = await this.templatesCollection!.deleteOne({ _id: id, userId });
             return result.deletedCount > 0;
         } catch (error) {
             this.logger.error('Failed to delete template', { id, error });
@@ -230,10 +230,10 @@ export class MongoDBAdapter implements DatabaseAdapter {
     }
 
     // Daily plan operations
-    async getDailyPlan(date: string): Promise<DailyPlan | null> {
+    async getDailyPlan(date: string, userId: string | null = null): Promise<DailyPlan | null> {
         this.ensureConnected();
         try {
-            const plan = await this.dailyPlansCollection!.findOne({ date });
+            const plan = await this.dailyPlansCollection!.findOne({ date, userId });
             return plan ? this.convertFromMongo(plan) : null;
         } catch (error) {
             this.logger.error('Failed to get daily plan', { date, error });
@@ -241,7 +241,7 @@ export class MongoDBAdapter implements DatabaseAdapter {
         }
     }
 
-    async updateDailyPlan(plan: DailyPlan): Promise<DailyPlan> {
+    async updateDailyPlan(plan: DailyPlan, userId: string | null = null): Promise<DailyPlan> {
         this.ensureConnected();
         try {
             const planToUpdate = this.convertToMongo(plan);

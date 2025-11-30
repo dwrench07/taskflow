@@ -25,10 +25,9 @@ export default function RootLayout({
 
   useEffect(() => {
     setIsMounted(true); // Ensure the component is mounted before rendering
-    const sessionToken = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("sessionToken="))
-      ?.split("=")[1];
+
+    // For now we can use the seeion token from local storage
+    const sessionToken = localStorage.getItem("userId");
 
     // Allow access to the login page without authentication
     if (!sessionToken && pathname !== "/login") {

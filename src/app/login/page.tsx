@@ -19,6 +19,9 @@ export default function LoginPage() {
       try {
         const user = await getUser(userId);
         if (user) {
+          // Store user ID in localStorage for future API calls
+          console.log('Storing userId in localStorage:', userId);
+          localStorage.setItem('userId', userId);
           login(userId); // Set the session ID as the user ID
           router.push("/"); // Redirect to the home page
         } else {
