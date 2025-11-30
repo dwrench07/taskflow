@@ -4,7 +4,7 @@
 
 import { MongoClient, Db, Collection, ObjectId } from 'mongodb';
 import type { DatabaseAdapter, DatabaseConfig, DatabaseLogger, DatabaseError, DailyPlan } from './types';
-import type { Task, TaskTemplate } from '../types';
+import type { Task, TaskTemplate, User } from '../types';
 
 export class MongoDBAdapter implements DatabaseAdapter {
     private client: MongoClient | null = null;
@@ -14,6 +14,7 @@ export class MongoDBAdapter implements DatabaseAdapter {
     private tasksCollection: Collection<Task> | null = null;
     private templatesCollection: Collection<TaskTemplate> | null = null;
     private dailyPlansCollection: Collection<DailyPlan> | null = null;
+    private usersCollection: Collection<User> | null = null;
 
     constructor(
         private config: DatabaseConfig,
@@ -44,6 +45,7 @@ export class MongoDBAdapter implements DatabaseAdapter {
             this.tasksCollection = this.db.collection(this.config.collections?.tasks || 'tasks');
             this.templatesCollection = this.db.collection(this.config.collections?.templates || 'templates');
             this.dailyPlansCollection = this.db.collection(this.config.collections?.dailyPlans || 'dailyPlans');
+            this.usersCollection = this.db.collection(this.config.collections?.users_dev || 'users_dev');
 
             // Create indexes for better performance
             await this.createIndexes();
@@ -261,6 +263,19 @@ export class MongoDBAdapter implements DatabaseAdapter {
         }
     }
 
+    // User operations
+    async getUser(id: string): Promise<User | null> {
+        this.ensureConnected();
+        try {
+            const user = await this.usersCollection!.findOne({ login_id: id });
+            console.log('MongoDBAdapter.getUser - retrieved user:', user, id);
+            return user ? this.convertFromMongo(user) : null;
+        } catch (error) {
+            this.logger.error('Failed to get user', { id, error });
+            throw new Error(`Failed to get user: ${error}`);
+        }
+    }
+
     async healthCheck(): Promise<boolean> {
         try {
             if (!this.isConnected()) {
@@ -312,6 +327,8 @@ export class MongoDBAdapter implements DatabaseAdapter {
             await this.templatesCollection!.createIndex({ createdAt: 1 });
 
             await this.dailyPlansCollection!.createIndex({ date: 1 }, { unique: true });
+
+            await this.usersCollection!.createIndex({ email: 1 }, { unique: true });
 
             this.logger.info('Database indexes created successfully');
         } catch (error) {

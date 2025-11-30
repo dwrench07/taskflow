@@ -44,6 +44,7 @@ services:
       MONGODB_TASKS_COLLECTION: tasks_dev
       MONGODB_TEMPLATES_COLLECTION: templates_dev
       MONGODB_DAILY_PLANS_COLLECTION: dailyPlans_dev
+      MONGODB_USERS_COLLECTION: users_dev
       # Next.js Development Configuration
       NODE_ENV: development
       HOSTNAME: 0.0.0.0

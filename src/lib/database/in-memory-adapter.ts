@@ -1,5 +1,6 @@
 
 import type { DatabaseAdapter, DatabaseLogger } from './types';
+import type { User } from '../types';
 
 // Initial mock data for development
 const initialTasks = [
@@ -86,6 +87,19 @@ const initialTemplates = [
 
 const initialDailyPlan = ['task-1'];
 
+const initialUsers: User[] = [
+    {
+        id: 'user-1',
+        email: 'user@example.com',
+        roles: ['user']
+    },
+    {
+        id: 'admin-1',
+        email: 'admin@example.com',
+        roles: ['admin']
+    }
+];
+
 /**
  * In-memory adapter for testing and development
  */
@@ -93,6 +107,7 @@ export class MemoryAdapter implements DatabaseAdapter {
     private tasks: Map<string, any> = new Map();
     private templates: Map<string, any> = new Map();
     private dailyPlans: Map<string, any> = new Map();
+    private users: Map<string, User> = new Map();
     private connected = false;
 
     constructor(private logger: DatabaseLogger) { }
@@ -103,6 +118,7 @@ export class MemoryAdapter implements DatabaseAdapter {
         // Initialize with mock data
         initialTasks.forEach(task => this.tasks.set(task.id, task));
         initialTemplates.forEach(template => this.templates.set(template.id, template));
+        initialUsers.forEach(user => this.users.set(user.id, user));
         this.dailyPlans.set('default', initialDailyPlan);
 
         this.logger.info('Connected to in-memory database with initial data');
@@ -114,6 +130,7 @@ export class MemoryAdapter implements DatabaseAdapter {
         this.tasks.clear();
         this.templates.clear();
         this.dailyPlans.clear();
+        this.users.clear();
         this.logger.info('Disconnected from in-memory database');
     }
 
@@ -174,6 +191,10 @@ export class MemoryAdapter implements DatabaseAdapter {
     async updateDailyPlan(plan: any): Promise<any> {
         this.dailyPlans.set(plan.date, plan);
         return plan;
+    }
+
+    async getUser(id: string): Promise<User | null> {
+        return this.users.get(id) || null;
     }
 
     async healthCheck(): Promise<boolean> {

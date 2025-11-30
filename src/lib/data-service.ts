@@ -2,7 +2,7 @@
  * Data service layer that uses the database abstraction
  */
 
-import type { Task, TaskTemplate } from './types';
+import type { Task, TaskTemplate, User } from './types';
 import type { DatabaseAdapter, DailyPlan } from './database/types';
 import { DatabaseFactory } from './database/factory';
 import { config, isServer } from './config';
@@ -52,14 +52,43 @@ const mockTasks: Task[] = [
         description: "Create mockups and a prototype for the new homepage design.",
         priority: "high",
         status: "in-progress",
+        tags: ["design", "website", "ux"],
+        startDate: "2024-08-01T10:00:00.000Z",
+        endDate: "2024-08-10T17:00:00.000Z",
         subtasks: [
-            { id: "sub-1-1", title: "Research competitor designs", completed: true },
-            { id: "sub-1-2", title: "Create wireframes", completed: false },
+            { id: "sub-1-1", title: "Create wireframes", completed: true, tags: ['design'] },
+            { id: "sub-1-2", title: "Develop high-fidelity mockups", completed: false, tags: ['design'] },
+            { id: "sub-1-3", title: "Prototype interactions", completed: false },
         ],
-        tags: ["design", "homepage"],
-        notes: ["Consider mobile-first approach", "Include accessibility features"],
-        startDate: "2024-01-15",
-        endDate: "2024-01-22",
+        notes: ["Initial meeting with stakeholders went well. They prefer a clean, modern look."],
+    },
+    {
+        id: "task-2",
+        title: "Develop API for user authentication",
+        description: "Build and document the API endpoints for user sign-up, sign-in, and profile management.",
+        priority: "high",
+        status: "todo",
+        tags: ["development", "backend", "api"],
+        startDate: "2024-08-05T09:00:00.000Z",
+        endDate: "2024-08-15T18:00:00.000Z",
+        subtasks: [
+            { id: "sub-2-1", title: "Set up database schema for users", completed: false },
+            { id: "sub-2-2", title: "Implement JWT generation", completed: false, tags: ['auth'] },
+            { id: "sub-2-3", title: "Create sign-up endpoint", completed: false },
+            { id: "sub-2-4", title: "Create sign-in endpoint", completed: false },
+        ],
+        notes: [],
+    },
+    {
+        id: "task-3",
+        title: "Plan Q4 Marketing Campaign",
+        description: "Outline the strategy, channels, and budget for the upcoming Q4 marketing campaign.",
+        priority: "medium",
+        status: "todo",
+        tags: ["marketing", "planning", "strategy"],
+        startDate: "2024-08-12T09:00:00.000Z",
+        subtasks: [],
+        notes: ["Focus on social media and content marketing.", "Need to coordinate with the sales team for promotions."],
     },
 ];
 
@@ -80,7 +109,10 @@ const mockTemplates: TaskTemplate[] = [
 
 let mockDailyPlan: string[] = ['task-1'];
 
-// === PUBLIC API ===
+const mockUsers: User[] = [
+    { id: 'user-1', email: 'user@example.com', roles: ['user'] },
+    { id: 'admin-1', email: 'admin@example.com', roles: ['admin'] },
+];
 
 /**
  * Get all tasks
@@ -100,19 +132,19 @@ export async function getAllTasksAsync(): Promise<Task[]> {
 }
 
 /**
- * Get a specific task by ID
+ * Get a single task by ID
  */
-export async function getTaskAsync(id: string): Promise<Task | null> {
+export async function getTaskAsync(taskId: string): Promise<Task | null> {
     if (!isServer) {
-        return mockTasks.find(task => task.id === id) || null;
+        return mockTasks.find(task => task.id === taskId) || null;
     }
 
     try {
         const db = await getDatabase();
-        return await db.getTask(id);
+        return await db.getTask(taskId);
     } catch (error) {
-        defaultLogger.warn('Failed to get task from database', { id, error });
-        return mockTasks.find(task => task.id === id) || null;
+        defaultLogger.warn('Failed to get task from database, checking mock data', { taskId, error });
+        return mockTasks.find(task => task.id === taskId) || null;
     }
 }
 
@@ -144,28 +176,23 @@ export async function addTaskAsync(newTask: Omit<Task, 'id'>): Promise<Task> {
  * Update an existing task
  */
 export async function updateTaskAsync(updatedTask: Task): Promise<void> {
-    const taskToUpdate = {
-        ...updatedTask,
-        updatedAt: new Date().toISOString(),
-    };
-
     if (!isServer) {
         const index = mockTasks.findIndex(task => task.id === updatedTask.id);
         if (index !== -1) {
-            mockTasks[index] = taskToUpdate;
+            mockTasks[index] = updatedTask;
         }
         return;
     }
 
     try {
         const db = await getDatabase();
-        await db.updateTask(taskToUpdate);
+        await db.updateTask(updatedTask);
     } catch (error) {
-        defaultLogger.warn('Failed to update task in database', { task: taskToUpdate, error });
+        defaultLogger.warn('Failed to update task in database', { task: updatedTask, error });
         // Update in mock data as fallback
         const index = mockTasks.findIndex(task => task.id === updatedTask.id);
         if (index !== -1) {
-            mockTasks[index] = taskToUpdate;
+            mockTasks[index] = updatedTask;
         }
     }
 }
@@ -358,4 +385,23 @@ if (isServer) {
     initializeDatabase().catch((error) => {
         defaultLogger.error('Failed to initialize database on startup', error);
     });
+}
+
+// === AUTHENTICATION ===
+
+/**
+ * Get a user by ID
+ */
+export async function getUserAsync(userId: string): Promise<User | null> {
+    if (!isServer) {
+        return mockUsers.find(user => user.id === userId) || null;
+    }
+
+    try {
+        const db = await getDatabase();
+        return await db.getUser(userId);
+    } catch (error) {
+        defaultLogger.error(`Failed to get user ${userId}`, error);
+        return null;
+    }
 }

@@ -139,3 +139,37 @@ export async function getDailyPlan(userId: string) {
     throw error;
   }
 }
+
+export interface User {
+  id: string;
+  email?: string;
+  roles?: string[];
+  [key: string]: any;
+}
+
+/**
+ * Fetch the current user from /api/auth.
+ * - token: optional JWT string (if you prefer to send it via Authorization header)
+ * - Reads token from localStorage if not provided (client-side only)
+ * - Includes credentials so httpOnly cookie-based sessions will work
+ */
+export async function getUser(userId: string): Promise<User | null> {
+  try {
+    const response = await fetch(`/api/authentication?userId=${encodeURIComponent(userId)}`, {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+    });
+
+    if (response.ok) {
+      const json = await response.json();
+      // Expecting response shape { user: { ... } } or just user object
+      return (json && (json.user || json)) ?? null;
+    } else {
+      console.error('Failed to fetch user from API:', response.statusText);
+      return null;
+    }
+  } catch (error) {
+    console.error('Failed to fetch user from API:', error);
+    return null;
+  }
+}

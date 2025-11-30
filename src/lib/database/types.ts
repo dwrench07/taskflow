@@ -3,7 +3,7 @@
  * Provides a unified interface for different database implementations
  */
 
-import type { Task, TaskTemplate } from '../types';
+import type { Task, TaskTemplate, User } from '../types';
 
 export interface DailyPlan {
     id: string;
@@ -40,6 +40,9 @@ export interface DatabaseAdapter {
     // Daily plan operations
     getDailyPlan(date: string): Promise<DailyPlan | null>;
     updateDailyPlan(plan: DailyPlan): Promise<DailyPlan>;
+
+    // User operations
+    getUser(id: string): Promise<User | null>;
 
     // Health check
     healthCheck(): Promise<boolean>;

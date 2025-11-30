@@ -4,8 +4,8 @@ export type HabitFrequency = "daily" | "weekly" | "monthly";
 
 export type DailyHabitStatus = 'changes observed' | 'no changes' | 'negative' | 'not recorded';
 export interface DailyStatus {
-    date: string; // ISO date string (e.g., "2024-08-07T00:00:00.000Z")
-    status: DailyHabitStatus;
+  date: string; // ISO date string (e.g., "2024-08-07T00:00:00.000Z")
+  status: DailyHabitStatus;
 }
 
 export interface Subtask {
@@ -18,7 +18,7 @@ export interface Subtask {
 }
 
 export interface Task {
-  id:string;
+  id: string;
   title: string;
   description: string;
   priority: Priority;
@@ -50,4 +50,11 @@ export interface TaskTemplate {
   priority: Priority;
   subtasks: TemplateSubtask[];
   tags?: string[];
+}
+
+export interface User {
+  id: string;
+  email?: string;
+  roles?: string[];
+  [key: string]: any;
 }
