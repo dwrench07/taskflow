@@ -39,8 +39,10 @@ function createConfig(): AppConfig {
                 tasks: process.env.MONGODB_TASKS_COLLECTION || 'tasks',
                 templates: process.env.MONGODB_TEMPLATES_COLLECTION || 'templates',
                 dailyPlans: process.env.MONGODB_DAILY_PLANS_COLLECTION || 'dailyPlans',
-                // Add users_dev collection (configurable via env)
-                users_dev: process.env.MONGODB_USERS_DEV_COLLECTION || 'users_dev',
+                // Rename users_dev to users in production
+                users: process.env.NODE_ENV === 'production'
+                    ? (process.env.MONGODB_USERS_COLLECTION || 'users')
+                    : (process.env.MONGODB_USERS_DEV_COLLECTION || 'users_dev'),
             },
         };
     } else {
@@ -51,8 +53,8 @@ function createConfig(): AppConfig {
                 tasks: 'tasks',
                 templates: 'templates',
                 dailyPlans: 'dailyPlans',
-                // Add users_dev collection for in-memory DB
-                users_dev: 'users_dev',
+                // Add users collection for in-memory DB
+                users: process.env.NODE_ENV === 'production' ? 'users' : 'users_dev',
             },
         };
     }
@@ -88,8 +90,9 @@ if (isServer) {
         hostname: config.hostname,
         database: {
             type: config.database.type,
-            host: config.database.host,
-            port: config.database.port,
+            // Only log host/port if connection string is missing to avoid confusion
+            host: config.database.connectionString ? 'via Connection String' : config.database.host,
+            port: config.database.connectionString ? 'via Connection String' : config.database.port,
             databaseName: config.database.databaseName,
             // Don't log sensitive information
             hasConnectionString: !!config.database.connectionString,

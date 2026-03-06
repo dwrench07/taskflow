@@ -45,7 +45,7 @@ export class MongoDBAdapter implements DatabaseAdapter {
             this.tasksCollection = this.db.collection(this.config.collections?.tasks || 'tasks');
             this.templatesCollection = this.db.collection(this.config.collections?.templates || 'templates');
             this.dailyPlansCollection = this.db.collection(this.config.collections?.dailyPlans || 'dailyPlans');
-            this.usersCollection = this.db.collection(this.config.collections?.users_dev || 'users_dev');
+            this.usersCollection = this.db.collection(this.config.collections?.users || 'users');
 
             // Create indexes for better performance
             await this.createIndexes();

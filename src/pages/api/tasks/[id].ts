@@ -17,11 +17,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         const decoded = await verifyToken(token);
-        if (!decoded || !decoded.userId) {
-            return res.status(401).json({ error: 'Invalid token' });
+        let userId = decoded?.userId;
+
+        if (decoded && !userId && decoded.email) {
+            const { getUserByEmailAsync } = await import('../../../lib/data-service');
+            const user = await getUserByEmailAsync(decoded.email);
+            if (user && user.id && user.id !== '') {
+                userId = user.id;
+            }
         }
 
-        const userId = decoded.userId;
+        if (!decoded || !userId) {
+            return res.status(401).json({
+                error: 'Invalid token',
+                debug: { decodedPayload: decoded, finalUserId: userId || "empty" }
+            });
+        }
 
         if (req.method === 'GET') {
             // Get task by ID using userId scope
