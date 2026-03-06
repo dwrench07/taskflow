@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getTaskAsync, updateTaskAsync } from '../../../lib/data-service';
 import type { Task } from '../../../lib/types';
+import { verifyToken } from '../../../lib/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const { id } = req.query;
@@ -10,9 +11,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
+        const token = req.cookies.token;
+        if (!token) {
+            return res.status(401).json({ error: 'Not authenticated' });
+        }
+
+        const decoded = await verifyToken(token);
+        if (!decoded || !decoded.userId) {
+            return res.status(401).json({ error: 'Invalid token' });
+        }
+
+        const userId = decoded.userId;
+
         if (req.method === 'GET') {
-            // Get task by ID
-            const task = await getTaskAsync(id);
+            // Get task by ID using userId scope
+            const task = await getTaskAsync(id, userId);
 
             if (!task) {
                 return res.status(404).json({ error: 'Task not found' });
@@ -23,9 +36,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         else if (req.method === 'PUT') {
             // Update task
             const taskData = req.body as Task;
-
-            // Extract the simple user authentication simulation
-            const userId = req.headers['x-user-id'] as string || null;
 
             // Validate required fields
             if (!taskData.title || !taskData.priority || !taskData.status) {
@@ -41,8 +51,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 });
             }
 
-            // Check if task exists before updating
-            const existingTask = await getTaskAsync(id);
+            // Check if task exists before updating and that the user owns it
+            const existingTask = await getTaskAsync(id, userId);
             if (!existingTask) {
                 return res.status(404).json({ error: 'Task not found' });
             }

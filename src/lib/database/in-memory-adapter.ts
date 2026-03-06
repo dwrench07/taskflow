@@ -197,6 +197,19 @@ export class MemoryAdapter implements DatabaseAdapter {
         return this.users.get(id) || null;
     }
 
+    async getUserByEmail(email: string): Promise<User | null> {
+        return Array.from(this.users.values()).find(u => u.email === email) || null;
+    }
+
+    async createUser(user: User): Promise<User> {
+        if (user.email && await this.getUserByEmail(user.email)) {
+            throw new Error('User with this email already exists');
+        }
+        const userWithId = { ...user, id: user.id || Date.now().toString() };
+        this.users.set(userWithId.id, userWithId);
+        return userWithId;
+    }
+
     async healthCheck(): Promise<boolean> {
         return this.connected;
     }

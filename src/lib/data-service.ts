@@ -405,3 +405,39 @@ export async function getUserAsync(userId: string): Promise<User | null> {
         return null;
     }
 }
+
+/**
+ * Get a user by email
+ */
+export async function getUserByEmailAsync(email: string): Promise<User | null> {
+    if (!isServer) {
+        return mockUsers.find(user => user.email === email) || null;
+    }
+
+    try {
+        const db = await getDatabase();
+        return await db.getUserByEmail(email);
+    } catch (error) {
+        defaultLogger.error(`Failed to get user by email ${email}`, error);
+        return null;
+    }
+}
+
+/**
+ * Create a new user
+ */
+export async function createUserAsync(user: User): Promise<User | null> {
+    if (!isServer) {
+        const userWithId = { ...user, id: user.id || Date.now().toString() };
+        mockUsers.push(userWithId);
+        return userWithId;
+    }
+
+    try {
+        const db = await getDatabase();
+        return await db.createUser(user);
+    } catch (error: any) {
+        defaultLogger.error(`Failed to create user`, error);
+        throw new Error(error.message || 'Failed to create user');
+    }
+}

@@ -43,6 +43,8 @@ export interface DatabaseAdapter {
 
     // User operations
     getUser(id: string): Promise<User | null>;
+    getUserByEmail(email: string): Promise<User | null>;
+    createUser(user: User): Promise<User>;
 
     // Health check
     healthCheck(): Promise<boolean>;

@@ -11,10 +11,10 @@ export class MongoDBAdapter implements DatabaseAdapter {
     private db: Db | null = null;
     private isConnectedFlag = false;
 
-    private tasksCollection: Collection<Task> | null = null;
-    private templatesCollection: Collection<TaskTemplate> | null = null;
-    private dailyPlansCollection: Collection<DailyPlan> | null = null;
-    private usersCollection: Collection<User> | null = null;
+    private tasksCollection: Collection<any> | null = null;
+    private templatesCollection: Collection<any> | null = null;
+    private dailyPlansCollection: Collection<any> | null = null;
+    private usersCollection: Collection<any> | null = null;
 
     constructor(
         private config: DatabaseConfig,
@@ -77,8 +77,8 @@ export class MongoDBAdapter implements DatabaseAdapter {
     async getAllTasks(userId: string | null = null): Promise<Task[]> {
         this.ensureConnected();
         try {
-            const tasks = await this.tasksCollection!.find({userId}).toArray();
-            return tasks.map(this.convertFromMongo);
+            const tasks = await this.tasksCollection!.find({ userId }).toArray();
+            return tasks.map(t => this.convertFromMongo<Task>(t));
         } catch (error) {
             this.logger.error('Failed to get all tasks', error);
             throw new Error(`Failed to get tasks: ${error}`);
@@ -99,7 +99,7 @@ export class MongoDBAdapter implements DatabaseAdapter {
     async addTask(task: Task, userId: string | null = null): Promise<Task> {
         this.ensureConnected();
         try {
-            const taskToInsert = this.convertToMongo({...task, userId});
+            const taskToInsert = this.convertToMongo({ ...task, userId });
             const result = await this.tasksCollection!.insertOne(taskToInsert);
 
             if (!result.acknowledged) {
@@ -155,8 +155,8 @@ export class MongoDBAdapter implements DatabaseAdapter {
     async getAllTemplates(userId: string | null = null): Promise<TaskTemplate[]> {
         this.ensureConnected();
         try {
-            const templates = await this.templatesCollection!.find({userId}).toArray();
-            return templates.map(this.convertFromMongo);
+            const templates = await this.templatesCollection!.find({ userId }).toArray();
+            return templates.map(t => this.convertFromMongo<TaskTemplate>(t));
         } catch (error) {
             this.logger.error('Failed to get all templates', error);
             throw new Error(`Failed to get templates: ${error}`);
@@ -267,12 +267,45 @@ export class MongoDBAdapter implements DatabaseAdapter {
     async getUser(id: string): Promise<User | null> {
         this.ensureConnected();
         try {
-            const user = await this.usersCollection!.findOne({ login_id: id });
-            console.log('MongoDBAdapter.getUser - retrieved user:', user, id);
+            const user = await this.usersCollection!.findOne({ _id: id });
             return user ? this.convertFromMongo(user) : null;
         } catch (error) {
             this.logger.error('Failed to get user', { id, error });
             throw new Error(`Failed to get user: ${error}`);
+        }
+    }
+
+    async getUserByEmail(email: string): Promise<User | null> {
+        this.ensureConnected();
+        try {
+            const user = await this.usersCollection!.findOne({ email: email });
+            return user ? this.convertFromMongo(user) : null;
+        } catch (error) {
+            this.logger.error('Failed to get user by email', { email, error });
+            throw new Error(`Failed to get user by email: ${error}`);
+        }
+    }
+
+    async createUser(user: User): Promise<User> {
+        this.ensureConnected();
+        try {
+            // Check if user already exists
+            const existingUser = await this.getUserByEmail(user.email || '');
+            if (existingUser) {
+                throw new Error('User with this email already exists');
+            }
+
+            const userToInsert = this.convertToMongo(user);
+            const result = await this.usersCollection!.insertOne(userToInsert);
+
+            if (!result.acknowledged) {
+                throw new Error('User insertion was not acknowledged');
+            }
+
+            return { ...user, id: result.insertedId.toString() };
+        } catch (error: any) {
+            this.logger.error('Failed to create user', { user, error });
+            throw new Error(error.message || `Failed to create user: ${error}`);
         }
     }
 

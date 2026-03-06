@@ -54,7 +54,9 @@ export interface TaskTemplate {
 
 export interface User {
   id: string;
+  name?: string;
   email?: string;
+  password?: string;
   roles?: string[];
   [key: string]: any;
 }
