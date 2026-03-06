@@ -200,25 +200,28 @@ export async function updateTaskAsync(updatedTask: Task, userId?: string | null)
 /**
  * Delete a task
  */
-export async function deleteTaskAsync(taskId: string): Promise<void> {
+export async function deleteTaskAsync(taskId: string, userId?: string | null): Promise<boolean> {
     if (!isServer) {
         const index = mockTasks.findIndex(task => task.id === taskId);
         if (index !== -1) {
             mockTasks.splice(index, 1);
+            return true;
         }
-        return;
+        return false;
     }
 
     try {
         const db = await getDatabase();
-        await db.deleteTask(taskId);
+        return await db.deleteTask(taskId, userId);
     } catch (error) {
         defaultLogger.warn('Failed to delete task from database', { taskId, error });
         // Delete from mock data as fallback
         const index = mockTasks.findIndex(task => task.id === taskId);
         if (index !== -1) {
             mockTasks.splice(index, 1);
+            return true;
         }
+        return false;
     }
 }
 

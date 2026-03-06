@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getTaskAsync, updateTaskAsync } from '../../../lib/data-service';
+import { getTaskAsync, updateTaskAsync, deleteTaskAsync } from '../../../lib/data-service';
 import type { Task } from '../../../lib/types';
 import { verifyToken } from '../../../lib/auth';
 
@@ -77,6 +77,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             await updateTaskAsync(safelyMergedTask, userId);
             return res.status(200).json({ message: 'Task updated successfully' });
+        }
+        else if (req.method === 'DELETE') {
+            // Delete task
+            const success = await deleteTaskAsync(id, userId);
+
+            if (!success) {
+                return res.status(404).json({ error: 'Task not found or you do not have permission to delete it' });
+            }
+
+            return res.status(200).json({ message: 'Task deleted successfully' });
         }
         else {
             return res.status(405).json({ error: 'Method not allowed' });

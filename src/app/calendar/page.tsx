@@ -114,7 +114,7 @@ export default function CalendarPage() {
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [view, setView] = useState<CalendarView>("month");
+  const [view, setView] = useState<CalendarView>("day");
   const { toast } = useToast();
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
 
