@@ -333,17 +333,23 @@ export class MongoDBAdapter implements DatabaseAdapter {
 
     private convertToMongo<T extends { id: string }>(item: T): any {
         const { id, ...rest } = item;
-        return {
-            _id: id,
+        const mongoObj: any = {
             ...rest,
             createdAt: (rest as any).createdAt || new Date().toISOString(),
         };
+
+        // Let MongoDB auto-generate _id if the provided string is empty
+        if (id && id.trim() !== '') {
+            mongoObj._id = id;
+        }
+
+        return mongoObj;
     }
 
     private convertFromMongo<T>(item: any): T {
         const { _id, ...rest } = item;
         return {
-            id: _id,
+            id: _id ? _id.toString() : '',
             ...rest,
         } as T;
     }
