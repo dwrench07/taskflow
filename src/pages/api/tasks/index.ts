@@ -3,9 +3,11 @@ import { getAllTasksAsync, addTaskAsync } from '../../../lib/data-service';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
+    const userId = req.headers['x-user-id'] as string || null;
+
     switch (req.method) {
       case 'GET':
-        const tasks = await getAllTasksAsync();
+        const tasks = await getAllTasksAsync(userId);
         return res.status(200).json(tasks);
 
       case 'POST':
@@ -14,7 +16,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           return res.status(400).json({ error: 'Invalid task data' });
         }
 
-        const createdTask = await addTaskAsync(newTask);
+        const createdTask = await addTaskAsync(newTask, userId);
         return res.status(201).json(createdTask);
 
       default:

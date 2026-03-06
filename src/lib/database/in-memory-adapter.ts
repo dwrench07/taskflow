@@ -138,26 +138,26 @@ export class MemoryAdapter implements DatabaseAdapter {
         return this.connected;
     }
 
-    async getAllTasks(): Promise<any[]> {
+    async getAllTasks(userId?: string | null): Promise<any[]> {
         return Array.from(this.tasks.values());
     }
 
-    async getTask(id: string): Promise<any | null> {
+    async getTask(id: string, userId?: string | null): Promise<any | null> {
         return this.tasks.get(id) || null;
     }
 
-    async addTask(task: any): Promise<any> {
+    async addTask(task: any, userId?: string | null): Promise<any> {
         const taskWithId = { ...task, id: task.id || Date.now().toString() };
         this.tasks.set(taskWithId.id, taskWithId);
         return taskWithId;
     }
 
-    async updateTask(task: any): Promise<any> {
+    async updateTask(task: any, userId?: string | null): Promise<any> {
         this.tasks.set(task.id, task);
         return task;
     }
 
-    async deleteTask(id: string): Promise<boolean> {
+    async deleteTask(id: string, userId?: string | null): Promise<boolean> {
         return this.tasks.delete(id);
     }
 

@@ -117,14 +117,14 @@ const mockUsers: User[] = [
 /**
  * Get all tasks
  */
-export async function getAllTasksAsync(): Promise<Task[]> {
+export async function getAllTasksAsync(userId?: string | null): Promise<Task[]> {
     if (!isServer) {
         return mockTasks;
     }
 
     try {
         const db = await getDatabase();
-        return await db.getAllTasks();
+        return await db.getAllTasks(userId);
     } catch (error) {
         defaultLogger.warn('Failed to get tasks from database, returning mock data', error);
         return mockTasks;
@@ -134,14 +134,14 @@ export async function getAllTasksAsync(): Promise<Task[]> {
 /**
  * Get a single task by ID
  */
-export async function getTaskAsync(taskId: string): Promise<Task | null> {
+export async function getTaskAsync(taskId: string, userId?: string | null): Promise<Task | null> {
     if (!isServer) {
         return mockTasks.find(task => task.id === taskId) || null;
     }
 
     try {
         const db = await getDatabase();
-        return await db.getTask(taskId);
+        return await db.getTask(taskId, userId);
     } catch (error) {
         defaultLogger.warn('Failed to get task from database, checking mock data', { taskId, error });
         return mockTasks.find(task => task.id === taskId) || null;
@@ -151,7 +151,7 @@ export async function getTaskAsync(taskId: string): Promise<Task | null> {
 /**
  * Add a new task
  */
-export async function addTaskAsync(newTask: Omit<Task, 'id'>): Promise<Task> {
+export async function addTaskAsync(newTask: Omit<Task, 'id'>, userId?: string | null): Promise<Task> {
     const taskWithId: Task = {
         ...newTask,
         id: `task-${Date.now()}`,
@@ -164,7 +164,7 @@ export async function addTaskAsync(newTask: Omit<Task, 'id'>): Promise<Task> {
 
     try {
         const db = await getDatabase();
-        return await db.addTask(taskWithId);
+        return await db.addTask(taskWithId, userId);
     } catch (error) {
         defaultLogger.warn('Failed to add task to database, adding to mock data', { task: taskWithId, error });
         mockTasks.push(taskWithId);
@@ -175,7 +175,7 @@ export async function addTaskAsync(newTask: Omit<Task, 'id'>): Promise<Task> {
 /**
  * Update an existing task
  */
-export async function updateTaskAsync(updatedTask: Task): Promise<void> {
+export async function updateTaskAsync(updatedTask: Task, userId?: string | null): Promise<void> {
     if (!isServer) {
         const index = mockTasks.findIndex(task => task.id === updatedTask.id);
         if (index !== -1) {
@@ -186,7 +186,7 @@ export async function updateTaskAsync(updatedTask: Task): Promise<void> {
 
     try {
         const db = await getDatabase();
-        await db.updateTask(updatedTask);
+        await db.updateTask(updatedTask, userId);
     } catch (error) {
         defaultLogger.warn('Failed to update task in database', { task: updatedTask, error });
         // Update in mock data as fallback

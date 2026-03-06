@@ -24,11 +24,11 @@ export interface DatabaseAdapter {
     isConnected(): boolean;
 
     // Task operations
-    getAllTasks(): Promise<Task[]>;
-    getTask(id: string): Promise<Task | null>;
-    addTask(task: Task): Promise<Task>;
-    updateTask(task: Task): Promise<Task>;
-    deleteTask(id: string): Promise<boolean>;
+    getAllTasks(userId?: string | null): Promise<Task[]>;
+    getTask(id: string, userId?: string | null): Promise<Task | null>;
+    addTask(task: Task, userId?: string | null): Promise<Task>;
+    updateTask(task: Task, userId?: string | null): Promise<Task>;
+    deleteTask(id: string, userId?: string | null): Promise<boolean>;
 
     // Template operations
     getAllTemplates(): Promise<TaskTemplate[]>;

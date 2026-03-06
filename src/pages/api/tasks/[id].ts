@@ -24,6 +24,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             // Update task
             const taskData = req.body as Task;
 
+            // Extract the simple user authentication simulation
+            const userId = req.headers['x-user-id'] as string || null;
+
             // Validate required fields
             if (!taskData.title || !taskData.priority || !taskData.status) {
                 return res.status(400).json({
@@ -44,7 +47,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 return res.status(404).json({ error: 'Task not found' });
             }
 
-            await updateTaskAsync(taskData);
+            // Safe Merge: Protect against stale clients wiping out fields
+            const safelyMergedTask: Task = {
+                ...existingTask,
+                ...taskData,
+                id // Explicitly preserve the ID
+            };
+
+            await updateTaskAsync(safelyMergedTask, userId);
             return res.status(200).json({ message: 'Task updated successfully' });
         }
         else {
