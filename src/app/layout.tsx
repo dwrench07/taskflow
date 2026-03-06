@@ -7,7 +7,6 @@ import React, { useEffect, useState } from 'react';
 import { Inter } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { AuthProvider } from "@/context/AuthContext";
-import { useRouter, usePathname } from "next/navigation";
 
 const fontSans = Inter({
   subsets: ["latin"],
@@ -19,21 +18,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const router = useRouter();
-  const pathname = usePathname();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true); // Ensure the component is mounted before rendering
-
-    // For now we can use the seeion token from local storage
-    const sessionToken = localStorage.getItem("userId");
-
-    // Allow access to the login page without authentication
-    if (!sessionToken && pathname !== "/login") {
-      router.push("/login");
-    }
-  }, [router, pathname]);
+  }, []);
 
   return (
     <html lang="en" suppressHydrationWarning>
