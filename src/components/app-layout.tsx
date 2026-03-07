@@ -47,29 +47,28 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <Sidebar>
-        <SidebarHeader className="p-4">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="shrink-0" asChild>
-              <Link href="/">
-                <Activity className="text-primary" />
-              </Link>
-            </Button>
-            <h1 className="text-xl font-semibold tracking-tight">TaskFlow</h1>
+      <Sidebar className="border-r border-white/5 bg-background/50 backdrop-blur-xl">
+        <SidebarHeader className="p-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent shadow-lg shadow-primary/20">
+              <Activity className="h-5 w-5 text-white" />
+            </div>
+            <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">TaskFlow</h1>
           </div>
         </SidebarHeader>
-        <SidebarContent>
-          <SidebarMenu>
+        <SidebarContent className="px-3">
+          <SidebarMenu className="gap-2">
             {menuItems.map((item) => (
               <SidebarMenuItem key={item.label}>
                 <SidebarMenuButton
                   asChild
                   isActive={pathname === item.href}
                   tooltip={item.label}
+                  className="rounded-lg transition-all hover:bg-white/5 hover:scale-[1.02] active:scale-[0.98] data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
                 >
-                  <Link href={item.href}>
-                    <item.icon />
-                    <span>{item.label}</span>
+                  <Link href={item.href} className="flex items-center gap-3 px-3 py-2">
+                    <item.icon className="h-4 w-4" />
+                    <span className="font-medium">{item.label}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -90,12 +89,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </SidebarFooter>
         )}
       </Sidebar>
-      <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background px-4 sm:px-6 md:hidden">
-          <SidebarTrigger />
+      <SidebarInset className="bg-transparent">
+        <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b border-white/5 bg-background/50 backdrop-blur-xl px-4 sm:px-6 md:hidden">
+          <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
           <div className="flex items-center gap-2">
-            <Activity className="h-6 w-6 text-primary" />
-            <h1 className="text-lg font-semibold tracking-tight">TaskFlow</h1>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent shadow-sm">
+              <Activity className="h-4 w-4 text-white" />
+            </div>
+            <h1 className="text-lg font-bold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">TaskFlow</h1>
           </div>
         </header>
         <main className="flex-1 p-4 sm:p-6">{children}</main>

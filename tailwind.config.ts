@@ -1,5 +1,5 @@
-import type {Config} from 'tailwindcss';
-import {fontFamily} from 'tailwindcss/defaultTheme';
+import type { Config } from 'tailwindcss';
+import { fontFamily } from 'tailwindcss/defaultTheme';
 
 export default {
   darkMode: ['class'],
@@ -87,10 +87,15 @@ export default {
             height: '0',
           },
         },
+        'fade-in': {
+          from: { opacity: '0', transform: 'translateY(10px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        }
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
+        'fade-in': 'fade-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
       },
     },
   },

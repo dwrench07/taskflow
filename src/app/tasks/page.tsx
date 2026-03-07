@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { ListTodo, FileText, Calendar as CalendarIcon, Clock, PlusCircle, Edit, Trash2, Tag, ChevronDown, ClipboardList, ArrowUpDown, ArrowLeft, Search, XCircle, Save, Loader2, Timer } from "lucide-react";
+import { ListTodo, FileText, Calendar as CalendarIcon, Clock, PlusCircle, Edit, Trash2, Tag, ChevronDown, ClipboardList, ArrowUpDown, ArrowLeft, Search, XCircle, Save, Loader2, Timer, Check } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -73,30 +73,30 @@ function TaskListItem({ task, onSelect, isSelected }: { task: Task; onSelect: ()
 
   return (
     <button onClick={onSelect} className={cn(
-      "w-full text-left p-3 rounded-lg border-2 transition-colors",
-      isSelected ? 'bg-primary/10 border-primary' : 'bg-card hover:bg-muted/50',
-      task.status === 'done' && 'border-green-500/20'
+      "w-full block text-left p-4 rounded-xl border transition-all duration-300 ease-in-out animate-fade-in shadow-sm hover:shadow-md outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 overflow-hidden max-w-full min-w-0",
+      isSelected ? 'bg-primary/10 border-primary scale-[1.01]' : 'bg-card hover:bg-muted/50 hover:scale-[1.02] hover:border-primary/50',
+      task.status === 'done' && 'border-green-500/20 opacity-80'
     )}>
-      <div className="flex justify-between items-start">
-        <p className="font-semibold truncate pr-2">{task.title}</p>
-        <Badge variant="outline" className={cn("capitalize flex-shrink-0", priorityStyles[task.priority])}>
+      <div className="flex justify-between items-start gap-2 w-full">
+        <p className="font-semibold truncate flex-1 text-left min-w-0 break-words">{task.title}</p>
+        <Badge variant="outline" className={cn("capitalize flex-shrink-0 mt-0.5", priorityStyles[task.priority])}>
           {task.priority}
         </Badge>
       </div>
-      <p className="text-sm text-muted-foreground mt-1 truncate">{task.description}</p>
-      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-auto pt-2">
-        <ListTodo className="w-3 h-3" />
-        <span>{task?.subtasks?.filter(st => st.completed)?.length}/{task?.subtasks?.length}</span>
-        <div className="w-full bg-muted rounded-full h-1.5 ml-auto">
-          <div className="bg-primary h-1.5 rounded-full" style={{ width: `${completionPercentage}%` }}></div>
+      <p className="text-sm text-muted-foreground mt-1 truncate w-full text-left min-w-0">{task.description}</p>
+      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-3 w-full min-w-0">
+        <ListTodo className="w-3 h-3 flex-shrink-0" />
+        <span className="flex-shrink-0">{task?.subtasks?.filter(st => st.completed)?.length}/{task?.subtasks?.length}</span>
+        <div className="w-full bg-muted rounded-full h-1.5 ml-auto overflow-hidden">
+          <div className="bg-primary h-1.5 rounded-full transition-all duration-500 ease-in-out" style={{ width: `${completionPercentage}%` }}></div>
         </div>
       </div>
       {task.tags && task.tags.length > 0 && (
-        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+        <div className="flex items-center flex-wrap gap-1.5 mt-3 overflow-hidden">
           {task.tags.slice(0, 3).map(tag => (
-            <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
+            <Badge key={tag} variant="secondary" className="text-xs truncate max-w-[100px]">{tag}</Badge>
           ))}
-          {task.tags.length > 3 && <Badge variant="secondary" className="text-xs">+{task.tags.length - 3}</Badge>}
+          {task.tags.length > 3 && <Badge variant="secondary" className="text-xs flex-shrink-0">+{task.tags.length - 3}</Badge>}
         </div>
       )}
     </button>
@@ -227,40 +227,47 @@ function NotesSection({ task, onUpdateTask }: { task: Task, onUpdateTask: (task:
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Notes</CardTitle>
-        <CardDescription>All notes related to this task.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2 pt-2">
-          <h4 className="font-semibold">Add a new note:</h4>
-          <div className="flex gap-2">
-            <Textarea
-              placeholder="Type your note here..."
-              value={newNote}
-              onChange={(e) => setNewNote(e.target.value)}
-            />
-            <Button onClick={handleSaveNote} size="icon">
-              <Save />
-            </Button>
-          </div>
+    <div className="bg-muted/10 p-6 rounded-3xl border border-border/50 shadow-sm mt-8 relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/30 to-transparent"></div>
+      <div className="mb-6">
+        <h3 className="text-lg font-bold flex items-center gap-2 text-foreground/90">
+          <FileText className="w-5 h-5 text-primary" />
+          Task Journal & Notes
+        </h3>
+        <p className="text-sm text-muted-foreground mt-1">Keep track of thoughts, logs, and important updates.</p>
+      </div>
+      <div className="space-y-6">
+        <div className="bg-background rounded-2xl p-1.5 border shadow-sm flex items-end gap-2 focus-within:ring-2 focus-within:ring-primary/50 transition-all">
+          <Textarea
+            placeholder="Type your new note here..."
+            value={newNote}
+            onChange={(e) => setNewNote(e.target.value)}
+            className="border-0 focus-visible:ring-0 resize-none min-h-[80px] bg-transparent pb-3 pt-3 px-4 shadow-none"
+          />
+          <Button onClick={handleSaveNote} size="icon" className="mb-1.5 mr-1.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm shrink-0 transition-transform active:scale-95">
+            <Save className="w-4 h-4" />
+          </Button>
         </div>
 
-        <div className="space-y-2 pt-4">
-          <h4 className="font-semibold">All Notes:</h4>
+        <div className="space-y-4 pt-2">
+          <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground ml-1">Journal History</h4>
           {task.notes && task.notes.length > 0 ? (
-            <ul className="list-disc pl-5 space-y-2 text-muted-foreground text-sm max-h-40 overflow-y-auto">
+            <div className="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
               {task.notes.map((note, index) => (
-                <li key={index}>{note}</li>
+                <div key={index} className="bg-background/60 backdrop-blur-sm border rounded-2xl p-4 text-sm text-foreground/90 shadow-sm">
+                  {note}
+                </div>
               ))}
-            </ul>
+            </div>
           ) : (
-            <p className="text-sm text-muted-foreground text-center py-4">No notes yet.</p>
+            <div className="flex flex-col items-center justify-center py-8 text-center bg-background/30 rounded-2xl border border-dashed">
+              <FileText className="w-8 h-8 text-muted-foreground/30 mb-2" />
+              <p className="text-sm text-muted-foreground">No notes recorded yet.</p>
+            </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }
 
@@ -591,15 +598,14 @@ function TasksPageContent() {
         )}
       </div>
       <div className={cn(
-        "grid gap-6 h-[calc(100vh-theme(spacing.48))] md:h-[calc(100vh-theme(spacing.36))]",
-        selectedTask ? "md:grid-cols-4" : "grid-cols-1"
+        "flex flex-col md:flex-row gap-6 w-full min-w-0 h-[calc(100vh-theme(spacing.48))] md:h-[calc(100vh-theme(spacing.36))]"
       )}>
         {showTaskList && (
           <Card className={cn(
-            "h-full flex flex-col",
-            selectedTask ? "md:col-span-1" : "col-span-1"
+            "flex flex-col overflow-hidden min-h-0 min-w-0 border-border shadow-sm",
+            selectedTask ? "w-full md:w-80 md:max-w-[20rem] md:flex-shrink-0" : "w-full"
           )}>
-            <CardHeader className="flex flex-col gap-4">
+            <CardHeader className="flex flex-col gap-4 flex-none pb-4">
               <div className="flex flex-row items-center justify-between">
                 <CardTitle>All Tasks</CardTitle>
                 <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
@@ -704,8 +710,8 @@ function TasksPageContent() {
                 </DropdownMenu>
               </div>
             </CardHeader>
-            <ScrollArea className="h-full p-3">
-              <div className="space-y-3">
+            <div className="flex-1 p-3 overflow-y-auto overflow-x-hidden">
+              <div className="space-y-3 pb-8">
                 {loading ? (
                   <div className="flex justify-center items-center h-full">
                     <Loader2 className="h-6 w-6 animate-spin" />
@@ -719,23 +725,23 @@ function TasksPageContent() {
                   />
                 ))}
               </div>
-            </ScrollArea>
+            </div>
           </Card>
         )}
         {showTaskDetails && selectedTask ? (
-          <div className="md:col-span-3 h-full">
-            <ScrollArea className="h-full pr-4">
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="flex items-center gap-4">
+          <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+            <div className="flex-1 pr-4 overflow-y-auto overflow-x-hidden">
+              <div className="space-y-6 pb-8">
+                <Card className="shadow-none border-none bg-transparent">
+                  <CardHeader className="px-0 pt-0 pb-6">
+                    <div className="flex flex-col xl:flex-row justify-between items-start gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-3">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="outline" className={cn("capitalize w-fit", statusStyles[selectedTask.status])}>
+                              <Button variant="outline" size="sm" className={cn("capitalize h-8 rounded-full px-4 text-xs font-semibold tracking-wide border-2", statusStyles[selectedTask.status])}>
                                 {statusLabels[selectedTask.status]}
-                                <ChevronDown className="ml-2 h-4 w-4" />
+                                <ChevronDown className="ml-2 h-3 w-3 opacity-70" />
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
@@ -746,20 +752,30 @@ function TasksPageContent() {
                               </DropdownMenuRadioGroup>
                             </DropdownMenuContent>
                           </DropdownMenu>
-                          <Badge variant="outline" className={cn("capitalize w-fit", priorityStyles[selectedTask.priority])}>
-                            {selectedTask.priority}
+                          <Badge variant="outline" className={cn("capitalize px-3 py-0.5 rounded-full border-2", priorityStyles[selectedTask.priority])}>
+                            {selectedTask.priority} Priority
                           </Badge>
                         </div>
-                        <CardTitle className="text-2xl pt-2">{selectedTask.title}</CardTitle>
-                        <p className="text-muted-foreground pt-1">{selectedTask.description}</p>
+                        <CardTitle className="text-3xl font-extrabold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent pb-1">{selectedTask.title}</CardTitle>
+                        {selectedTask?.subtasks && selectedTask.subtasks.length > 0 && (
+                          <div className="flex items-center gap-3 mt-4 w-full max-w-md">
+                            <div className="text-xs font-medium text-muted-foreground whitespace-nowrap">
+                              {selectedTask.subtasks.filter(st => st.completed).length}/{selectedTask.subtasks.length} Subtasks
+                            </div>
+                            <div className="flex-1 bg-muted/60 rounded-full h-1.5 overflow-hidden border border-border/50 relative">
+                              <div className="absolute top-0 left-0 bg-primary h-full rounded-full transition-all duration-700 ease-out" style={{ width: `${(selectedTask.subtasks.filter(st => st.completed).length / selectedTask.subtasks.length) * 100}%` }}></div>
+                            </div>
+                          </div>
+                        )}
+                        <p className="text-muted-foreground text-[15px] pt-4 w-full min-w-0 break-words whitespace-pre-wrap leading-relaxed">{selectedTask.description}</p>
                       </div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Button size="sm" onClick={() => router.push(`/focus?taskId=${selectedTask.id}`)}>
-                          <Timer className="mr-2 h-4 w-4" /> Focus
+                      <div className="flex flex-wrap items-center gap-2 shrink-0 border border-border/50 p-1.5 rounded-full bg-background/50 shadow-sm backdrop-blur-sm">
+                        <Button className="bg-primary/10 hover:bg-primary/20 text-primary border-primary/20 shadow-sm transition-all rounded-full px-5" variant="outline" size="sm" onClick={() => router.push(`/focus?taskId=${selectedTask.id}`)}>
+                          <Timer className="mr-2 h-4 w-4" /> Focus Session
                         </Button>
                         <Dialog open={isEditingFormOpen} onOpenChange={setIsEditingFormOpen}>
                           <DialogTrigger asChild>
-                            <Button variant="outline" size="icon">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60">
                               <Edit className="h-4 w-4" />
                             </Button>
                           </DialogTrigger>
@@ -780,7 +796,7 @@ function TasksPageContent() {
                         </Dialog>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="destructive" size="icon">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10">
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </AlertDialogTrigger>
@@ -804,42 +820,76 @@ function TasksPageContent() {
                     </div>
                   </CardHeader>
 
-                  <CardContent>
-                    <Separator className="my-2" />
-                    <div className="py-4">
-                      <h4 className="font-semibold mb-2">Tags</h4>
-                      <TagInput
-                        tags={selectedTask.tags || []}
-                        allTags={allTags}
-                        onUpdateTags={handleUpdateTaskTags}
-                        placeholder="Add or select tags..."
-                      />
+                  <CardContent className="px-0">
+                    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8 relative">
+                      <div className="lg:col-span-3 space-y-3 bg-muted/20 p-5 rounded-2xl border border-border/50 shadow-sm transition-all hover:shadow-md">
+                        <h4 className="text-sm font-semibold flex items-center gap-2 text-foreground/80">
+                          <Tag className="w-4 h-4 text-primary/70" />
+                          Labels & Categories
+                        </h4>
+                        <div className="pt-2">
+                          <TagInput
+                            tags={selectedTask.tags || []}
+                            allTags={allTags}
+                            onUpdateTags={handleUpdateTaskTags}
+                            placeholder="Add or select tags..."
+                          />
+                        </div>
+                      </div>
+                      <div className="lg:col-span-2 space-y-4 bg-muted/20 p-5 rounded-2xl border border-border/50 shadow-sm transition-all hover:shadow-md">
+                        <div className="space-y-3">
+                          <h4 className="text-sm font-semibold flex items-center gap-2 text-foreground/80">
+                            <CalendarIcon className="w-4 h-4 text-primary/70" />
+                            Schedule
+                          </h4>
+                          <div className="grid gap-4 pt-2">
+                            <div className="flex flex-col gap-2">
+                              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Start Time</span>
+                              <DateTimePicker date={selectedTask.startDate} setDate={(date) => handleDateChange('startDate', date)} />
+                            </div>
+                            <div className="flex flex-col gap-2">
+                              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Deadline</span>
+                              <DateTimePicker date={selectedTask.endDate} setDate={(date) => handleDateChange('endDate', date)} />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                     <Separator className="my-2" />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-                      <div>
-                        <h4 className="font-semibold mb-2">Start Date & Time</h4>
-                        <DateTimePicker date={selectedTask.startDate} setDate={(date) => handleDateChange('startDate', date)} />
+                    <div className="py-4 mt-6 bg-muted/10 rounded-3xl p-6 border border-border/50 shadow-sm relative overflow-hidden">
+                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-secondary-foreground/20 to-transparent"></div>
+                      <div className="flex items-center justify-between mb-6">
+                        <h4 className="text-lg font-bold flex items-center gap-2 text-foreground/90">
+                          <ListTodo className="w-5 h-5 text-primary" />
+                          Subtasks Action Plan
+                        </h4>
+                        <Badge variant="secondary" className="font-medium bg-background border shadow-sm">
+                          {selectedTask?.subtasks?.filter(st => st.completed).length || 0} / {selectedTask?.subtasks?.length || 0} Completed
+                        </Badge>
                       </div>
-                      <div>
-                        <h4 className="font-semibold mb-2">End Date & Time</h4>
-                        <DateTimePicker date={selectedTask.endDate} setDate={(date) => handleDateChange('endDate', date)} />
-                      </div>
-                    </div>
 
-                    <Separator className="my-2" />
-                    <div className="py-4">
-                      <h4 className="font-semibold my-3">Subtasks</h4>
-                      <div className="space-y-2">
+                      <div className="space-y-4">
                         {selectedTask?.subtasks?.map(subtask => (
-                          <div key={subtask.id} className="flex flex-col sm:flex-row sm:items-start gap-3 group p-2 rounded-md hover:bg-muted/50">
-                            <Checkbox
-                              id={subtask.id}
-                              checked={subtask.completed}
-                              onCheckedChange={(checked) => handleSubtaskCompletion(subtask.id, !!checked)}
-                              className="mt-1"
-                            />
-                            <div className="flex-1 space-y-2">
+                          <div key={subtask.id} className={cn(
+                            "flex flex-col sm:flex-row sm:items-start gap-4 group p-4 rounded-2xl border transition-all duration-300 shadow-sm",
+                            subtask.completed ? "bg-muted/30 border-border/40" : "bg-background hover:border-primary/40 hover:shadow-md"
+                          )}>
+                            <div className="flex items-center gap-4 w-full sm:w-auto mt-0.5">
+                              <div className={cn(
+                                "flex items-center justify-center w-6 h-6 rounded-md border-2 transition-colors",
+                                subtask.completed ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground/30 bg-background group-hover:border-primary/50"
+                              )}>
+                                <Checkbox
+                                  id={subtask.id}
+                                  checked={subtask.completed}
+                                  onCheckedChange={(checked) => handleSubtaskCompletion(subtask.id, !!checked)}
+                                  className="w-full h-full opacity-0 absolute cursor-pointer"
+                                />
+                                {subtask.completed && <Check className="w-3.5 h-3.5" />}
+                              </div>
+                            </div>
+
+                            <div className="flex-1 space-y-3 min-w-0">
                               {editingSubtask?.id === subtask.id ? (
                                 <Input
                                   type="text"
@@ -853,45 +903,59 @@ function TasksPageContent() {
                                       setEditingSubtask(null)
                                     }
                                   }}
-                                  className="h-8"
+                                  className="h-9 text-base font-medium shadow-sm"
+                                  placeholder="Subtask title..."
                                 />
                               ) : (
                                 <label
                                   htmlFor={subtask.id}
-                                  className={cn("text-sm flex-1 cursor-text", subtask.completed && "line-through text-muted-foreground")}
+                                  className={cn(
+                                    "text-base font-medium flex-1 cursor-text block truncate select-none transition-colors",
+                                    subtask.completed ? "line-through text-muted-foreground" : "text-foreground/90 group-hover:text-primary"
+                                  )}
                                   onDoubleClick={() => setEditingSubtask(subtask)}
                                 >
                                   {subtask.title}
                                 </label>
                               )}
-                              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                                <TagInput
-                                  tags={subtask.tags || []}
-                                  allTags={allTags}
-                                  onUpdateTags={(tags) => handleUpdateSubtaskTags(subtask.id, tags)}
-                                  placeholder="Add tags..."
-                                />
-                                <DateTimePicker date={subtask.startDate} setDate={(date) => handleSubtaskDateChange(subtask.id, 'startDate', date)} />
+
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-1">
+                                <div className="flex items-center gap-2">
+                                  <TagInput
+                                    tags={subtask.tags || []}
+                                    allTags={allTags}
+                                    onUpdateTags={(tags) => handleUpdateSubtaskTags(subtask.id, tags)}
+                                    placeholder="Add sub-tags..."
+                                  />
+                                </div>
+                                <div className="sm:ml-auto">
+                                  <DateTimePicker date={subtask.startDate} setDate={(date) => handleSubtaskDateChange(subtask.id, 'startDate', date)} />
+                                </div>
                               </div>
                             </div>
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditingSubtask(subtask)}>
-                                <Edit className="h-3.5 w-3.5" />
+
+                            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-start gap-1 sm:self-start self-end -mt-2 sm:-mt-1 -mr-2">
+                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10" onClick={() => setEditingSubtask(subtask)}>
+                                <Edit className="h-4 w-4" />
                               </Button>
-                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDeleteSubtask(subtask.id)}>
-                                <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10" onClick={() => handleDeleteSubtask(subtask.id)}>
+                                <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
                           </div>
                         ))}
-                        <div className="flex items-center gap-3 pl-7">
-                          <Input
-                            placeholder="Add new subtask and press Enter"
-                            value={newSubtaskTitle}
-                            onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                            onKeyDown={handleAddSubtask}
-                            className="h-8 mt-2"
-                          />
+
+                        <div className="mt-6">
+                          <div className="flex items-center gap-3 bg-background border px-4 py-2 rounded-2xl shadow-sm focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary/50 transition-all">
+                            <PlusCircle className="w-5 h-5 text-muted-foreground/50 shrink-0" />
+                            <Input
+                              placeholder="Add a new actionable subtask and press Enter..."
+                              value={newSubtaskTitle}
+                              onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                              onKeyDown={handleAddSubtask}
+                              className="h-10 border-0 focus-visible:ring-0 px-0 shadow-none text-base bg-transparent min-w-0"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -900,7 +964,7 @@ function TasksPageContent() {
 
                 <NotesSection task={selectedTask} onUpdateTask={handleUpdateTask} />
               </div>
-            </ScrollArea>
+            </div>
           </div>
         ) : showTaskList && (
           <div className="md:col-span-3 h-full items-center justify-center hidden md:flex">

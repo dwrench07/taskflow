@@ -9,6 +9,7 @@ import {
     EnergyLevel,
     Task
 } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import { getFocusSessions, addFocusSession, getAllTasks } from "@/lib/data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -164,48 +165,73 @@ export default function FocusPage() {
     const selectedTask = tasks.find(t => t.id === targetTaskId);
 
     return (
-        <div className="h-full flex flex-col gap-6 max-w-4xl mx-auto">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="h-full flex flex-col max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in pb-20 mt-4 md:mt-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Focus</h1>
-                    <p className="text-muted-foreground">Deep work sessions tracking and analytics.</p>
+                    <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">Focus Mode</h1>
+                    <p className="text-muted-foreground mt-2 text-lg">Deep work sessions tracking and analytics.</p>
                 </div>
             </div>
 
             {loading ? (
-                <div className="flex justify-center items-center h-40">
-                    <div className="text-muted-foreground animate-pulse">Loading focus data...</div>
+                <div className="flex justify-center items-center h-48 bg-muted/10 rounded-3xl border border-border/50">
+                    <div className="flex flex-col items-center gap-3">
+                        <Flame className="w-8 h-8 text-primary animate-pulse" />
+                        <div className="text-muted-foreground font-medium animate-pulse">Loading focus environment...</div>
+                    </div>
                 </div>
             ) : (
-                <>
-                    <Card className="max-w-xl mx-auto mb-6">
-                        <CardHeader>
-                            <CardTitle className="text-xl">Focus Analytics</CardTitle>
-                            <CardDescription>Your deep work sessions over the last 5 days.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <FocusAnalyticsChart sessions={sessions} />
-                        </CardContent>
-                    </Card>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* Left Column: Analytics */}
+                    <div className="lg:col-span-12 xl:col-span-5 flex flex-col gap-6">
+                        <Card className="bg-muted/10 border-border/50 shadow-sm rounded-3xl overflow-hidden relative">
+                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/40 to-transparent"></div>
+                            <CardHeader className="pb-4">
+                                <CardTitle className="text-xl flex items-center gap-2">
+                                    <Flame className="w-5 h-5 text-primary" />
+                                    Focus Analytics
+                                </CardTitle>
+                                <CardDescription>Your deep work sessions over the last 5 days.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="pt-0">
+                                <FocusAnalyticsChart sessions={sessions} />
+                            </CardContent>
+                        </Card>
+                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Active Timer Section */}
-                        <Card className="flex flex-col items-center p-8 border-primary/20">
-                            <Tabs value={mode} onValueChange={(v) => handleModeChange(v as FocusMode)} className="w-full mb-8">
-                                <TabsList className="grid w-full grid-cols-3">
-                                    <TabsTrigger value="pomodoro" disabled={isActive}>Pomodoro</TabsTrigger>
-                                    <TabsTrigger value="stopwatch" disabled={isActive}>Stopwatch</TabsTrigger>
-                                    <TabsTrigger value="countdown" disabled={isActive}>Custom</TabsTrigger>
+                    {/* Right Column: Timer & Notes */}
+                    <div className="lg:col-span-12 xl:col-span-7 flex flex-col gap-8">
+                        {/* Timer Card */}
+                        <Card className="flex flex-col items-center justify-center p-8 sm:p-12 border-primary/20 bg-background/60 backdrop-blur-md shadow-lg rounded-[2.5rem] relative overflow-hidden transition-all duration-500">
+                            <div className={cn(
+                                "absolute inset-0 bg-gradient-to-br transition-opacity duration-1000 -z-10",
+                                isActive ? "from-primary/10 via-background to-background opacity-100" : "from-transparent to-transparent opacity-0"
+                            )} />
+
+                            <Tabs value={mode} onValueChange={(v) => handleModeChange(v as FocusMode)} className="w-full max-w-md mb-12 relative z-10">
+                                <TabsList className="grid w-full grid-cols-3 h-12 rounded-full bg-muted/30 p-1 border shadow-inner">
+                                    <TabsTrigger value="pomodoro" disabled={isActive} className="rounded-full">Pomodoro</TabsTrigger>
+                                    <TabsTrigger value="stopwatch" disabled={isActive} className="rounded-full">Stopwatch</TabsTrigger>
+                                    <TabsTrigger value="countdown" disabled={isActive} className="rounded-full">Custom</TabsTrigger>
                                 </TabsList>
                             </Tabs>
 
-                            <div className="text-8xl font-bold tracking-tighter tabular-nums mb-4 text-primary">
-                                {mode === 'stopwatch' ? formatTime(elapsedTime) : formatTime(timeRemaining)}
+                            <div className="relative mb-10 group">
+                                <div className={cn(
+                                    "absolute inset-0 bg-primary/20 blur-3xl rounded-full transition-opacity duration-1000",
+                                    isActive ? "opacity-100" : "opacity-0"
+                                )} />
+                                <div className={cn(
+                                    "text-[5rem] sm:text-[7rem] md:text-[8rem] font-black tracking-tighter tabular-nums text-primary leading-none transition-transform duration-300 relative z-10",
+                                    isActive && "scale-105"
+                                )}>
+                                    {mode === 'stopwatch' ? formatTime(elapsedTime) : formatTime(timeRemaining)}
+                                </div>
                             </div>
 
                             {mode === 'countdown' && !isActive && elapsedTime === 0 && (
-                                <div className="flex items-center gap-2 mb-4">
-                                    <Label htmlFor="custom-mins" className="text-muted-foreground text-sm">Minutes:</Label>
+                                <div className="flex items-center gap-3 mb-8 bg-muted/20 px-6 py-3 rounded-full border shadow-sm">
+                                    <Label htmlFor="custom-mins" className="text-muted-foreground font-medium uppercase tracking-wider text-xs">Target Mins:</Label>
                                     <Input
                                         id="custom-mins"
                                         type="number"
@@ -217,36 +243,36 @@ export default function FocusPage() {
                                             setCustomMinutes(val);
                                             setTimeRemaining(val * 60);
                                         }}
-                                        className="w-20 text-center"
+                                        className="w-20 text-center font-bold text-lg h-9 border-0 bg-background/50 focus-visible:ring-1 focus-visible:ring-primary shadow-inner"
                                     />
                                 </div>
                             )}
 
                             {selectedTask ? (
-                                <div className="flex flex-col items-center gap-2 mb-6">
-                                    <Badge variant="outline" className="px-4 py-1.5 flex items-center gap-2 text-sm bg-muted/50">
-                                        Focusing on: <span className="font-semibold">{selectedTask.title}</span>
-                                        {selectedTask.priority === 'high' && <Flame className="h-4 w-4 text-orange-500" />}
-                                    </Badge>
+                                <div className="flex flex-col items-center gap-3 mb-10 w-full max-w-lg">
+                                    <div className="flex items-center gap-2 bg-muted/40 px-5 py-2.5 rounded-2xl border border-border/50 text-sm font-medium text-foreground/80 text-center w-full justify-center shadow-sm backdrop-blur-sm">
+                                        <span className="opacity-70">Focusing on:</span> <span className="font-bold truncate max-w-[200px] sm:max-w-[300px]">{selectedTask.title}</span>
+                                        {selectedTask.priority === 'high' && <Flame className="h-4 w-4 text-orange-500 animate-pulse ml-1 shrink-0" />}
+                                    </div>
                                     {selectedTask.endDate && new Date(selectedTask.endDate) < new Date() && (
-                                        <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-white animate-pulse">
-                                            🐸 Frog Eater Bonus Active!
+                                        <Badge variant="default" className="bg-green-500/10 text-green-600 border-green-500/20 hover:bg-green-500/20 px-3 py-1 font-semibold">
+                                            Overdue task — Eat the Frog!
                                         </Badge>
                                     )}
                                 </div>
                             ) : (
-                                <div className="w-full max-w-xs mb-6 px-4">
+                                <div className="w-full max-w-sm mb-10">
                                     <Input
-                                        placeholder="What are you focusing on?"
+                                        placeholder="What is your main goal for this session?"
                                         value={sessionGoal}
                                         onChange={(e) => setSessionGoal(e.target.value)}
                                         disabled={isActive}
-                                        className="text-center bg-transparent border-dashed h-10"
+                                        className="text-center bg-muted/20 border-border/50 h-14 rounded-2xl text-lg shadow-inner"
                                     />
                                 </div>
                             )}
 
-                            <div className="flex items-center gap-4">
+                            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 relative z-10 w-full">
                                 {!isActive && elapsedTime === 0 ? (
                                     <Button size="lg" className="w-32 h-14 text-lg rounded-full shadow-lg transition-transform hover:scale-105" onClick={handleStart}>
                                         <Play className="mr-2 h-5 w-5 fill-current" /> Start
@@ -273,40 +299,42 @@ export default function FocusPage() {
                             </div>
                         </Card>
 
-                        {/* Distraction & Analytics Split */}
-                        <div className="space-y-6 flex flex-col">
-                            <Card className="flex-1">
-                                <CardHeader>
-                                    <CardTitle className="text-xl">Session Notes & Distractions</CardTitle>
-                                    <CardDescription>Jot down passing thoughts or session notes to clear your mind.</CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <Input
-                                        placeholder="e.g., Buy groceries later..."
-                                        value={currentDistraction}
-                                        onChange={e => setCurrentDistraction(e.target.value)}
-                                        onKeyDown={e => {
-                                            if (e.key === 'Enter' && currentDistraction.trim()) {
-                                                const timeStamp = mode === 'stopwatch' ? formatTime(elapsedTime) : formatTime(timeRemaining);
-                                                setDistractions([...distractions, `[${timeStamp}] ${currentDistraction.trim()}`]);
-                                                setCurrentDistraction("");
-                                            }
-                                        }}
-                                        disabled={!isActive}
-                                    />
-                                    <div className="mt-4 space-y-2 max-h-40 overflow-y-auto">
-                                        {distractions.map((d, i) => (
-                                            <div key={i} className="text-sm bg-muted/50 p-2 rounded-md">{d}</div>
-                                        ))}
-                                        {distractions.length === 0 && isActive && (
-                                            <p className="text-sm text-muted-foreground flex items-center gap-1"><Flame className="h-4 w-4 text-orange-500" /> Keep the streak zero for a Deep Work bonus!</p>
-                                        )}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </div>
+                        {/* Distraction & Notes Card */}
+                        <Card className="border-border/50 bg-muted/5 rounded-3xl overflow-hidden shadow-sm">
+                            <CardHeader className="bg-muted/10 pb-4">
+                                <CardTitle className="text-xl">Session Notes & Distractions</CardTitle>
+                                <CardDescription>Jot down passing thoughts or session notes to clear your mind.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="pt-6">
+                                <Input
+                                    placeholder="e.g., Buy groceries later..."
+                                    value={currentDistraction}
+                                    onChange={e => setCurrentDistraction(e.target.value)}
+                                    onKeyDown={e => {
+                                        if (e.key === 'Enter' && currentDistraction.trim()) {
+                                            const timeStamp = mode === 'stopwatch' ? formatTime(elapsedTime) : formatTime(timeRemaining);
+                                            setDistractions([...distractions, `[${timeStamp}] ${currentDistraction.trim()}`]);
+                                            setCurrentDistraction("");
+                                        }
+                                    }}
+                                    disabled={!isActive}
+                                    className="h-12 bg-background shadow-sm rounded-xl"
+                                />
+                                <div className="mt-6 space-y-2 max-h-40 overflow-y-auto pr-2">
+                                    {distractions.map((d, i) => (
+                                        <div key={i} className="text-sm bg-muted/40 border border-border/50 p-3 rounded-xl shadow-sm animate-fade-in">{d}</div>
+                                    ))}
+                                    {distractions.length === 0 && isActive && (
+                                        <div className="flex flex-col items-center justify-center p-6 text-center bg-muted/20 border border-border/30 rounded-xl border-dashed">
+                                            <p className="text-sm text-foreground/80 font-medium flex items-center gap-2 mb-1"><Flame className="h-5 w-5 text-orange-500 animate-pulse" /> Keep the streak zero!</p>
+                                            <p className="text-xs text-muted-foreground">Maintain absolute focus for a Deep Work bonus.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
                     </div>
-                </>
+                </div>
             )}
 
             {/* Post-Session Evaluation Modal */}

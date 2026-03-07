@@ -36,8 +36,8 @@ function MiniTaskCard({
   return (
     <Card
       className={cn(
-        "group transition-all hover:border-primary",
-        isDragging && "opacity-50"
+        "group transition-all duration-300 ease-in-out hover:border-primary hover:shadow-md animate-fade-in",
+        isDragging ? "opacity-30 scale-95" : "hover:scale-[1.02]"
       )}
       draggable={!isBacklog}
       onDragStart={(e) => onDragStart?.(e, task.id)}

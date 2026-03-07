@@ -437,133 +437,134 @@ export default function HabitsPage() {
             </div>
 
             <div className={cn(
-                "grid gap-6 h-[calc(100vh-theme(spacing.36))]",
-                selectedHabit ? "md:grid-cols-3" : "grid-cols-1"
+                "flex flex-col md:flex-row gap-6 w-full min-w-0 h-[calc(100vh-theme(spacing.36))]"
             )}>
                 {showHabitList && (
                     <div className={cn(
-                        "h-full",
-                        selectedHabit ? "md:col-span-1" : "md:col-span-3"
+                        "h-full flex flex-col overflow-hidden min-h-0 min-w-0 border-border",
+                        selectedHabit ? "w-full md:w-80 md:max-w-[20rem] md:flex-shrink-0" : "w-full"
                     )}>
-                        <div className={cn(
-                            "grid gap-6",
-                            selectedHabit ? "grid-cols-1" : "md:grid-cols-2 lg:grid-cols-3"
-                        )}>
-                            {sortedHabits.map(habit => {
-                                const streak = calculateStreak(habit);
-                                const completedToday = hasCompletedToday(habit);
-                                const progress = habit.streakGoal ? (streak / habit.streakGoal) * 100 : 0;
-                                const goalMet = habit.streakGoal && streak >= habit.streakGoal;
-                                const todaysStatus = getTodaysStatus(habit);
+                        <ScrollArea className="flex-1 pr-4">
+                            <div className={cn(
+                                "grid gap-6 pb-8",
+                                selectedHabit ? "grid-cols-1" : "md:grid-cols-2 lg:grid-cols-3"
+                            )}>
+                                {sortedHabits.map(habit => {
+                                    const streak = calculateStreak(habit);
+                                    const completedToday = hasCompletedToday(habit);
+                                    const progress = habit.streakGoal ? (streak / habit.streakGoal) * 100 : 0;
+                                    const goalMet = habit.streakGoal && streak >= habit.streakGoal;
+                                    const todaysStatus = getTodaysStatus(habit);
 
-                                return (
-                                    <Card
-                                        key={habit.id}
-                                        className={cn(
-                                            "flex flex-col cursor-pointer transition-all",
-                                            selectedHabit?.id === habit.id ? 'border-primary' : 'hover:border-primary/50',
-                                            dailyStatusStyles[todaysStatus],
-                                            goalMet && "border-green-500/50"
-                                        )}
-                                        onClick={() => handleSelectHabit(habit)}
-                                    >
-                                        <CardHeader>
-                                            <div className="flex justify-between items-start gap-2">
-                                                <CardTitle className="flex-1">{habit.title}</CardTitle>
-                                                <div className="flex items-center gap-2">
-                                                    <Badge variant={streak > 0 ? "default" : "secondary"} className="flex items-center gap-1.5 whitespace-nowrap">
-                                                        <Flame className={cn("h-4 w-4", streak > 0 ? "text-orange-300" : "text-muted-foreground")} />
-                                                        {streak} Day{streak !== 1 && 's'}
-                                                    </Badge>
-                                                    <AlertDialog>
-                                                        <AlertDialogTrigger asChild>
-                                                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={e => e.stopPropagation()}>
-                                                                <Trash2 className="h-4 w-4 text-destructive/50 hover:text-destructive" />
-                                                            </Button>
-                                                        </AlertDialogTrigger>
-                                                        <AlertDialogContent>
-                                                            <AlertDialogHeader>
-                                                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                                                <AlertDialogDescription>
-                                                                    This will permanently delete the "{habit.title}" habit and all its history. This action cannot be undone.
-                                                                </AlertDialogDescription>
-                                                            </AlertDialogHeader>
-                                                            <AlertDialogFooter>
-                                                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                                <AlertDialogAction onClick={() => handleDeleteHabit(habit.id)}>Delete</AlertDialogAction>
-                                                            </AlertDialogFooter>
-                                                        </AlertDialogContent>
-                                                    </AlertDialog>
-                                                </div>
-                                            </div>
-                                            <CardDescription className="pt-2 line-clamp-2">{habit.description}</CardDescription>
-                                        </CardHeader>
-                                        <CardContent className="flex-grow flex flex-col justify-end">
-                                            <Badge variant="outline" className="capitalize w-fit">
-                                                {habit.habitFrequency}
-                                            </Badge>
-                                            {habit.streakGoal && (
-                                                <div className="mt-auto pt-4 space-y-2">
-                                                    <div className="flex justify-between items-center text-sm text-muted-foreground">
-                                                        <span>Goal: {habit.streakGoal} days</span>
-                                                        {goalMet && <Trophy className="h-4 w-4 text-yellow-500" />}
-                                                    </div>
-                                                    <Progress value={progress} className={cn(goalMet && "[&>div]:bg-green-500")} />
-                                                </div>
+                                    return (
+                                        <Card
+                                            key={habit.id}
+                                            className={cn(
+                                                "flex flex-col cursor-pointer transition-all duration-300 ease-in-out animate-fade-in shadow-sm hover:shadow-md max-w-full min-w-0",
+                                                selectedHabit?.id === habit.id ? 'border-primary ring-1 ring-primary scale-[1.02]' : 'hover:border-primary/50 hover:scale-[1.03]',
+                                                dailyStatusStyles[todaysStatus],
+                                                goalMet && "border-green-500/50"
                                             )}
-                                            <div className="flex items-stretch gap-2 w-full mt-4">
-                                                <Button
-                                                    onClick={(e) => { e.stopPropagation(); handleToggleCompletion(habit.id); }}
-                                                    variant={completedToday ? "secondary" : "default"}
-                                                    className="w-full"
-                                                >
-                                                    {completedToday ? <Undo2 className="mr-2 h-4 w-4" /> : <Zap className="mr-2 h-4 w-4" />}
-                                                    {completedToday ? "Undo" : "Done"}
-                                                </Button>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="outline" size="icon" onClick={e => e.stopPropagation()}>
-                                                            <MoreVertical className="h-4 w-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent onClick={e => e.stopPropagation()}>
-                                                        <DropdownMenuItem onSelect={() => handleSetDailyStatus(habit.id, 'changes observed')}>
-                                                            <Smile className="mr-2 h-4 w-4 text-green-500" /> Changes Observed
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem onSelect={() => handleSetDailyStatus(habit.id, 'no changes')}>
-                                                            <Meh className="mr-2 h-4 w-4 text-yellow-500" /> No Changes
-                                                        </DropdownMenuItem>
-                                                        <DropdownMenuItem onSelect={() => handleSetDailyStatus(habit.id, 'negative')}>
-                                                            <Frown className="mr-2 h-4 w-4 text-red-500" /> Negative
-                                                        </DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </div>
+                                            onClick={() => handleSelectHabit(habit)}
+                                        >
+                                            <CardHeader>
+                                                <div className="flex justify-between items-start gap-2 w-full min-w-0">
+                                                    <CardTitle className="flex-1 truncate text-left min-w-0">{habit.title}</CardTitle>
+                                                    <div className="flex items-center gap-2 flex-shrink-0">
+                                                        <Badge variant={streak > 0 ? "default" : "secondary"} className="flex items-center gap-1.5 whitespace-nowrap">
+                                                            <Flame className={cn("h-4 w-4", streak > 0 ? "text-orange-300" : "text-muted-foreground")} />
+                                                            {streak} Day{streak !== 1 && 's'}
+                                                        </Badge>
+                                                        <AlertDialog>
+                                                            <AlertDialogTrigger asChild>
+                                                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={e => e.stopPropagation()}>
+                                                                    <Trash2 className="h-4 w-4 text-destructive/50 hover:text-destructive" />
+                                                                </Button>
+                                                            </AlertDialogTrigger>
+                                                            <AlertDialogContent>
+                                                                <AlertDialogHeader>
+                                                                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                                                    <AlertDialogDescription>
+                                                                        This will permanently delete the "{habit.title}" habit and all its history. This action cannot be undone.
+                                                                    </AlertDialogDescription>
+                                                                </AlertDialogHeader>
+                                                                <AlertDialogFooter>
+                                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                    <AlertDialogAction onClick={() => handleDeleteHabit(habit.id)}>Delete</AlertDialogAction>
+                                                                </AlertDialogFooter>
+                                                            </AlertDialogContent>
+                                                        </AlertDialog>
+                                                    </div>
+                                                </div>
+                                                <CardDescription className="pt-2 line-clamp-2 text-left min-w-0">{habit.description}</CardDescription>
+                                            </CardHeader>
+                                            <CardContent className="flex-grow flex flex-col justify-end">
+                                                <Badge variant="outline" className="capitalize w-fit">
+                                                    {habit.habitFrequency}
+                                                </Badge>
+                                                {habit.streakGoal && (
+                                                    <div className="mt-auto pt-4 space-y-2">
+                                                        <div className="flex justify-between items-center text-sm text-muted-foreground">
+                                                            <span>Goal: {habit.streakGoal} days</span>
+                                                            {goalMet && <Trophy className="h-4 w-4 text-yellow-500" />}
+                                                        </div>
+                                                        <Progress value={progress} className={cn(goalMet && "[&>div]:bg-green-500")} />
+                                                    </div>
+                                                )}
+                                                <div className="flex items-stretch gap-2 w-full mt-4">
+                                                    <Button
+                                                        onClick={(e) => { e.stopPropagation(); handleToggleCompletion(habit.id); }}
+                                                        variant={completedToday ? "secondary" : "default"}
+                                                        className="w-full"
+                                                    >
+                                                        {completedToday ? <Undo2 className="mr-2 h-4 w-4" /> : <Zap className="mr-2 h-4 w-4" />}
+                                                        {completedToday ? "Undo" : "Done"}
+                                                    </Button>
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="outline" size="icon" onClick={e => e.stopPropagation()}>
+                                                                <MoreVertical className="h-4 w-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent onClick={e => e.stopPropagation()}>
+                                                            <DropdownMenuItem onSelect={() => handleSetDailyStatus(habit.id, 'changes observed')}>
+                                                                <Smile className="mr-2 h-4 w-4 text-green-500" /> Changes Observed
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem onSelect={() => handleSetDailyStatus(habit.id, 'no changes')}>
+                                                                <Meh className="mr-2 h-4 w-4 text-yellow-500" /> No Changes
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem onSelect={() => handleSetDailyStatus(habit.id, 'negative')}>
+                                                                <Frown className="mr-2 h-4 w-4 text-red-500" /> Negative
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    )
+                                })}
+                                {habits.length === 0 && (
+                                    <Card className="md:col-span-2 lg:col-span-3 shadow-sm border-border">
+                                        <CardContent className="flex flex-col items-center justify-center gap-4 text-center h-60">
+                                            <Repeat className="w-12 h-12 text-muted-foreground" />
+                                            <p className="text-muted-foreground">
+                                                You haven't created any habits yet.
+                                            </p>
+                                            <Button onClick={() => setIsFormOpen(true)}>
+                                                <PlusCircle className="mr-2 h-4 w-4" />
+                                                Create Your First Habit
+                                            </Button>
                                         </CardContent>
                                     </Card>
-                                )
-                            })}
-                            {habits.length === 0 && (
-                                <Card className="md:col-span-2 lg:col-span-3">
-                                    <CardContent className="flex flex-col items-center justify-center gap-4 text-center h-60">
-                                        <Repeat className="w-12 h-12 text-muted-foreground" />
-                                        <p className="text-muted-foreground">
-                                            You haven't created any habits yet.
-                                        </p>
-                                        <Button onClick={() => setIsFormOpen(true)}>
-                                            <PlusCircle className="mr-2 h-4 w-4" />
-                                            Create Your First Habit
-                                        </Button>
-                                    </CardContent>
-                                </Card>
-                            )}
-                        </div>
+                                )}
+                            </div>
+                        </ScrollArea>
                     </div>
                 )}
                 {showHabitDetails && selectedHabit ? (
-                    <div className="md:col-span-2 h-full">
-                        <ScrollArea className="h-full pr-4">
-                            <Card className="relative">
+                    <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+                        <ScrollArea className="flex-1 pr-4">
+                            <Card className="relative shadow-sm mb-8 border-border">
                                 {isMobile && (
                                     <Button
                                         variant="ghost"
@@ -588,7 +589,7 @@ export default function HabitsPage() {
                                                 </Button>
                                             </div>
                                             <CardTitle className="text-2xl">{selectedHabit.title}</CardTitle>
-                                            <CardDescription className="pt-2">{selectedHabit.description}</CardDescription>
+                                            <CardDescription className="pt-2 w-full min-w-0 break-words whitespace-pre-wrap">{selectedHabit.description}</CardDescription>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <Dialog open={editingHabit?.id === selectedHabit.id} onOpenChange={(isOpen) => !isOpen && setEditingHabit(undefined)}>

@@ -30,7 +30,7 @@ export function DashboardStats({ allTasks }: { allTasks: Task[] }) {
   }, [allTasks]);
 
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col transition-all duration-500 ease-in-out animate-fade-in hover:shadow-md" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
       <CardHeader>
         <CardTitle>Overall Progress</CardTitle>
         <CardDescription>Your all-time stats.</CardDescription>
