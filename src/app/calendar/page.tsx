@@ -91,6 +91,21 @@ function CalendarEvent({ event }: { event: CalendarEventData }) {
     router.push(getLink());
   };
 
+  const renderTitle = (title: string, isSubtask?: boolean) => {
+    if (isSubtask) {
+      const match = title.match(/^(.*)\s*\(Subtask:\s*(.*)\)$/);
+      if (match) {
+        return (
+          <span className="truncate">
+            {match[1]}{" "}
+            <i className="font-normal opacity-90">(Subtask: {match[2]})</i>
+          </span>
+        );
+      }
+    }
+    return <span className="truncate">{title}</span>;
+  };
+
   return (
     <div
       className={cn(
@@ -103,8 +118,7 @@ function CalendarEvent({ event }: { event: CalendarEventData }) {
       onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleClick(e as any)}
     >
       {event.isHabit && event.dailyStatus && event.dailyStatus !== 'not recorded' && statusIcons[event.dailyStatus]}
-      <span className="font-semibold flex-1 truncate">{event.title}</span>
-      {event.isSubtask && <span className="text-xs opacity-80"> (subtask)</span>}
+      <span className="font-semibold flex-1 truncate">{renderTitle(event.title, event.isSubtask)}</span>
       {event.isHabit && <Repeat className="inline-block h-3 w-3 ml-1.5 opacity-90" />}
     </div>
   );
@@ -136,22 +150,8 @@ export default function CalendarPage() {
     const events: CalendarEventData[] = [];
 
     (Array.isArray(allTasks) ? allTasks : []).forEach((task) => {
-      if (task.isHabit) {
-        const dailyStatusEntry = task.dailyStatus?.find(ds => isSameDay(parseISO(ds.date), day));
-        events.push({
-          ...task,
-          isSubtask: false,
-          dailyStatus: dailyStatusEntry?.status || 'not recorded'
-        });
-      }
-      else if (task.startDate) {
-        const taskStart = parseISO(task.startDate);
-        const taskEnd = task.endDate ? parseISO(task.endDate) : taskStart;
-        if (isWithinInterval(day, { start: startOfDay(taskStart), end: endOfDay(taskEnd) })) {
-          const { dailyStatus, ...restTask } = task;
-          events.push({ ...restTask, isSubtask: false });
-        }
-      }
+      let isTaskAdded = false;
+      const scheduledSubtasks = new Set<string>();
 
       if (task.subtasks) {
         task.subtasks.forEach((subtask) => {
@@ -159,18 +159,40 @@ export default function CalendarPage() {
             const subtaskStart = parseISO(subtask.startDate);
             const subtaskEnd = subtask.endDate ? parseISO(subtask.endDate) : subtaskStart;
             if (isWithinInterval(day, { start: startOfDay(subtaskStart), end: endOfDay(subtaskEnd) })) {
+              scheduledSubtasks.add(subtask.id);
               events.push({
                 ...subtask,
                 parentId: task.id,
                 isSubtask: true,
                 priority: task.priority,
                 isHabit: false,
-                title: subtask.title,
+                title: `${task.title} (Subtask: ${subtask.title})`,
                 id: subtask.id,
               });
             }
           }
         });
+      }
+
+      if (scheduledSubtasks.size === 0) {
+        if (task.isHabit) {
+          const dailyStatusEntry = task.dailyStatus?.find(ds => isSameDay(parseISO(ds.date), day));
+          events.push({
+            ...task,
+            isSubtask: false,
+            dailyStatus: dailyStatusEntry?.status || 'not recorded'
+          });
+          isTaskAdded = true;
+        }
+        else if (task.startDate) {
+          const taskStart = parseISO(task.startDate);
+          const taskEnd = task.endDate ? parseISO(task.endDate) : taskStart;
+          if (isWithinInterval(day, { start: startOfDay(taskStart), end: endOfDay(taskEnd) })) {
+            const { dailyStatus, ...restTask } = task;
+            events.push({ ...restTask, isSubtask: false });
+            isTaskAdded = true;
+          }
+        }
       }
     });
 
@@ -524,7 +546,20 @@ export default function CalendarPage() {
                     </div>
                     <div className="flex-1">
                       <Link href={getLink()} className="hover:underline">
-                        <p className={cn("font-semibold", isCompleted && "line-through text-muted-foreground")}>{event.title}{event.isSubtask && <span className="text-sm font-normal opacity-80"> (subtask)</span>}</p>
+                        <p className={cn("font-semibold flex items-center flex-wrap gap-1", isCompleted && "line-through text-muted-foreground")}>
+                          {(() => {
+                            const match = event.title.match(/^(.*)\s*\(Subtask:\s*(.*)\)$/);
+                            if (event.isSubtask && match) {
+                              return (
+                                <>
+                                  <span>{match[1]}</span>
+                                  <i className="text-sm font-normal text-muted-foreground">(Subtask: {match[2]})</i>
+                                </>
+                              );
+                            }
+                            return <span>{event.title}</span>;
+                          })()}
+                        </p>
                       </Link>
                       <div className="flex items-center gap-2 mt-1">
                         <Badge variant="outline" className={cn("capitalize", priorityStyles[event.priority])}>{event.priority}</Badge>

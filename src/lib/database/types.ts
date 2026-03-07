@@ -3,7 +3,7 @@
  * Provides a unified interface for different database implementations
  */
 
-import type { Task, TaskTemplate, User, FocusSession } from '../types';
+import type { Task, TaskTemplate, User, FocusSession, Goal } from '../types';
 
 export interface DailyPlan {
     id: string;
@@ -45,6 +45,13 @@ export interface DatabaseAdapter {
     getFocusSessions(userId?: string | null): Promise<FocusSession[]>;
     addFocusSession(session: FocusSession, userId?: string | null): Promise<FocusSession>;
 
+    // Goal operations
+    getGoals(userId?: string | null): Promise<Goal[]>;
+    getGoal(id: string, userId?: string | null): Promise<Goal | null>;
+    addGoal(goal: Goal, userId?: string | null): Promise<Goal>;
+    updateGoal(goal: Goal, userId?: string | null): Promise<Goal>;
+    deleteGoal(id: string, userId?: string | null): Promise<boolean>;
+
     // User operations
     getUser(id: string): Promise<User | null>;
     getUserByEmail(email: string): Promise<User | null>;
@@ -71,6 +78,7 @@ export interface DatabaseConfig {
         dailyPlans: string;
         users: string;
         focusSessions: string;
+        goals: string;
     };
 }
 

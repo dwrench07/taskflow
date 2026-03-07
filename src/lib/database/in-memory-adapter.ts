@@ -109,6 +109,7 @@ export class MemoryAdapter implements DatabaseAdapter {
     private dailyPlans: Map<string, any> = new Map();
     private users: Map<string, User> = new Map();
     private focusSessions: Map<string, any> = new Map();
+    private goals: Map<string, any> = new Map();
     private connected = false;
 
     constructor(private logger: DatabaseLogger) { }
@@ -132,6 +133,7 @@ export class MemoryAdapter implements DatabaseAdapter {
         this.templates.clear();
         this.dailyPlans.clear();
         this.users.clear();
+        this.goals.clear();
         this.logger.info('Disconnected from in-memory database');
     }
 
@@ -204,6 +206,32 @@ export class MemoryAdapter implements DatabaseAdapter {
         const sessionWithId = { ...session, userId: userId || session.userId, id: session.id || Date.now().toString() };
         this.focusSessions.set(sessionWithId.id, sessionWithId);
         return sessionWithId;
+    }
+
+    async getGoals(userId?: string | null): Promise<any[]> {
+        return Array.from(this.goals.values()).filter(goal => !userId || goal.userId === userId);
+    }
+
+    async getGoal(id: string, userId?: string | null): Promise<any | null> {
+        const goal = this.goals.get(id);
+        if (goal && (!userId || goal.userId === userId)) return goal;
+        return null;
+    }
+
+    async addGoal(goal: any, userId?: string | null): Promise<any> {
+        const goalWithId = { ...goal, userId: userId || goal.userId, id: goal.id || Date.now().toString() };
+        this.goals.set(goalWithId.id, goalWithId);
+        return goalWithId;
+    }
+
+    async updateGoal(goal: any, userId?: string | null): Promise<any> {
+        const goalWithId = { ...goal, userId: userId || goal.userId };
+        this.goals.set(goalWithId.id, goalWithId);
+        return goalWithId;
+    }
+
+    async deleteGoal(id: string, userId?: string | null): Promise<boolean> {
+        return this.goals.delete(id);
     }
 
     async getUser(id: string): Promise<User | null> {

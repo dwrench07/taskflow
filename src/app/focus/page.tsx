@@ -67,20 +67,34 @@ export default function FocusPage() {
     useEffect(() => {
         let interval: NodeJS.Timeout;
         if (isActive) {
+            let lastTickTime = Date.now();
             interval = setInterval(() => {
-                setElapsedTime(prev => prev + 1);
+                const now = Date.now();
+                const deltaMs = now - lastTickTime;
 
-                if (mode !== 'stopwatch') {
-                    setTimeRemaining(prev => {
-                        if (prev <= 1) {
-                            clearInterval(interval);
-                            handleStop();
-                            return 0;
-                        }
-                        return prev - 1;
+                if (deltaMs >= 1000) {
+                    const secondsPassed = Math.floor(deltaMs / 1000);
+                    lastTickTime += secondsPassed * 1000;
+
+                    let newElapsed = 0;
+                    setElapsedTime(prev => {
+                        newElapsed = prev + secondsPassed;
+                        return newElapsed;
                     });
+
+                    if (mode !== 'stopwatch') {
+                        setTimeRemaining(prev => {
+                            const newRemaining = prev - secondsPassed;
+                            if (newRemaining <= 0) {
+                                clearInterval(interval);
+                                setTimeout(() => handleStop(newElapsed), 0);
+                                return 0;
+                            }
+                            return newRemaining;
+                        });
+                    }
                 }
-            }, 1000);
+            }, 200);
         }
         return () => clearInterval(interval);
     }, [isActive, mode]);
@@ -106,9 +120,10 @@ export default function FocusPage() {
         setIsActive(false);
     }
 
-    const handleStop = () => {
+    const handleStop = (overrideElapsed?: any) => {
         setIsActive(false);
-        if (elapsedTime > 60) { // Only prompt if > 1 minute tracked
+        const currentElapsed = typeof overrideElapsed === 'number' ? overrideElapsed : elapsedTime;
+        if (currentElapsed > 60) { // Only prompt if > 1 minute tracked
             setIsModalOpen(true);
         } else {
             // Reset if too short
@@ -202,7 +217,7 @@ export default function FocusPage() {
                     {/* Right Column: Timer & Notes */}
                     <div className="lg:col-span-12 xl:col-span-7 flex flex-col gap-8">
                         {/* Timer Card */}
-                        <Card className="flex flex-col items-center justify-center p-8 sm:p-12 border-primary/20 bg-background/60 backdrop-blur-md shadow-lg rounded-[2.5rem] relative overflow-hidden transition-all duration-500">
+                        <Card className="flex flex-col items-center justify-center p-6 sm:p-8 border-primary/20 bg-background/60 backdrop-blur-md shadow-lg rounded-[2.5rem] relative overflow-hidden transition-all duration-500">
                             <div className={cn(
                                 "absolute inset-0 bg-gradient-to-br transition-opacity duration-1000 -z-10",
                                 isActive ? "from-primary/10 via-background to-background opacity-100" : "from-transparent to-transparent opacity-0"
@@ -222,7 +237,7 @@ export default function FocusPage() {
                                     isActive ? "opacity-100" : "opacity-0"
                                 )} />
                                 <div className={cn(
-                                    "text-[5rem] sm:text-[7rem] md:text-[8rem] font-black tracking-tighter tabular-nums text-primary leading-none transition-transform duration-300 relative z-10",
+                                    "text-[4rem] sm:text-[5rem] md:text-[6rem] font-black tracking-tighter tabular-nums text-primary leading-none transition-transform duration-300 relative z-10",
                                     isActive && "scale-105"
                                 )}>
                                     {mode === 'stopwatch' ? formatTime(elapsedTime) : formatTime(timeRemaining)}

@@ -10,7 +10,8 @@ import {
   Activity,
   ClipboardList,
   Repeat,
-  Timer
+  Timer,
+  StickyNote
 } from "lucide-react";
 
 import {
@@ -38,6 +39,7 @@ const menuItems = [
   { href: "/templates", label: "Templates", icon: ClipboardList },
   { href: "/plan", label: "Plan", icon: FilePenLine },
   { href: "/calendar", label: "Calendar", icon: Calendar },
+  { href: "/jots", label: "Jots", icon: StickyNote },
   { href: "/profile", label: "Profile", icon: User },
 ];
 

@@ -7,6 +7,8 @@ import { DashboardPriorityChart } from "@/components/dashboard-priority-chart";
 import { DashboardUpcomingDeadlines } from "@/components/dashboard-upcoming-deadlines";
 import { DashboardCompletionChart } from "@/components/dashboard-completion-chart";
 import { DashboardStats } from "@/components/dashboard-stats";
+import { DashboardGoals } from "@/components/dashboard-goals";
+import { DashboardHabitHeatmap } from "@/components/dashboard-habit-heatmap";
 import { getAllTasks } from "@/lib/data";
 import { useEffect, useState } from "react";
 import { Task } from "@/lib/types";
@@ -36,6 +38,10 @@ export default function DashboardPage() {
       <div className="grid gap-8 lg:grid-cols-2">
         <DashboardUpcomingDeadlines allTasks={allTasks} />
         <DashboardCompletionChart allTasks={allTasks} />
+      </div>
+      <div className="grid gap-8 lg:grid-cols-3">
+        <DashboardHabitHeatmap allTasks={allTasks} />
+        <DashboardGoals />
       </div>
     </div>
   );

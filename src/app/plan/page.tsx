@@ -33,6 +33,19 @@ function MiniTaskCard({
   onDragEnd?: (e: React.DragEvent<HTMLDivElement>) => void;
   isDragging?: boolean;
 }) {
+  const renderTitle = (title: string) => {
+    const match = title.match(/^(.*)\s*\(Subtask:\s*(.*)\)$/);
+    if (match) {
+      return (
+        <span>
+          {match[1]}{" "}
+          <i className="text-muted-foreground font-normal">(Subtask: {match[2]})</i>
+        </span>
+      );
+    }
+    return title;
+  };
+
   return (
     <Card
       className={cn(
@@ -50,7 +63,7 @@ function MiniTaskCard({
           <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab group-hover:text-foreground" />
         )}
         <div className="flex-1">
-          <p className="font-semibold">{task.title}</p>
+          <p className="font-semibold">{renderTitle(task.title)}</p>
           <Badge variant="outline" className={cn("capitalize mt-1", priorityStyles[task.priority])}>
             {task.priority}
           </Badge>
@@ -62,6 +75,12 @@ function MiniTaskCard({
     </Card>
   );
 }
+
+// Helper to determine if an ID is a subtask format typical of this app.
+// Since we don't naturally have a global subtask ID tracker that tells us its parent,
+// we will structure the combined ID as parentId_subtaskId for the daily plan if needed,
+// OR we just store the subtask ID if they are universally unique.
+// Actually, earlier we stored just task IDs. Let's see how dailyTaskIds handles it.
 
 export default function PlanPage() {
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
@@ -90,17 +109,84 @@ export default function PlanPage() {
     refreshData();
   }, [selectedDate]);
 
-  const dailyTasks = dailyTaskIds.map(id => (Array.isArray(allTasks) ? allTasks : []).find(t => t.id === id)).filter((t): t is Task => !!t);
-  const backlogTasks = (Array.isArray(allTasks) ? allTasks : []).filter(task =>
-    task.status !== 'done' &&
-    !task.isHabit &&
-    !dailyTaskIds.includes(task.id)
-  );
+  const dailyTasks = dailyTaskIds.map(id => {
+    // Find parent or subtask
+    for (const t of (Array.isArray(allTasks) ? allTasks : [])) {
+      if (t.id === id) return t;
+      if (t.subtasks) {
+        const st = t.subtasks.find(s => s.id === id);
+        if (st) {
+          return {
+            ...st,
+            parentId: t.id,
+            description: "",
+            status: st.completed ? 'done' : 'todo' as 'done' | 'todo',
+            priority: t.priority,
+            subtasks: [],
+            notes: [],
+            isSubtask: true,
+            title: `${t.title} (Subtask: ${st.title})`
+          } as unknown as Task;
+        }
+      }
+    }
+    return undefined;
+  }).filter((t): t is Task => !!t);
+
+  const backlogTasks: Task[] = [];
+  (Array.isArray(allTasks) ? allTasks : []).forEach(task => {
+    if (task.status === 'done' || task.isHabit) return;
+
+    // Only add parent if it has no incomplete subtasks, OR we add subtasks individually.
+    // Wait, let's just add the parent if the parent is not in dailyTaskIds AND has no subtasks.
+    // Or add subtasks if they exist.
+
+    const incompleteSubtasks = task.subtasks?.filter(st => !st.completed) || [];
+
+    if (incompleteSubtasks.length > 0) {
+      incompleteSubtasks.forEach(st => {
+        if (!dailyTaskIds.includes(st.id)) {
+          backlogTasks.push({
+            ...st,
+            parentId: task.id,
+            description: "",
+            status: 'todo',
+            priority: task.priority,
+            subtasks: [],
+            notes: [],
+            isSubtask: true,
+            title: `${task.title} (Subtask: ${st.title})`
+          } as unknown as Task);
+        }
+      });
+    } else {
+      if (!dailyTaskIds.includes(task.id)) {
+        backlogTasks.push(task);
+      }
+    }
+  });
 
   const addToDailyPlan = async (taskId: string) => {
-    const task = allTasks.find(t => t.id === taskId);
-    if (task?.endDate) {
-      const taskEndDate = task.endDate.split('T')[0];
+    let taskEndDate = "";
+
+    // Find task or subtask end date
+    for (const t of allTasks) {
+      if (t.id === taskId && t.endDate) {
+        taskEndDate = t.endDate.split('T')[0];
+        break;
+      }
+      const st = t.subtasks?.find(s => s.id === taskId);
+      if (st && st.endDate) {
+        taskEndDate = st.endDate.split('T')[0];
+        break;
+      } else if (st && t.endDate) {
+        // Fallback to parent end date
+        taskEndDate = t.endDate.split('T')[0];
+        break;
+      }
+    }
+
+    if (taskEndDate) {
       if (selectedDate > taskEndDate) {
         alert(`Cannot plan this task for ${selectedDate} because its deadline was ${taskEndDate}`);
         return;
@@ -141,9 +227,25 @@ export default function PlanPage() {
   const handleDragEnd = async () => {
     if (dragItem.current === null) return;
 
-    const task = allTasks.find(t => t.id === dragItem.current);
-    if (task?.endDate) {
-      const taskEndDate = task.endDate.split('T')[0];
+    let taskEndDate = "";
+    const taskId = dragItem.current;
+
+    for (const t of allTasks) {
+      if (t.id === taskId && t.endDate) {
+        taskEndDate = t.endDate.split('T')[0];
+        break;
+      }
+      const st = t.subtasks?.find(s => s.id === taskId);
+      if (st && st.endDate) {
+        taskEndDate = st.endDate.split('T')[0];
+        break;
+      } else if (st && t.endDate) {
+        taskEndDate = t.endDate.split('T')[0];
+        break;
+      }
+    }
+
+    if (taskEndDate) {
       if (selectedDate > taskEndDate) {
         alert(`Cannot plan this task for ${selectedDate} because its deadline was ${taskEndDate}`);
         refreshData(); // Revert visual drag

@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,14 +17,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select"
-import { type Task } from "@/lib/types";
+import { type Task, type Goal } from "@/lib/types";
 import { TagInput } from "./tag-input";
+import { getAllGoals } from "@/lib/data";
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -35,17 +36,24 @@ const formSchema = z.object({
   }),
   priority: z.enum(["low", "medium", "high"]),
   tags: z.array(z.string()).optional(),
+  goalId: z.string().optional().nullable(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
 interface TaskFormProps {
-    task?: Task;
-    allTags: string[];
-    onSubmit: (data: FormValues) => void;
+  task?: Task;
+  allTags: string[];
+  onSubmit: (data: FormValues) => Promise<void> | void;
 }
 
 export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
+  const [goals, setGoals] = useState<Goal[]>([]);
+
+  useEffect(() => {
+    getAllGoals().then(setGoals).catch(console.error);
+  }, []);
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -53,6 +61,7 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
       description: task?.description || "",
       priority: task?.priority || "medium",
       tags: task?.tags || [],
+      goalId: task?.goalId || null,
     },
   });
 
@@ -89,49 +98,72 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
           )}
         />
         <div className="grid grid-cols-2 gap-4">
-            <FormField
+          <FormField
             control={form.control}
             name="priority"
             render={({ field }) => (
-                <FormItem>
+              <FormItem>
                 <FormLabel>Priority</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
+                  <FormControl>
                     <SelectTrigger>
-                        <SelectValue placeholder="Select a priority" />
+                      <SelectValue placeholder="Select a priority" />
                     </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
+                  </FormControl>
+                  <SelectContent>
                     <SelectItem value="low">Low</SelectItem>
                     <SelectItem value="medium">Medium</SelectItem>
                     <SelectItem value="high">High</SelectItem>
-                    </SelectContent>
+                  </SelectContent>
                 </Select>
                 <FormMessage />
-                </FormItem>
+              </FormItem>
             )}
-            />
+          />
+          <FormField
+            control={form.control}
+            name="goalId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Linked Goal (Optional)</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value || "none"}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="No goal linked" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {goals.map((g) => (
+                      <SelectItem key={g.id} value={g.id}>{g.title}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
-         <FormField
+        <FormField
           control={form.control}
           name="tags"
           render={({ field }) => (
             <FormItem>
-                <FormLabel>Tags</FormLabel>
-                <FormControl>
-                   <TagInput
-                      tags={field.value || []}
-                      allTags={allTags}
-                      onUpdateTags={(tags) => form.setValue('tags', tags)}
-                      placeholder="Add or select tags..."
-                    />
-                </FormControl>
-                <FormMessage />
+              <FormLabel>Tags</FormLabel>
+              <FormControl>
+                <TagInput
+                  tags={field.value || []}
+                  allTags={allTags}
+                  onUpdateTags={async (tags) => form.setValue('tags', tags)}
+                  placeholder="Add or select tags..."
+                />
+              </FormControl>
+              <FormMessage />
             </FormItem>
           )}
         />
         <Button type="submit">
-            {task ? 'Save Changes' : 'Create Task'}
+          {task ? 'Save Changes' : 'Create Task'}
         </Button>
       </form>
     </Form>

@@ -4,7 +4,7 @@
 
 import { MongoClient, Db, Collection, ObjectId } from 'mongodb';
 import type { DatabaseAdapter, DatabaseConfig, DatabaseLogger, DatabaseError, DailyPlan } from './types';
-import type { Task, TaskTemplate, User, FocusSession } from '../types';
+import type { Task, TaskTemplate, User, FocusSession, Goal } from '../types';
 
 export class MongoDBAdapter implements DatabaseAdapter {
     private client: MongoClient | null = null;
@@ -16,6 +16,7 @@ export class MongoDBAdapter implements DatabaseAdapter {
     private dailyPlansCollection: Collection<any> | null = null;
     private usersCollection: Collection<any> | null = null;
     private focusSessionsCollection: Collection<any> | null = null;
+    private goalsCollection: Collection<any> | null = null;
 
     constructor(
         private config: DatabaseConfig,
@@ -48,6 +49,7 @@ export class MongoDBAdapter implements DatabaseAdapter {
             this.dailyPlansCollection = this.db.collection(this.config.collections?.dailyPlans || 'dailyPlans');
             this.usersCollection = this.db.collection(this.config.collections?.users || 'users');
             this.focusSessionsCollection = this.db.collection(this.config.collections?.focusSessions || 'focus_sessions');
+            this.goalsCollection = this.db.collection(this.config.collections?.goals || 'goals');
 
             // Create indexes for better performance
             await this.createIndexes();
@@ -296,6 +298,89 @@ export class MongoDBAdapter implements DatabaseAdapter {
         }
     }
 
+    // Goal operations
+    async getGoals(userId?: string | null): Promise<Goal[]> {
+        this.ensureConnected();
+        try {
+            const query = userId ? { userId } : {};
+            const goals = await this.goalsCollection!.find(query).toArray();
+            return goals.map(g => this.convertFromMongo<Goal>(g));
+        } catch (error) {
+            this.logger.error('Failed to get goals', error);
+            throw new Error(`Failed to get goals: ${error}`);
+        }
+    }
+
+    async getGoal(id: string, userId?: string | null): Promise<Goal | null> {
+        this.ensureConnected();
+        try {
+            const query: any = { _id: id };
+            if (userId) query.userId = userId;
+            const goal = await this.goalsCollection!.findOne(query);
+            return goal ? this.convertFromMongo(goal) : null;
+        } catch (error) {
+            this.logger.error('Failed to get goal', { id, error });
+            throw new Error(`Failed to get goal: ${error}`);
+        }
+    }
+
+    async addGoal(goal: Goal, userId?: string | null): Promise<Goal> {
+        this.ensureConnected();
+        try {
+            const goalToInsert = this.convertToMongo({ ...goal, userId });
+            const result = await this.goalsCollection!.insertOne(goalToInsert);
+
+            if (!result.acknowledged) {
+                throw new Error('Goal insertion was not acknowledged');
+            }
+
+            return { ...goal, id: result.insertedId.toString(), userId: userId || goal.userId };
+        } catch (error) {
+            this.logger.error('Failed to add goal', { goal, error });
+            throw new Error(`Failed to add goal: ${error}`);
+        }
+    }
+
+    async updateGoal(goal: Goal, userId?: string | null): Promise<Goal> {
+        this.ensureConnected();
+        try {
+            const goalToUpdate = this.convertToMongo({ ...goal, userId });
+            const { _id, ...updateData } = goalToUpdate;
+
+            const query: any = { _id: goal.id };
+            if (userId) query.userId = userId;
+
+            const result = await this.goalsCollection!.updateOne(query, {
+                $set: {
+                    ...updateData,
+                    updatedAt: new Date().toISOString()
+                }
+            });
+
+            if (result.matchedCount === 0) {
+                throw new Error('Goal not found');
+            }
+
+            return { ...goal, userId: userId || goal.userId };
+        } catch (error) {
+            this.logger.error('Failed to update goal', { goal, error });
+            throw new Error(`Failed to update goal: ${error}`);
+        }
+    }
+
+    async deleteGoal(id: string, userId?: string | null): Promise<boolean> {
+        this.ensureConnected();
+        try {
+            const query: any = { _id: id };
+            if (userId) query.userId = userId;
+            const result = await this.goalsCollection!.deleteOne(query);
+            return result.deletedCount > 0;
+        } catch (error) {
+            this.logger.error('Failed to delete goal', { id, error });
+            throw new Error(`Failed to delete goal: ${error}`);
+        }
+    }
+
     // User operations
     async getUser(id: string): Promise<User | null> {
         this.ensureConnected();
@@ -405,6 +490,11 @@ export class MongoDBAdapter implements DatabaseAdapter {
             await this.focusSessionsCollection!.createIndex({ userId: 1 });
             await this.focusSessionsCollection!.createIndex({ taskId: 1 });
             await this.focusSessionsCollection!.createIndex({ createdAt: 1 });
+
+            // Goal indexes
+            await this.goalsCollection!.createIndex({ userId: 1 });
+            await this.goalsCollection!.createIndex({ status: 1 });
+            await this.goalsCollection!.createIndex({ createdAt: 1 });
 
             this.logger.info('Database indexes created successfully');
         } catch (error) {

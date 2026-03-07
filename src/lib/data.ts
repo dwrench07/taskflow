@@ -1,4 +1,4 @@
-import type { Task, TaskTemplate, FocusSession } from './types';
+import type { Task, TaskTemplate, FocusSession, Goal } from './types';
 
 // === API FUNCTIONS FOR CLIENT-SIDE USAGE ===
 // These functions make direct API calls and are used by React components
@@ -198,5 +198,58 @@ export async function addFocusSession(session: Omit<FocusSession, 'id'>): Promis
     return await response.json();
   } else {
     throw new Error(`Failed to add focus session: ${response.statusText}`);
+  }
+}
+
+// === GOALS ===
+
+export async function getAllGoals(): Promise<Goal[]> {
+  try {
+    const response = await fetch('/api/goals');
+    if (response.ok) {
+      return await response.json();
+    } else {
+      console.error('Failed to fetch goals from API:', response.statusText);
+      return [];
+    }
+  } catch (error) {
+    console.error('Failed to fetch goals from API:', error);
+    return [];
+  }
+}
+
+export async function addGoal(newGoal: Omit<Goal, 'id'>): Promise<Goal> {
+  const response = await fetch('/api/goals', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(newGoal),
+  });
+
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw new Error(`Failed to add goal: ${response.statusText}`);
+  }
+}
+
+export async function updateGoal(updatedGoal: Goal): Promise<void> {
+  const response = await fetch(`/api/goals/${updatedGoal.id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updatedGoal),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to update goal: ${response.statusText}`);
+  }
+}
+
+export async function deleteGoal(goalId: string): Promise<void> {
+  const response = await fetch(`/api/goals/${goalId}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to delete goal: ${response.statusText}`);
   }
 }

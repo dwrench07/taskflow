@@ -34,6 +34,7 @@ export interface Task {
   habitFrequency?: HabitFrequency;
   lastCompletedDate?: string;
   dailyStatus?: DailyStatus[];
+  goalId?: string; // Optional link to a long-term goal
 }
 
 // New Template Types
@@ -50,6 +51,7 @@ export interface TaskTemplate {
   priority: Priority;
   subtasks: TemplateSubtask[];
   tags?: string[];
+  goalId?: string; // Optional link to a long-term goal
 }
 
 export interface User {
@@ -78,4 +80,15 @@ export interface FocusSession {
   energyLevel?: EnergyLevel;
   distractions: string[];
   deepWorkScore?: number;      // Multiplier logic
+}
+
+export interface Goal {
+  id: string;
+  title: string;
+  description: string;
+  status: 'active' | 'completed' | 'abandoned';
+  deadline?: string;
+  startDate?: string;
+  tags?: string[];
+  userId?: string; // Attached to the tenant
 }

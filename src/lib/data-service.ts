@@ -2,7 +2,7 @@
  * Data service layer that uses the database abstraction
  */
 
-import type { Task, TaskTemplate, User, FocusSession } from './types';
+import type { Task, TaskTemplate, User, FocusSession, Goal } from './types';
 import type { DatabaseAdapter, DailyPlan } from './database/types';
 import { DatabaseFactory } from './database/factory';
 import { config, isServer } from './config';
@@ -115,6 +115,8 @@ const mockUsers: User[] = [
 ];
 
 const mockFocusSessions: FocusSession[] = [];
+
+const mockGoals: Goal[] = [];
 
 /**
  * Get all tasks
@@ -358,6 +360,119 @@ export async function addFocusSessionAsync(newSession: Omit<FocusSession, 'id'>,
         defaultLogger.warn('Failed to add focus session to database, adding to mock data', { session: sessionWithId, error });
         mockFocusSessions.push(sessionWithId);
         return sessionWithId;
+    }
+}
+
+// === GOALS ===
+
+/**
+ * Get all goals
+ */
+export async function getGoalsAsync(userId?: string | null): Promise<Goal[]> {
+    if (!isServer) {
+        return mockGoals;
+    }
+
+    try {
+        const db = await getDatabase();
+        return await db.getGoals(userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to get goals from database, returning mock data', error);
+        return mockGoals;
+    }
+}
+
+/**
+ * Get a single goal
+ */
+export async function getGoalAsync(id: string, userId?: string | null): Promise<Goal | null> {
+    if (!isServer) {
+        return mockGoals.find(g => g.id === id) || null;
+    }
+
+    try {
+        const db = await getDatabase();
+        return await db.getGoal(id, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to get goal from database, returning mock data', error);
+        return mockGoals.find(g => g.id === id) || null;
+    }
+}
+
+/**
+ * Add a new goal
+ */
+export async function addGoalAsync(newGoal: Omit<Goal, 'id'>, userId?: string | null): Promise<Goal> {
+    const goalWithId: Goal = {
+        ...newGoal,
+        id: `goal-${Date.now()}`,
+    };
+
+    if (!isServer) {
+        mockGoals.push(goalWithId);
+        return goalWithId;
+    }
+
+    try {
+        const db = await getDatabase();
+        return await db.addGoal(goalWithId, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to add goal to database, adding to mock data', { goal: goalWithId, error });
+        mockGoals.push(goalWithId);
+        return goalWithId;
+    }
+}
+
+/**
+ * Update an existing goal
+ */
+export async function updateGoalAsync(updatedGoal: Goal, userId?: string | null): Promise<void> {
+    if (!isServer) {
+        const index = mockGoals.findIndex(g => g.id === updatedGoal.id);
+        if (index !== -1) {
+            mockGoals[index] = updatedGoal;
+        }
+        return;
+    }
+
+    try {
+        const db = await getDatabase();
+        await db.updateGoal(updatedGoal, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to update goal in database', { goal: updatedGoal, error });
+        // Update mock data as fallback
+        const index = mockGoals.findIndex(g => g.id === updatedGoal.id);
+        if (index !== -1) {
+            mockGoals[index] = updatedGoal;
+        }
+    }
+}
+
+/**
+ * Delete a goal
+ */
+export async function deleteGoalAsync(id: string, userId?: string | null): Promise<boolean> {
+    if (!isServer) {
+        const index = mockGoals.findIndex(g => g.id === id);
+        if (index !== -1) {
+            mockGoals.splice(index, 1);
+            return true;
+        }
+        return false;
+    }
+
+    try {
+        const db = await getDatabase();
+        return await db.deleteGoal(id, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to delete goal from database', { id, error });
+        // Delete mock data as fallback
+        const index = mockGoals.findIndex(g => g.id === id);
+        if (index !== -1) {
+            mockGoals.splice(index, 1);
+            return true;
+        }
+        return false;
     }
 }
 

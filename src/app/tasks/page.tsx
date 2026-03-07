@@ -18,6 +18,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { format, isAfter, isBefore } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { TaskForm } from "@/components/task-form";
 import { TagInput } from "@/components/tag-input";
 import { Textarea } from "@/components/ui/textarea";
@@ -129,12 +130,12 @@ function DateTimePicker({ date, setDate }: { date?: string; setDate: (date: Date
         <Button
           variant={"outline"}
           className={cn(
-            "w-full justify-start text-left font-normal",
+            "w-full justify-start text-left font-normal overflow-hidden",
             !date && "text-muted-foreground"
           )}
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          <span>{formattedDate}</span>
+          <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+          <span className="truncate">{formattedDate}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">
@@ -311,8 +312,6 @@ function TasksPageContent() {
 
         if (taskToSelect) {
           setSelectedTask(taskToSelect);
-        } else if (!isMobile) {
-          // Auto-select first task based on current sort/filter
         } else {
           setSelectedTask(null);
         }
@@ -376,7 +375,7 @@ function TasksPageContent() {
 
   useEffect(() => {
     if (!selectedTask && !isMobile && sortedAndFilteredTasks.length > 0) {
-      setSelectedTask(sortedAndFilteredTasks[0]);
+      // Auto-selection removed so it displays as a grid
     }
   }, [sortedAndFilteredTasks, selectedTask, isMobile]);
 
@@ -458,6 +457,13 @@ function TasksPageContent() {
   const handleSelectTask = (task: Task) => {
     setSelectedTask(task);
     router.push(`/tasks?taskId=${task.id}`, { scroll: false });
+  }
+
+  const handleCloseSheet = (open: boolean) => {
+    if (!open) {
+      setSelectedTask(null);
+      router.push('/tasks', { scroll: false });
+    }
   }
 
   const handleDateChange = async (field: 'startDate' | 'endDate', date: Date) => {
@@ -598,385 +604,379 @@ function TasksPageContent() {
         )}
       </div>
       <div className={cn(
-        "flex flex-col md:flex-row gap-6 w-full min-w-0 h-[calc(100vh-theme(spacing.48))] md:h-[calc(100vh-theme(spacing.36))]"
+        "w-full min-w-0 h-[calc(100vh-theme(spacing.48))] md:h-[calc(100vh-theme(spacing.36))]"
       )}>
-        {showTaskList && (
-          <Card className={cn(
-            "flex flex-col overflow-hidden min-h-0 min-w-0 border-border shadow-sm",
-            selectedTask ? "w-full md:w-80 md:max-w-[20rem] md:flex-shrink-0" : "w-full"
-          )}>
-            <CardHeader className="flex flex-col gap-4 flex-none pb-4">
-              <div className="flex flex-row items-center justify-between">
-                <CardTitle>All Tasks</CardTitle>
-                <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-                  <Dialog open={isTemplateDialogOpen} onOpenChange={setIsTemplateDialogOpen}>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button size="icon" variant="outline">
-                          <PlusCircle className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => setIsFormOpen(true)}>
-                          <FileText className="mr-2 h-4 w-4" />
-                          New Blank Task
+        <Card className={cn(
+          "flex flex-col h-full overflow-hidden min-h-0 min-w-0 border-border shadow-sm w-full"
+        )}>
+          <CardHeader className="flex flex-col gap-4 flex-none pb-4">
+            <div className="flex flex-row items-center justify-between">
+              <CardTitle>All Tasks</CardTitle>
+              <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+                <Dialog open={isTemplateDialogOpen} onOpenChange={setIsTemplateDialogOpen}>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="icon" variant="outline">
+                        <PlusCircle className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => setIsFormOpen(true)}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        New Blank Task
+                      </DropdownMenuItem>
+                      <DialogTrigger asChild>
+                        <DropdownMenuItem>
+                          <ClipboardList className="mr-2 h-4 w-4" />
+                          Create from Template
                         </DropdownMenuItem>
-                        <DialogTrigger asChild>
-                          <DropdownMenuItem>
-                            <ClipboardList className="mr-2 h-4 w-4" />
-                            Create from Template
-                          </DropdownMenuItem>
-                        </DialogTrigger>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                    <CreateFromTemplateDialog onSelectTemplate={handleCreateTaskFromTemplate} onOpenChange={setIsTemplateDialogOpen} />
-                  </Dialog>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Create New Task</DialogTitle>
-                    </DialogHeader>
-                    <TaskForm
-                      allTags={allTags}
-                      onSubmit={(data) => {
-                        handleAddTask(data);
-                        setIsFormOpen(false);
-                      }}
-                    />
-                  </DialogContent>
+                      </DialogTrigger>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <CreateFromTemplateDialog onSelectTemplate={handleCreateTaskFromTemplate} onOpenChange={setIsTemplateDialogOpen} />
                 </Dialog>
-              </div>
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search tasks..."
-                  className="pl-8 w-full"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                {searchQuery && <XCircle onClick={() => setSearchQuery("")} className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground cursor-pointer hover:text-foreground" />}
-              </div>
-              <div className="flex items-center gap-2">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="flex-1">
-                      <ArrowUpDown className="mr-2 h-4 w-4" />
-                      Sort
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start">
-                    <DropdownMenuLabel>Sort by</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuRadioGroup value={sortOption} onValueChange={(value) => setSortOption(value as SortOption)}>
-                      <DropdownMenuRadioItem value="priority">Priority</DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem value="title">Title</DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem value="startDate">Start Date</DropdownMenuRadioItem>
-                      <DropdownMenuRadioItem value="status">Status</DropdownMenuRadioItem>
-                    </DropdownMenuRadioGroup>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="flex-1">
-                      Filter
-                      {(statusFilter.length > 0 || priorityFilter.length > 0) && <span className="ml-2 h-2 w-2 rounded-full bg-primary" />}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Filter by</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuSub>
-                      <DropdownMenuSubTrigger>Status</DropdownMenuSubTrigger>
-                      <DropdownMenuSubContent>
-                        <DropdownMenuCheckboxItem checked={statusFilter.includes('todo')} onCheckedChange={() => toggleStatusFilter('todo')}>To-Do</DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem checked={statusFilter.includes('in-progress')} onCheckedChange={() => toggleStatusFilter('in-progress')}>In Progress</DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem checked={statusFilter.includes('done')} onCheckedChange={() => toggleStatusFilter('done')}>Done</DropdownMenuCheckboxItem>
-                      </DropdownMenuSubContent>
-                    </DropdownMenuSub>
-                    <DropdownMenuSub>
-                      <DropdownMenuSubTrigger>Priority</DropdownMenuSubTrigger>
-                      <DropdownMenuSubContent>
-                        <DropdownMenuCheckboxItem checked={priorityFilter.includes('high')} onCheckedChange={() => togglePriorityFilter('high')}>High</DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem checked={priorityFilter.includes('medium')} onCheckedChange={() => togglePriorityFilter('medium')}>Medium</DropdownMenuCheckboxItem>
-                        <DropdownMenuCheckboxItem checked={priorityFilter.includes('low')} onCheckedChange={() => togglePriorityFilter('low')}>Low</DropdownMenuCheckboxItem>
-                      </DropdownMenuSubContent>
-                    </DropdownMenuSub>
-                    {(statusFilter.length > 0 || priorityFilter.length > 0) && (
-                      <>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onSelect={() => { setStatusFilter([]); setPriorityFilter([]); }}>Clear Filters</DropdownMenuItem>
-                      </>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </CardHeader>
-            <div className="flex-1 p-3 overflow-y-auto overflow-x-hidden">
-              <div className="space-y-3 pb-8">
-                {loading ? (
-                  <div className="flex justify-center items-center h-full">
-                    <Loader2 className="h-6 w-6 animate-spin" />
-                  </div>
-                ) : sortedAndFilteredTasks.map(task => (
-                  <TaskListItem
-                    key={task.id}
-                    task={task}
-                    isSelected={selectedTask?.id === task.id}
-                    onSelect={() => handleSelectTask(task)}
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create New Task</DialogTitle>
+                  </DialogHeader>
+                  <TaskForm
+                    allTags={allTags}
+                    onSubmit={(data) => {
+                      handleAddTask(data);
+                      setIsFormOpen(false);
+                    }}
                   />
-                ))}
-              </div>
+                </DialogContent>
+              </Dialog>
             </div>
-          </Card>
-        )}
-        {showTaskDetails && selectedTask ? (
-          <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-            <div className="flex-1 pr-4 overflow-y-auto overflow-x-hidden">
-              <div className="space-y-6 pb-8">
-                <Card className="shadow-none border-none bg-transparent">
-                  <CardHeader className="px-0 pt-0 pb-6">
-                    <div className="flex flex-col xl:flex-row justify-between items-start gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-3">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="outline" size="sm" className={cn("capitalize h-8 rounded-full px-4 text-xs font-semibold tracking-wide border-2", statusStyles[selectedTask.status])}>
-                                {statusLabels[selectedTask.status]}
-                                <ChevronDown className="ml-2 h-3 w-3 opacity-70" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                              <DropdownMenuRadioGroup value={selectedTask.status} onValueChange={(value) => handleStatusChange(value as Status)}>
-                                <DropdownMenuRadioItem value="todo">To-Do</DropdownMenuRadioItem>
-                                <DropdownMenuRadioItem value="in-progress">In Progress</DropdownMenuRadioItem>
-                                <DropdownMenuRadioItem value="done">Done</DropdownMenuRadioItem>
-                              </DropdownMenuRadioGroup>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                          <Badge variant="outline" className={cn("capitalize px-3 py-0.5 rounded-full border-2", priorityStyles[selectedTask.priority])}>
-                            {selectedTask.priority} Priority
-                          </Badge>
-                        </div>
-                        <CardTitle className="text-3xl font-extrabold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent pb-1">{selectedTask.title}</CardTitle>
-                        {selectedTask?.subtasks && selectedTask.subtasks.length > 0 && (
-                          <div className="flex items-center gap-3 mt-4 w-full max-w-md">
-                            <div className="text-xs font-medium text-muted-foreground whitespace-nowrap">
-                              {selectedTask.subtasks.filter(st => st.completed).length}/{selectedTask.subtasks.length} Subtasks
-                            </div>
-                            <div className="flex-1 bg-muted/60 rounded-full h-1.5 overflow-hidden border border-border/50 relative">
-                              <div className="absolute top-0 left-0 bg-primary h-full rounded-full transition-all duration-700 ease-out" style={{ width: `${(selectedTask.subtasks.filter(st => st.completed).length / selectedTask.subtasks.length) * 100}%` }}></div>
-                            </div>
-                          </div>
-                        )}
-                        <p className="text-muted-foreground text-[15px] pt-4 w-full min-w-0 break-words whitespace-pre-wrap leading-relaxed">{selectedTask.description}</p>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-2 shrink-0 border border-border/50 p-1.5 rounded-full bg-background/50 shadow-sm backdrop-blur-sm">
-                        <Button className="bg-primary/10 hover:bg-primary/20 text-primary border-primary/20 shadow-sm transition-all rounded-full px-5" variant="outline" size="sm" onClick={() => router.push(`/focus?taskId=${selectedTask.id}`)}>
-                          <Timer className="mr-2 h-4 w-4" /> Focus Session
-                        </Button>
-                        <Dialog open={isEditingFormOpen} onOpenChange={setIsEditingFormOpen}>
-                          <DialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60">
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Edit Task</DialogTitle>
-                            </DialogHeader>
-                            <TaskForm
-                              task={selectedTask}
-                              allTags={allTags}
-                              onSubmit={async (data) => {
-                                const updatedData = { ...selectedTask, ...data };
-                                await handleUpdateTask(updatedData);
-                                setIsEditingFormOpen(false);
-                              }}
-                            />
-                          </DialogContent>
-                        </Dialog>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete the task
-                                "{selectedTask.title}".
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDeleteTask(selectedTask.id)}>
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </div>
-                  </CardHeader>
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search tasks..."
+                className="pl-8 w-full"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && <XCircle onClick={() => setSearchQuery("")} className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground cursor-pointer hover:text-foreground" />}
+            </div>
+            <div className="flex items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="flex-1">
+                    <ArrowUpDown className="mr-2 h-4 w-4" />
+                    Sort
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup value={sortOption} onValueChange={(value) => setSortOption(value as SortOption)}>
+                    <DropdownMenuRadioItem value="priority">Priority</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="title">Title</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="startDate">Start Date</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="status">Status</DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="flex-1">
+                    Filter
+                    {(statusFilter.length > 0 || priorityFilter.length > 0) && <span className="ml-2 h-2 w-2 rounded-full bg-primary" />}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Filter by</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>Status</DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      <DropdownMenuCheckboxItem checked={statusFilter.includes('todo')} onCheckedChange={() => toggleStatusFilter('todo')} onSelect={(e) => e.preventDefault()}>To-Do</DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem checked={statusFilter.includes('in-progress')} onCheckedChange={() => toggleStatusFilter('in-progress')} onSelect={(e) => e.preventDefault()}>In Progress</DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem checked={statusFilter.includes('done')} onCheckedChange={() => toggleStatusFilter('done')} onSelect={(e) => e.preventDefault()}>Done</DropdownMenuCheckboxItem>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>Priority</DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      <DropdownMenuCheckboxItem checked={priorityFilter.includes('high')} onCheckedChange={() => togglePriorityFilter('high')} onSelect={(e) => e.preventDefault()}>High</DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem checked={priorityFilter.includes('medium')} onCheckedChange={() => togglePriorityFilter('medium')} onSelect={(e) => e.preventDefault()}>Medium</DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem checked={priorityFilter.includes('low')} onCheckedChange={() => togglePriorityFilter('low')} onSelect={(e) => e.preventDefault()}>Low</DropdownMenuCheckboxItem>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                  {(statusFilter.length > 0 || priorityFilter.length > 0) && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onSelect={() => { setStatusFilter([]); setPriorityFilter([]); }}>Clear Filters</DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </CardHeader>
+          <div className="flex-1 p-3 overflow-y-auto overflow-x-hidden">
+            <div className="grid gap-6 pb-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {loading ? (
+                <div className="col-span-full flex justify-center items-center h-full">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                </div>
+              ) : sortedAndFilteredTasks.map(task => (
+                <TaskListItem
+                  key={task.id}
+                  task={task}
+                  isSelected={selectedTask?.id === task.id}
+                  onSelect={() => handleSelectTask(task)}
+                />
+              ))}
+            </div>
+          </div>
+        </Card>
 
-                  <CardContent className="px-0">
-                    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8 relative">
-                      <div className="lg:col-span-3 space-y-3 bg-muted/20 p-5 rounded-2xl border border-border/50 shadow-sm transition-all hover:shadow-md">
-                        <h4 className="text-sm font-semibold flex items-center gap-2 text-foreground/80">
-                          <Tag className="w-4 h-4 text-primary/70" />
-                          Labels & Categories
-                        </h4>
-                        <div className="pt-2">
-                          <TagInput
-                            tags={selectedTask.tags || []}
-                            allTags={allTags}
-                            onUpdateTags={handleUpdateTaskTags}
-                            placeholder="Add or select tags..."
-                          />
-                        </div>
-                      </div>
-                      <div className="lg:col-span-2 space-y-4 bg-muted/20 p-5 rounded-2xl border border-border/50 shadow-sm transition-all hover:shadow-md">
-                        <div className="space-y-3">
-                          <h4 className="text-sm font-semibold flex items-center gap-2 text-foreground/80">
-                            <CalendarIcon className="w-4 h-4 text-primary/70" />
-                            Schedule
-                          </h4>
-                          <div className="grid gap-4 pt-2">
-                            <div className="flex flex-col gap-2">
-                              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Start Time</span>
-                              <DateTimePicker date={selectedTask.startDate} setDate={(date) => handleDateChange('startDate', date)} />
+        <Sheet open={!!selectedTask} onOpenChange={handleCloseSheet}>
+          <SheetContent side="right" className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl overflow-y-auto p-4 sm:p-6 lg:p-8">
+            {selectedTask && (
+              <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+                <div className="flex-1 pr-4 overflow-y-auto overflow-x-hidden">
+                  <div className="space-y-6 pb-8">
+                    <Card className="shadow-none border-none bg-transparent">
+                      <CardHeader className="px-0 pt-0 pb-6">
+                        <div className="flex flex-col xl:flex-row justify-between items-start gap-4">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-3 mb-3">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="outline" size="sm" className={cn("capitalize h-8 rounded-full px-4 text-xs font-semibold tracking-wide border-2", statusStyles[selectedTask.status])}>
+                                    {statusLabels[selectedTask.status]}
+                                    <ChevronDown className="ml-2 h-3 w-3 opacity-70" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent>
+                                  <DropdownMenuRadioGroup value={selectedTask.status} onValueChange={(value) => handleStatusChange(value as Status)}>
+                                    <DropdownMenuRadioItem value="todo">To-Do</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="in-progress">In Progress</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="done">Done</DropdownMenuRadioItem>
+                                  </DropdownMenuRadioGroup>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                              <Badge variant="outline" className={cn("capitalize px-3 py-0.5 rounded-full border-2", priorityStyles[selectedTask.priority])}>
+                                {selectedTask.priority} Priority
+                              </Badge>
                             </div>
-                            <div className="flex flex-col gap-2">
-                              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Deadline</span>
-                              <DateTimePicker date={selectedTask.endDate} setDate={(date) => handleDateChange('endDate', date)} />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <Separator className="my-2" />
-                    <div className="py-4 mt-6 bg-muted/10 rounded-3xl p-6 border border-border/50 shadow-sm relative overflow-hidden">
-                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-secondary-foreground/20 to-transparent"></div>
-                      <div className="flex items-center justify-between mb-6">
-                        <h4 className="text-lg font-bold flex items-center gap-2 text-foreground/90">
-                          <ListTodo className="w-5 h-5 text-primary" />
-                          Subtasks Action Plan
-                        </h4>
-                        <Badge variant="secondary" className="font-medium bg-background border shadow-sm">
-                          {selectedTask?.subtasks?.filter(st => st.completed).length || 0} / {selectedTask?.subtasks?.length || 0} Completed
-                        </Badge>
-                      </div>
-
-                      <div className="space-y-4">
-                        {selectedTask?.subtasks?.map(subtask => (
-                          <div key={subtask.id} className={cn(
-                            "flex flex-col sm:flex-row sm:items-start gap-4 group p-4 rounded-2xl border transition-all duration-300 shadow-sm",
-                            subtask.completed ? "bg-muted/30 border-border/40" : "bg-background hover:border-primary/40 hover:shadow-md"
-                          )}>
-                            <div className="flex items-center gap-4 w-full sm:w-auto mt-0.5">
-                              <div className={cn(
-                                "relative flex items-center justify-center w-6 h-6 rounded-md border-2 transition-colors",
-                                subtask.completed ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground/30 bg-background group-hover:border-primary/50"
-                              )}>
-                                <Checkbox
-                                  id={subtask.id}
-                                  checked={subtask.completed}
-                                  onCheckedChange={(checked) => handleSubtaskCompletion(subtask.id, !!checked)}
-                                  className="w-full h-full opacity-0 absolute cursor-pointer"
-                                />
-                                {subtask.completed && <Check className="w-3.5 h-3.5" />}
+                            <CardTitle className="text-3xl font-extrabold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent pb-1">{selectedTask.title}</CardTitle>
+                            {selectedTask?.subtasks && selectedTask.subtasks.length > 0 && (
+                              <div className="flex items-center gap-3 mt-4 w-full max-w-md">
+                                <div className="text-xs font-medium text-muted-foreground whitespace-nowrap">
+                                  {selectedTask.subtasks.filter(st => st.completed).length}/{selectedTask.subtasks.length} Subtasks
+                                </div>
+                                <div className="flex-1 bg-muted/60 rounded-full h-1.5 overflow-hidden border border-border/50 relative">
+                                  <div className="absolute top-0 left-0 bg-primary h-full rounded-full transition-all duration-700 ease-out" style={{ width: `${(selectedTask.subtasks.filter(st => st.completed).length / selectedTask.subtasks.length) * 100}%` }}></div>
+                                </div>
                               </div>
-                            </div>
-
-                            <div className="flex-1 space-y-3 min-w-0">
-                              {editingSubtask?.id === subtask.id ? (
-                                <Input
-                                  type="text"
-                                  defaultValue={subtask.title}
-                                  autoFocus
-                                  onBlur={() => setEditingSubtask(null)}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                                      handleUpdateSubtask({ ...subtask, title: e.currentTarget.value.trim() });
-                                    } else if (e.key === 'Escape') {
-                                      setEditingSubtask(null)
-                                    }
+                            )}
+                            <p className="text-muted-foreground text-[15px] pt-4 w-full min-w-0 break-words whitespace-pre-wrap leading-relaxed">{selectedTask.description}</p>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2 shrink-0 border border-border/50 p-1.5 rounded-full bg-background/50 shadow-sm backdrop-blur-sm">
+                            <Button className="bg-primary/10 hover:bg-primary/20 text-primary border-primary/20 shadow-sm transition-all rounded-full px-5" variant="outline" size="sm" onClick={() => router.push(`/focus?taskId=${selectedTask.id}`)}>
+                              <Timer className="mr-2 h-4 w-4" /> Focus Session
+                            </Button>
+                            <Dialog open={isEditingFormOpen} onOpenChange={setIsEditingFormOpen}>
+                              <DialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60">
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Edit Task</DialogTitle>
+                                </DialogHeader>
+                                <TaskForm
+                                  task={selectedTask}
+                                  allTags={allTags}
+                                  onSubmit={async (data) => {
+                                    const updatedData = { ...selectedTask, ...data };
+                                    await handleUpdateTask(updatedData);
+                                    setIsEditingFormOpen(false);
                                   }}
-                                  className="h-9 text-base font-medium shadow-sm"
-                                  placeholder="Subtask title..."
                                 />
-                              ) : (
-                                <label
-                                  htmlFor={subtask.id}
-                                  className={cn(
-                                    "text-base font-medium flex-1 cursor-text block truncate select-none transition-colors",
-                                    subtask.completed ? "line-through text-muted-foreground" : "text-foreground/90 group-hover:text-primary"
-                                  )}
-                                  onDoubleClick={() => setEditingSubtask(subtask)}
-                                >
-                                  {subtask.title}
-                                </label>
-                              )}
+                              </DialogContent>
+                            </Dialog>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete the task
+                                    "{selectedTask.title}".
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDeleteTask(selectedTask.id)}>
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </div>
+                      </CardHeader>
 
-                              <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-1">
-                                <div className="flex items-center gap-2">
-                                  <TagInput
-                                    tags={subtask.tags || []}
-                                    allTags={allTags}
-                                    onUpdateTags={(tags) => handleUpdateSubtaskTags(subtask.id, tags)}
-                                    placeholder="Add sub-tags..."
-                                  />
+                      <CardContent className="px-0">
+                        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8 relative">
+                          <div className="lg:col-span-3 space-y-3 bg-muted/20 p-5 rounded-2xl border border-border/50 shadow-sm transition-all hover:shadow-md">
+                            <h4 className="text-sm font-semibold flex items-center gap-2 text-foreground/80">
+                              <Tag className="w-4 h-4 text-primary/70" />
+                              Labels & Categories
+                            </h4>
+                            <div className="pt-2">
+                              <TagInput
+                                tags={selectedTask.tags || []}
+                                allTags={allTags}
+                                onUpdateTags={handleUpdateTaskTags}
+                                placeholder="Add or select tags..."
+                              />
+                            </div>
+                          </div>
+                          <div className="lg:col-span-2 space-y-4 bg-muted/20 p-5 rounded-2xl border border-border/50 shadow-sm transition-all hover:shadow-md">
+                            <div className="space-y-3">
+                              <h4 className="text-sm font-semibold flex items-center gap-2 text-foreground/80">
+                                <CalendarIcon className="w-4 h-4 text-primary/70" />
+                                Schedule
+                              </h4>
+                              <div className="grid gap-4 pt-2">
+                                <div className="flex flex-col gap-2">
+                                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Start Time</span>
+                                  <DateTimePicker date={selectedTask.startDate} setDate={(date) => handleDateChange('startDate', date)} />
                                 </div>
-                                <div className="sm:ml-auto">
-                                  <DateTimePicker date={subtask.startDate} setDate={(date) => handleSubtaskDateChange(subtask.id, 'startDate', date)} />
+                                <div className="flex flex-col gap-2">
+                                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Deadline</span>
+                                  <DateTimePicker date={selectedTask.endDate} setDate={(date) => handleDateChange('endDate', date)} />
                                 </div>
                               </div>
                             </div>
-
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-start gap-1 sm:self-start self-end -mt-2 sm:-mt-1 -mr-2">
-                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10" onClick={() => setEditingSubtask(subtask)}>
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10" onClick={() => handleDeleteSubtask(subtask.id)}>
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-
-                        <div className="mt-6">
-                          <div className="flex items-center gap-3 bg-background border px-4 py-2 rounded-2xl shadow-sm focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary/50 transition-all">
-                            <PlusCircle className="w-5 h-5 text-muted-foreground/50 shrink-0" />
-                            <Input
-                              placeholder="Add a new actionable subtask and press Enter..."
-                              value={newSubtaskTitle}
-                              onChange={(e) => setNewSubtaskTitle(e.target.value)}
-                              onKeyDown={handleAddSubtask}
-                              className="h-10 border-0 focus-visible:ring-0 px-0 shadow-none text-base bg-transparent min-w-0"
-                            />
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                        <Separator className="my-2" />
+                        <div className="py-4 mt-6 bg-muted/10 rounded-3xl p-6 border border-border/50 shadow-sm relative overflow-hidden">
+                          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-secondary-foreground/20 to-transparent"></div>
+                          <div className="flex items-center justify-between mb-6">
+                            <h4 className="text-lg font-bold flex items-center gap-2 text-foreground/90">
+                              <ListTodo className="w-5 h-5 text-primary" />
+                              Subtasks Action Plan
+                            </h4>
+                            <Badge variant="secondary" className="font-medium bg-background border shadow-sm">
+                              {selectedTask?.subtasks?.filter(st => st.completed).length || 0} / {selectedTask?.subtasks?.length || 0} Completed
+                            </Badge>
+                          </div>
 
-                <NotesSection task={selectedTask} onUpdateTask={handleUpdateTask} />
+                          <div className="space-y-4">
+                            {selectedTask?.subtasks?.map(subtask => (
+                              <div key={subtask.id} className={cn(
+                                "flex flex-col sm:flex-row sm:items-start gap-4 group p-4 rounded-2xl border transition-all duration-300 shadow-sm",
+                                subtask.completed ? "bg-muted/30 border-border/40" : "bg-background hover:border-primary/40 hover:shadow-md"
+                              )}>
+                                <div className="flex items-center gap-4 w-full sm:w-auto mt-0.5">
+                                  <div className={cn(
+                                    "relative flex items-center justify-center w-6 h-6 rounded-md border-2 transition-colors",
+                                    subtask.completed ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground/30 bg-background group-hover:border-primary/50"
+                                  )}>
+                                    <Checkbox
+                                      id={subtask.id}
+                                      checked={subtask.completed}
+                                      onCheckedChange={(checked) => handleSubtaskCompletion(subtask.id, !!checked)}
+                                      className="w-full h-full opacity-0 absolute cursor-pointer"
+                                    />
+                                    {subtask.completed && <Check className="w-3.5 h-3.5" />}
+                                  </div>
+                                </div>
+
+                                <div className="flex-1 space-y-3 min-w-0">
+                                  {editingSubtask?.id === subtask.id ? (
+                                    <Input
+                                      type="text"
+                                      defaultValue={subtask.title}
+                                      autoFocus
+                                      onBlur={() => setEditingSubtask(null)}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                                          handleUpdateSubtask({ ...subtask, title: e.currentTarget.value.trim() });
+                                        } else if (e.key === 'Escape') {
+                                          setEditingSubtask(null)
+                                        }
+                                      }}
+                                      className="h-9 text-base font-medium shadow-sm"
+                                      placeholder="Subtask title..."
+                                    />
+                                  ) : (
+                                    <label
+                                      htmlFor={subtask.id}
+                                      className={cn(
+                                        "text-base font-medium flex-1 cursor-text block truncate select-none transition-colors",
+                                        subtask.completed ? "line-through text-muted-foreground" : "text-foreground/90 group-hover:text-primary"
+                                      )}
+                                      onDoubleClick={() => setEditingSubtask(subtask)}
+                                    >
+                                      {subtask.title}
+                                    </label>
+                                  )}
+
+                                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-1">
+                                    <div className="flex items-center gap-2">
+                                      <TagInput
+                                        tags={subtask.tags || []}
+                                        allTags={allTags}
+                                        onUpdateTags={(tags) => handleUpdateSubtaskTags(subtask.id, tags)}
+                                        placeholder="Add sub-tags..."
+                                      />
+                                    </div>
+                                    <div className="sm:ml-auto">
+                                      <DateTimePicker date={subtask.startDate} setDate={(date) => handleSubtaskDateChange(subtask.id, 'startDate', date)} />
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-start gap-1 sm:self-start self-end -mt-2 sm:-mt-1 -mr-2">
+                                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10" onClick={() => setEditingSubtask(subtask)}>
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10" onClick={() => handleDeleteSubtask(subtask.id)}>
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+
+                            <div className="mt-6">
+                              <div className="flex items-center gap-3 bg-background border px-4 py-2 rounded-2xl shadow-sm focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary/50 transition-all">
+                                <PlusCircle className="w-5 h-5 text-muted-foreground/50 shrink-0" />
+                                <Input
+                                  placeholder="Add a new actionable subtask and press Enter..."
+                                  value={newSubtaskTitle}
+                                  onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                                  onKeyDown={handleAddSubtask}
+                                  className="h-10 border-0 focus-visible:ring-0 px-0 shadow-none text-base bg-transparent min-w-0"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <NotesSection task={selectedTask} onUpdateTask={handleUpdateTask} />
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        ) : showTaskList && (
-          <div className="md:col-span-3 h-full items-center justify-center hidden md:flex">
-            <div className="text-center text-muted-foreground">
-              <ListTodo className="w-12 h-12 mx-auto mb-2" />
-              <p>Select a task to see its details.</p>
-              <p className="text-sm">Or, create a new task to get started.</p>
-            </div>
-          </div>
-        )}
+            )}
+          </SheetContent>
+        </Sheet>
       </div>
-    </div>
+    </div >
   );
 }
 
