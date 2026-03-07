@@ -876,7 +876,7 @@ function TasksPageContent() {
                           )}>
                             <div className="flex items-center gap-4 w-full sm:w-auto mt-0.5">
                               <div className={cn(
-                                "flex items-center justify-center w-6 h-6 rounded-md border-2 transition-colors",
+                                "relative flex items-center justify-center w-6 h-6 rounded-md border-2 transition-colors",
                                 subtask.completed ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground/30 bg-background group-hover:border-primary/50"
                               )}>
                                 <Checkbox
