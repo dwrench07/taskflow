@@ -4,7 +4,7 @@
 
 import { MongoClient, Db, Collection, ObjectId } from 'mongodb';
 import type { DatabaseAdapter, DatabaseConfig, DatabaseLogger, DatabaseError, DailyPlan } from './types';
-import type { Task, TaskTemplate, User } from '../types';
+import type { Task, TaskTemplate, User, FocusSession } from '../types';
 
 export class MongoDBAdapter implements DatabaseAdapter {
     private client: MongoClient | null = null;
@@ -15,6 +15,7 @@ export class MongoDBAdapter implements DatabaseAdapter {
     private templatesCollection: Collection<any> | null = null;
     private dailyPlansCollection: Collection<any> | null = null;
     private usersCollection: Collection<any> | null = null;
+    private focusSessionsCollection: Collection<any> | null = null;
 
     constructor(
         private config: DatabaseConfig,
@@ -46,6 +47,7 @@ export class MongoDBAdapter implements DatabaseAdapter {
             this.templatesCollection = this.db.collection(this.config.collections?.templates || 'templates');
             this.dailyPlansCollection = this.db.collection(this.config.collections?.dailyPlans || 'dailyPlans');
             this.usersCollection = this.db.collection(this.config.collections?.users || 'users');
+            this.focusSessionsCollection = this.db.collection(this.config.collections?.focusSessions || 'focus_sessions');
 
             // Create indexes for better performance
             await this.createIndexes();
@@ -246,10 +248,11 @@ export class MongoDBAdapter implements DatabaseAdapter {
         try {
             const planToUpdate = this.convertToMongo(plan);
             const result = await this.dailyPlansCollection!.updateOne(
-                { date: plan.date },
+                { date: plan.date, userId },
                 {
                     $set: {
                         ...planToUpdate,
+                        userId,
                         updatedAt: new Date().toISOString()
                     }
                 },
@@ -260,6 +263,36 @@ export class MongoDBAdapter implements DatabaseAdapter {
         } catch (error) {
             this.logger.error('Failed to update daily plan', { plan, error });
             throw new Error(`Failed to update daily plan: ${error}`);
+        }
+    }
+
+    // Focus Session operations
+    async getFocusSessions(userId?: string | null): Promise<FocusSession[]> {
+        this.ensureConnected();
+        try {
+            const query = userId ? { userId } : {};
+            const sessions = await this.focusSessionsCollection!.find(query).toArray();
+            return sessions.map(s => this.convertFromMongo<FocusSession>(s));
+        } catch (error) {
+            this.logger.error('Failed to get focus sessions', error);
+            throw new Error(`Failed to get focus sessions: ${error}`);
+        }
+    }
+
+    async addFocusSession(session: FocusSession, userId?: string | null): Promise<FocusSession> {
+        this.ensureConnected();
+        try {
+            const sessionToInsert = this.convertToMongo({ ...session, userId });
+            const result = await this.focusSessionsCollection!.insertOne(sessionToInsert);
+
+            if (!result.acknowledged) {
+                throw new Error('Focus session insertion was not acknowledged');
+            }
+
+            return { ...session, id: result.insertedId.toString(), userId: userId || session.userId };
+        } catch (error) {
+            this.logger.error('Failed to add focus session', { session, error });
+            throw new Error(`Failed to add focus session: ${error}`);
         }
     }
 
@@ -365,9 +398,13 @@ export class MongoDBAdapter implements DatabaseAdapter {
             await this.templatesCollection!.createIndex({ tags: 1 });
             await this.templatesCollection!.createIndex({ createdAt: 1 });
 
-            await this.dailyPlansCollection!.createIndex({ date: 1 }, { unique: true });
+            await this.dailyPlansCollection!.createIndex({ date: 1, userId: 1 }, { unique: true });
 
             await this.usersCollection!.createIndex({ email: 1 }, { unique: true });
+
+            await this.focusSessionsCollection!.createIndex({ userId: 1 });
+            await this.focusSessionsCollection!.createIndex({ taskId: 1 });
+            await this.focusSessionsCollection!.createIndex({ createdAt: 1 });
 
             this.logger.info('Database indexes created successfully');
         } catch (error) {

@@ -2,7 +2,7 @@
  * Data service layer that uses the database abstraction
  */
 
-import type { Task, TaskTemplate, User } from './types';
+import type { Task, TaskTemplate, User, FocusSession } from './types';
 import type { DatabaseAdapter, DailyPlan } from './database/types';
 import { DatabaseFactory } from './database/factory';
 import { config, isServer } from './config';
@@ -113,6 +113,8 @@ const mockUsers: User[] = [
     { id: 'user-1', email: 'user@example.com', roles: ['user'] },
     { id: 'admin-1', email: 'admin@example.com', roles: ['admin'] },
 ];
+
+const mockFocusSessions: FocusSession[] = [];
 
 /**
  * Get all tasks
@@ -316,11 +318,54 @@ export async function deleteTemplateAsync(templateId: string): Promise<void> {
     }
 }
 
+// === FOCUS SESSIONS ===
+
+/**
+ * Get all focus sessions
+ */
+export async function getFocusSessionsAsync(userId?: string | null): Promise<FocusSession[]> {
+    if (!isServer) {
+        return mockFocusSessions;
+    }
+
+    try {
+        const db = await getDatabase();
+        return await db.getFocusSessions(userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to get focus sessions from database, returning mock data', error);
+        return mockFocusSessions;
+    }
+}
+
+/**
+ * Add a new focus session
+ */
+export async function addFocusSessionAsync(newSession: Omit<FocusSession, 'id'>, userId?: string | null): Promise<FocusSession> {
+    const sessionWithId: FocusSession = {
+        ...newSession,
+        id: `focus-${Date.now()}`,
+    };
+
+    if (!isServer) {
+        mockFocusSessions.push(sessionWithId);
+        return sessionWithId;
+    }
+
+    try {
+        const db = await getDatabase();
+        return await db.addFocusSession(sessionWithId, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to add focus session to database, adding to mock data', { session: sessionWithId, error });
+        mockFocusSessions.push(sessionWithId);
+        return sessionWithId;
+    }
+}
+
 /**
  * Get daily plan
  */
-export async function getDailyPlanAsync(): Promise<string[]> {
-    const today = new Date().toISOString().split('T')[0];
+export async function getDailyPlanAsync(date?: string, userId?: string | null): Promise<string[]> {
+    const targetDate = date || new Date().toISOString().split('T')[0];
 
     if (!isServer) {
         return mockDailyPlan;
@@ -328,7 +373,7 @@ export async function getDailyPlanAsync(): Promise<string[]> {
 
     try {
         const db = await getDatabase();
-        const plan = await db.getDailyPlan(today);
+        const plan = await db.getDailyPlan(targetDate, userId);
         return plan?.tasks || [];
     } catch (error) {
         defaultLogger.warn('Failed to get daily plan from database, returning mock data', error);
@@ -339,8 +384,8 @@ export async function getDailyPlanAsync(): Promise<string[]> {
 /**
  * Update daily plan
  */
-export async function updateDailyPlanAsync(taskIds: string[]): Promise<void> {
-    const today = new Date().toISOString().split('T')[0];
+export async function updateDailyPlanAsync(taskIds: string[], date?: string, userId?: string | null): Promise<void> {
+    const targetDate = date || new Date().toISOString().split('T')[0];
 
     if (!isServer) {
         mockDailyPlan = taskIds;
@@ -350,13 +395,13 @@ export async function updateDailyPlanAsync(taskIds: string[]): Promise<void> {
     try {
         const db = await getDatabase();
         const plan: DailyPlan = {
-            id: today,
-            date: today,
+            id: targetDate,
+            date: targetDate,
             tasks: taskIds,
             notes: [],
             updatedAt: new Date().toISOString(),
         };
-        await db.updateDailyPlan(plan);
+        await db.updateDailyPlan(plan, userId);
     } catch (error) {
         defaultLogger.warn('Failed to update daily plan in database', { taskIds, error });
         // Update mock data as fallback

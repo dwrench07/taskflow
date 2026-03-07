@@ -16,16 +16,16 @@ const priorityStyles: Record<Priority, string> = {
   low: "bg-green-500/20 text-green-400 border-green-500/30",
 };
 
-function MiniTaskCard({ 
-  task, 
-  onMove, 
-  isBacklog, 
-  onDragStart, 
-  onDragEnter, 
-  onDragEnd, 
-  isDragging 
-}: { 
-  task: Task; 
+function MiniTaskCard({
+  task,
+  onMove,
+  isBacklog,
+  onDragStart,
+  onDragEnter,
+  onDragEnd,
+  isDragging
+}: {
+  task: Task;
   onMove: (id: string) => void;
   isBacklog: boolean;
   onDragStart?: (e: React.DragEvent<HTMLDivElement>, id: string) => void;
@@ -34,7 +34,7 @@ function MiniTaskCard({
   isDragging?: boolean;
 }) {
   return (
-    <Card 
+    <Card
       className={cn(
         "group transition-all hover:border-primary",
         isDragging && "opacity-50"
@@ -56,7 +56,7 @@ function MiniTaskCard({
           </Badge>
         </div>
         <Button size="icon" variant="ghost" onClick={() => onMove(task.id)} className="opacity-0 group-hover:opacity-100 transition-opacity">
-            {isBacklog ? <PlusCircle className="h-5 w-5 text-primary" /> : <ArrowLeftCircle className="h-5 w-5 text-muted-foreground" />}
+          {isBacklog ? <PlusCircle className="h-5 w-5 text-primary" /> : <ArrowLeftCircle className="h-5 w-5 text-muted-foreground" />}
         </Button>
       </CardContent>
     </Card>
@@ -64,42 +64,56 @@ function MiniTaskCard({
 }
 
 export default function PlanPage() {
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [dailyTaskIds, setDailyTaskIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   const dragItem = useRef<string | null>(null);
   const dragOverItem = useRef<string | null>(null);
 
   const refreshData = async () => {
     setLoading(true);
-    const tasks = await getAllTasks();
-    const planIds = await getDailyPlan();
-    setAllTasks(tasks);
-    setDailyTaskIds(planIds);
-    setLoading(false);
+    try {
+      const tasks = await getAllTasks();
+      const planIds = await getDailyPlan(selectedDate);
+      setAllTasks(tasks || []);
+      setDailyTaskIds(Array.isArray(planIds) ? planIds : []);
+    } catch (error) {
+      console.error("Failed to refresh daily plan:", error);
+    } finally {
+      setLoading(false);
+    }
   }
-  
+
   useEffect(() => {
     refreshData();
-  }, []);
-  
+  }, [selectedDate]);
+
   const dailyTasks = dailyTaskIds.map(id => (Array.isArray(allTasks) ? allTasks : []).find(t => t.id === id)).filter((t): t is Task => !!t);
-  const backlogTasks = (Array.isArray(allTasks) ? allTasks : []).filter(task => 
-    task.status !== 'done' && 
-    !task.isHabit && 
+  const backlogTasks = (Array.isArray(allTasks) ? allTasks : []).filter(task =>
+    task.status !== 'done' &&
+    !task.isHabit &&
     !dailyTaskIds.includes(task.id)
   );
 
-  const addToDailyPlan = (taskId: string) => {
+  const addToDailyPlan = async (taskId: string) => {
+    const task = allTasks.find(t => t.id === taskId);
+    if (task?.endDate) {
+      const taskEndDate = task.endDate.split('T')[0];
+      if (selectedDate > taskEndDate) {
+        alert(`Cannot plan this task for ${selectedDate} because its deadline was ${taskEndDate}`);
+        return;
+      }
+    }
     const newDailyIds = [...dailyTaskIds, taskId];
-    updateDailyPlanAsync(newDailyIds);
+    await updateDailyPlanAsync(newDailyIds, selectedDate);
     refreshData();
   };
 
-  const removeFromDailyPlan = (taskId: string) => {
+  const removeFromDailyPlan = async (taskId: string) => {
     const newDailyIds = dailyTaskIds.filter(id => id !== taskId);
-    updateDailyPlanAsync(newDailyIds);
+    await updateDailyPlanAsync(newDailyIds, selectedDate);
     refreshData();
   };
 
@@ -109,7 +123,7 @@ export default function PlanPage() {
 
   const handleDragEnter = (e: React.DragEvent<HTMLDivElement>, id: string) => {
     if (dragItem.current === null || dragItem.current === id) return;
-    
+
     dragOverItem.current = id;
 
     const newIds = [...dailyTaskIds];
@@ -120,15 +134,27 @@ export default function PlanPage() {
 
     const [draggedId] = newIds.splice(dragItemIndex, 1);
     newIds.splice(dragOverItemIndex, 0, draggedId);
-    
+
     setDailyTaskIds(newIds);
   };
 
-  const handleDragEnd = () => {
+  const handleDragEnd = async () => {
     if (dragItem.current === null) return;
-    
-    updateDailyPlanAsync(dailyTaskIds);
-    
+
+    const task = allTasks.find(t => t.id === dragItem.current);
+    if (task?.endDate) {
+      const taskEndDate = task.endDate.split('T')[0];
+      if (selectedDate > taskEndDate) {
+        alert(`Cannot plan this task for ${selectedDate} because its deadline was ${taskEndDate}`);
+        refreshData(); // Revert visual drag
+        dragItem.current = null;
+        dragOverItem.current = null;
+        return;
+      }
+    }
+
+    await updateDailyPlanAsync(dailyTaskIds, selectedDate);
+
     dragItem.current = null;
     dragOverItem.current = null;
     refreshData();
@@ -136,9 +162,19 @@ export default function PlanPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Plan Your Day</h1>
-        <p className="text-muted-foreground">Move tasks from your backlog to today's plan. Drag and drop to reorder.</p>
+      <div className="flex justify-between items-end">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Plan Your Day</h1>
+          <p className="text-muted-foreground">Move tasks from your backlog to today's plan. Drag and drop to reorder.</p>
+        </div>
+        <div>
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
+          />
+        </div>
       </div>
       <div className="grid md:grid-cols-2 gap-8 items-start">
         <Card>
@@ -147,15 +183,15 @@ export default function PlanPage() {
           </CardHeader>
           <CardContent className="space-y-3 min-h-[50vh]">
             {loading ? (
-                 <div className="flex justify-center items-center h-full pt-10">
-                    <Loader2 className="h-6 w-6 animate-spin" />
-                </div>
+              <div className="flex justify-center items-center h-full pt-10">
+                <Loader2 className="h-6 w-6 animate-spin" />
+              </div>
             ) : backlogTasks.length > 0 ? (
-                backlogTasks.map((task) => (
-                    <MiniTaskCard key={task.id} task={task} onMove={addToDailyPlan} isBacklog={true} />
-                ))
+              backlogTasks.map((task) => (
+                <MiniTaskCard key={task.id} task={task} onMove={addToDailyPlan} isBacklog={true} />
+              ))
             ) : (
-                <p className="text-muted-foreground text-center pt-10">Backlog is empty!</p>
+              <p className="text-muted-foreground text-center pt-10">Backlog is empty!</p>
             )}
           </CardContent>
         </Card>
@@ -163,29 +199,29 @@ export default function PlanPage() {
           <CardHeader>
             <CardTitle>Today's Plan</CardTitle>
           </CardHeader>
-          <CardContent 
+          <CardContent
             className="space-y-3 min-h-[50vh] bg-primary/5 rounded-b-lg"
             onDragOver={(e) => e.preventDefault()}
           >
-             {loading ? (
-                <div className="flex justify-center items-center h-full pt-10">
-                    <Loader2 className="h-6 w-6 animate-spin" />
-                </div>
-             ) : dailyTasks.length > 0 ? (
-                dailyTasks.map((task) => (
-                    <MiniTaskCard 
-                      key={task.id} 
-                      task={task} 
-                      onMove={removeFromDailyPlan} 
-                      isBacklog={false}
-                      onDragStart={handleDragStart}
-                      onDragEnter={handleDragEnter}
-                      onDragEnd={handleDragEnd}
-                      isDragging={dragItem.current === task.id}
-                    />
-                ))
+            {loading ? (
+              <div className="flex justify-center items-center h-full pt-10">
+                <Loader2 className="h-6 w-6 animate-spin" />
+              </div>
+            ) : dailyTasks.length > 0 ? (
+              dailyTasks.map((task) => (
+                <MiniTaskCard
+                  key={task.id}
+                  task={task}
+                  onMove={removeFromDailyPlan}
+                  isBacklog={false}
+                  onDragStart={handleDragStart}
+                  onDragEnter={handleDragEnter}
+                  onDragEnd={handleDragEnd}
+                  isDragging={dragItem.current === task.id}
+                />
+              ))
             ) : (
-                <p className="text-muted-foreground text-center pt-10">Plan your day by adding tasks from the backlog.</p>
+              <p className="text-muted-foreground text-center pt-10">Plan your day by adding tasks from the backlog.</p>
             )}
           </CardContent>
         </Card>

@@ -60,3 +60,22 @@ export interface User {
   roles?: string[];
   [key: string]: any;
 }
+
+// Focus Timer Types
+export type FocusMode = 'pomodoro' | 'stopwatch' | 'countdown';
+export type ProductivityScore = 'high' | 'medium' | 'low';
+export type EnergyLevel = 'high' | 'medium' | 'low';
+
+export interface FocusSession {
+  id: string;
+  userId?: string;             // Attached to the tenant
+  taskId?: string;             // Optional association with a Task/Habit
+  startTime: string;           // ISO date string
+  endTime: string;             // ISO date string
+  duration: number;            // Total active focus time in minutes
+  mode: FocusMode;
+  productivityScore?: ProductivityScore;
+  energyLevel?: EnergyLevel;
+  distractions: string[];
+  deepWorkScore?: number;      // Multiplier logic
+}

@@ -9,7 +9,8 @@ import {
   User,
   Activity,
   ClipboardList,
-  Repeat
+  Repeat,
+  Timer
 } from "lucide-react";
 
 import {
@@ -33,6 +34,7 @@ const menuItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/tasks", label: "Tasks", icon: ListTodo },
   { href: "/habits", label: "Habits", icon: Repeat },
+  { href: "/focus", label: "Focus", icon: Timer },
   { href: "/templates", label: "Templates", icon: ClipboardList },
   { href: "/plan", label: "Plan", icon: FilePenLine },
   { href: "/calendar", label: "Calendar", icon: Calendar },

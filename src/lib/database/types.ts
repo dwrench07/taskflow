@@ -3,7 +3,7 @@
  * Provides a unified interface for different database implementations
  */
 
-import type { Task, TaskTemplate, User } from '../types';
+import type { Task, TaskTemplate, User, FocusSession } from '../types';
 
 export interface DailyPlan {
     id: string;
@@ -38,8 +38,12 @@ export interface DatabaseAdapter {
     deleteTemplate(id: string): Promise<boolean>;
 
     // Daily plan operations
-    getDailyPlan(date: string): Promise<DailyPlan | null>;
-    updateDailyPlan(plan: DailyPlan): Promise<DailyPlan>;
+    getDailyPlan(date: string, userId?: string | null): Promise<DailyPlan | null>;
+    updateDailyPlan(plan: DailyPlan, userId?: string | null): Promise<DailyPlan>;
+
+    // Focus Session operations
+    getFocusSessions(userId?: string | null): Promise<FocusSession[]>;
+    addFocusSession(session: FocusSession, userId?: string | null): Promise<FocusSession>;
 
     // User operations
     getUser(id: string): Promise<User | null>;
@@ -66,6 +70,7 @@ export interface DatabaseConfig {
         templates: string;
         dailyPlans: string;
         users: string;
+        focusSessions: string;
     };
 }
 

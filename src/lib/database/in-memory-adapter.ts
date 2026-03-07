@@ -108,6 +108,7 @@ export class MemoryAdapter implements DatabaseAdapter {
     private templates: Map<string, any> = new Map();
     private dailyPlans: Map<string, any> = new Map();
     private users: Map<string, User> = new Map();
+    private focusSessions: Map<string, any> = new Map();
     private connected = false;
 
     constructor(private logger: DatabaseLogger) { }
@@ -184,13 +185,25 @@ export class MemoryAdapter implements DatabaseAdapter {
         return this.templates.delete(id);
     }
 
-    async getDailyPlan(date: string): Promise<any | null> {
-        return this.dailyPlans.get(date) || null;
+    async getDailyPlan(date: string, userId?: string | null): Promise<any | null> {
+        const key = userId ? `${userId}_${date}` : date;
+        return this.dailyPlans.get(key) || null;
     }
 
-    async updateDailyPlan(plan: any): Promise<any> {
-        this.dailyPlans.set(plan.date, plan);
+    async updateDailyPlan(plan: any, userId?: string | null): Promise<any> {
+        const key = userId ? `${userId}_${plan.date}` : plan.date;
+        this.dailyPlans.set(key, plan);
         return plan;
+    }
+
+    async getFocusSessions(userId?: string | null): Promise<any[]> {
+        return Array.from(this.focusSessions.values()).filter(session => !userId || session.userId === userId);
+    }
+
+    async addFocusSession(session: any, userId?: string | null): Promise<any> {
+        const sessionWithId = { ...session, userId: userId || session.userId, id: session.id || Date.now().toString() };
+        this.focusSessions.set(sessionWithId.id, sessionWithId);
+        return sessionWithId;
     }
 
     async getUser(id: string): Promise<User | null> {

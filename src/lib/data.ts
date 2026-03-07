@@ -1,4 +1,4 @@
-import type { Task, TaskTemplate } from './types';
+import type { Task, TaskTemplate, FocusSession } from './types';
 
 // === API FUNCTIONS FOR CLIENT-SIDE USAGE ===
 // These functions make direct API calls and are used by React components
@@ -105,11 +105,11 @@ export async function deleteTemplate(templateId: string): Promise<void> {
   }
 }
 
-export async function updateDailyPlanAsync(newTaskIds: string[]): Promise<void> {
+export async function updateDailyPlanAsync(newTaskIds: string[], date?: string): Promise<void> {
   const response = await fetch('/api/daily-plan', {
-    method: 'PUT',
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ taskIds: newTaskIds }),
+    body: JSON.stringify({ dailyTaskIds: newTaskIds, ...(date ? { date } : {}) }),
   });
 
   if (!response.ok) {
@@ -117,9 +117,10 @@ export async function updateDailyPlanAsync(newTaskIds: string[]): Promise<void> 
   }
 }
 
-export async function getDailyPlan(userId: string) {
+export async function getDailyPlan(date?: string) {
   try {
-    const response = await fetch('/api/daily-plan');
+    const url = date ? `/api/daily-plan?date=${date}` : '/api/daily-plan';
+    const response = await fetch(url);
     if (!response.ok) {
       if (response.status === 404) {
         throw new Error("User not found");
@@ -132,7 +133,8 @@ export async function getDailyPlan(userId: string) {
         throw new Error(`Unexpected response: ${response.statusText}`);
       }
     }
-    return await response.json();
+    const json = await response.json();
+    return json.dailyTaskIds || json.tasks || [];
   } catch (error) {
     console.error("Error in getDailyPlan:", error);
     throw error;
@@ -166,5 +168,35 @@ export async function getUser(): Promise<User | null> {
   } catch (error) {
     console.error('Failed to fetch user from API:', error);
     return null;
+  }
+}
+
+// === FOCUS SESSIONS ===
+export async function getFocusSessions(): Promise<FocusSession[]> {
+  try {
+    const response = await fetch('/api/focus');
+    if (response.ok) {
+      return await response.json();
+    } else {
+      console.error('Failed to fetch focus sessions:', response.statusText);
+      return [];
+    }
+  } catch (error) {
+    console.error('Failed to fetch focus sessions:', error);
+    return [];
+  }
+}
+
+export async function addFocusSession(session: Omit<FocusSession, 'id'>): Promise<FocusSession> {
+  const response = await fetch('/api/focus', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(session),
+  });
+
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw new Error(`Failed to add focus session: ${response.statusText}`);
   }
 }

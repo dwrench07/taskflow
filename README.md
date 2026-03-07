@@ -29,13 +29,12 @@ TaskFlow is a premium, multi-tenant productivity application designed to help us
 - [ ] Complete full TypeScript type-safety across the codebase.
 
 ### Phase 2: Focus & Productivity
-- [ ] **Focus Timer**: A new dedicated tab to track deep work intervals (Pomodoro-style) linked to specific tasks or habits.
+- [ ] **Focus Timer**: A multi-mode timer (Pomodoro, Stopwatch, Custom) with direct integration from Tasks and Habits. Includes post-session Productivity & Energy Scoring, Deep Work multipliers, a Distraction Log, Avoidance tracking (Frog Eater badge), and a 5-Day Analytics Bar Chart.
 - [ ] **Analytics Dashboard**: Enhanced charts for task completion trends, habit consistency heatmaps, and goal progress curves.
 - [ ] **Template Overhaul**: Improved task templates for rapid recurring setup.
 
 ### Phase 3: Strategic Alignment & Deep Work
 - [ ] **Goal Tracking**: Long-term objective management. Link habits and tasks to high-level goals.
-- [ ] **Focus Mode / Distraction Log**: Minimal interface to capture distracting thoughts during sessions for later review.
 
 ### Phase 4: Custom Organization & Behavioral Insights
 - [ ] **Tagging & Filtering**: Comprehensive system to label and filter all items by project, context, or area of life.
