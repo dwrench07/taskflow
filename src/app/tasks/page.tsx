@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { ListTodo, FileText, Calendar as CalendarIcon, Clock, PlusCircle, Edit, Trash2, Tag, ChevronDown, ClipboardList, ArrowUpDown, ArrowLeft, Search, XCircle, Save, Loader2, Timer, Check } from "lucide-react";
+import { ListTodo, FileText, Calendar as CalendarIcon, Clock, PlusCircle, Edit, Trash2, Tag, ChevronDown, ClipboardList, ArrowUpDown, ArrowLeft, Search, XCircle, Save, Loader2, Timer, Check, ArrowUp, ArrowDown } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -53,7 +53,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 
 const priorityStyles: Record<Priority, string> = {
-  high: "bg-red-500/20 text-red-400 border-red-500/30 hover:bg-red-50/30",
+  urgent: "bg-red-600/30 text-red-500 border-red-600/50 shadow-[0_0_10px_rgba(220,38,38,0.3)] animate-pulse",
+  high: "bg-orange-500/20 text-orange-400 border-orange-500/30 hover:bg-orange-50/30",
   medium: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/30",
   low: "bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30",
 };
@@ -286,16 +287,17 @@ function TasksPageContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<Status[]>([]);
   const [priorityFilter, setPriorityFilter] = useState<Priority[]>([]);
+  const [energyFilter, setEnergyFilter] = useState<string[]>([]);
 
   const searchParams = useSearchParams();
   const router = useRouter();
   const isMobile = useIsMobile();
 
-  const refreshTasks = async () => {
-    setLoading(true);
+  const refreshTasks = async (showLoader = false) => {
+    if (showLoader) setLoading(true);
     const tasks = await getAllTasks();
     setAllTasks(tasks);
-    setLoading(false);
+    if (showLoader) setLoading(false);
     return tasks;
   };
 
@@ -304,7 +306,7 @@ function TasksPageContent() {
 
     const loadTasks = async () => {
       try {
-        const tasks = await refreshTasks(); // wait for promise to resolve
+        const tasks = await refreshTasks(true); // wait for promise to resolve
         const taskId = searchParams?.get('taskId');
         const taskToSelect = taskId ? tasks.find(t => t.id === taskId) : null;
 
@@ -340,7 +342,7 @@ function TasksPageContent() {
     console.log("Recomputing sorted and filtered tasks", allTasks);
     console.log("^^^^^^^^^^||||||^^^^^^^", typeof allTasks)
     let sorted = typeof allTasks === 'object' ? allTasks?.filter(t => !t.isHabit) : [];
-    const priorityOrder = { high: 1, medium: 2, low: 3 };
+    const priorityOrder = { urgent: 0, high: 1, medium: 2, low: 3 };
     const statusOrder = { todo: 1, "in-progress": 2, done: 3 };
 
     let filtered = sorted;
@@ -352,6 +354,9 @@ function TasksPageContent() {
     }
     if (priorityFilter.length > 0) {
       filtered = filtered.filter(task => priorityFilter.includes(task.priority));
+    }
+    if (energyFilter.length > 0) {
+      filtered = filtered.filter(task => energyFilter.includes(task.energyLevel || 'none'));
     }
 
     filtered.sort((a, b) => {
@@ -371,7 +376,7 @@ function TasksPageContent() {
       }
     });
     return filtered;
-  }, [allTasks, searchQuery, statusFilter, priorityFilter, sortOption]);
+  }, [allTasks, searchQuery, statusFilter, priorityFilter, energyFilter, sortOption]);
 
   useEffect(() => {
     if (!selectedTask && !isMobile && sortedAndFilteredTasks.length > 0) {
@@ -529,13 +534,15 @@ function TasksPageContent() {
   }
 
   const handleUpdateSubtask = async (subtask: Subtask) => {
-    if (!selectedTask || !editingSubtask) return;
+    if (!selectedTask) return;
     const updatedSubtasks = selectedTask.subtasks.map(st =>
-      st.id === editingSubtask.id ? subtask : st
+      st.id === subtask.id ? subtask : st
     );
     const updatedTask = { ...selectedTask, subtasks: updatedSubtasks };
     await handleUpdateTask(updatedTask);
-    setEditingSubtask(null);
+    if (editingSubtask?.id === subtask.id) {
+      setEditingSubtask(null);
+    }
   }
 
   const handleDeleteSubtask = async (subtaskId: string) => {
@@ -543,6 +550,26 @@ function TasksPageContent() {
     const updatedSubtasks = selectedTask.subtasks.filter(st => st.id !== subtaskId);
     const updatedTask = { ...selectedTask, subtasks: updatedSubtasks };
     await handleUpdateTask(updatedTask);
+  }
+
+  const handleMoveSubtaskUp = async (index: number) => {
+    if (!selectedTask || index === 0) return;
+    const updatedSubtasks = [...selectedTask.subtasks];
+    const temp = updatedSubtasks[index - 1];
+    updatedSubtasks[index - 1] = updatedSubtasks[index];
+    updatedSubtasks[index] = temp;
+
+    await handleUpdateTask({ ...selectedTask, subtasks: updatedSubtasks });
+  }
+
+  const handleMoveSubtaskDown = async (index: number) => {
+    if (!selectedTask || index === selectedTask.subtasks.length - 1) return;
+    const updatedSubtasks = [...selectedTask.subtasks];
+    const temp = updatedSubtasks[index + 1];
+    updatedSubtasks[index + 1] = updatedSubtasks[index];
+    updatedSubtasks[index] = temp;
+
+    await handleUpdateTask({ ...selectedTask, subtasks: updatedSubtasks });
   }
 
   const handleUpdateTaskTags = async (tags: string[]) => {
@@ -577,6 +604,10 @@ function TasksPageContent() {
 
   const togglePriorityFilter = (priority: Priority) => {
     setPriorityFilter(prev => prev.includes(priority) ? prev.filter(p => p !== priority) : [...prev, priority]);
+  }
+
+  const toggleEnergyFilter = (level: string) => {
+    setEnergyFilter(prev => prev.includes(level) ? prev.filter(l => l !== level) : [...prev, level]);
   }
 
 
@@ -642,7 +673,12 @@ function TasksPageContent() {
                   <TaskForm
                     allTags={allTags}
                     onSubmit={(data) => {
-                      handleAddTask(data);
+                      const sanitizedData = {
+                        ...data,
+                        goalId: data.goalId === null ? undefined : data.goalId,
+                        energyLevel: data.energyLevel === null ? undefined : data.energyLevel
+                      };
+                      handleAddTask(sanitizedData);
                       setIsFormOpen(false);
                     }}
                   />
@@ -682,7 +718,7 @@ function TasksPageContent() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="flex-1">
                     Filter
-                    {(statusFilter.length > 0 || priorityFilter.length > 0) && <span className="ml-2 h-2 w-2 rounded-full bg-primary" />}
+                    {(statusFilter.length > 0 || priorityFilter.length > 0 || energyFilter.length > 0) && <span className="ml-2 h-2 w-2 rounded-full bg-primary" />}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -699,15 +735,25 @@ function TasksPageContent() {
                   <DropdownMenuSub>
                     <DropdownMenuSubTrigger>Priority</DropdownMenuSubTrigger>
                     <DropdownMenuSubContent>
+                      <DropdownMenuCheckboxItem checked={priorityFilter.includes('urgent')} onCheckedChange={() => togglePriorityFilter('urgent')} onSelect={(e) => e.preventDefault()}>Urgent</DropdownMenuCheckboxItem>
                       <DropdownMenuCheckboxItem checked={priorityFilter.includes('high')} onCheckedChange={() => togglePriorityFilter('high')} onSelect={(e) => e.preventDefault()}>High</DropdownMenuCheckboxItem>
                       <DropdownMenuCheckboxItem checked={priorityFilter.includes('medium')} onCheckedChange={() => togglePriorityFilter('medium')} onSelect={(e) => e.preventDefault()}>Medium</DropdownMenuCheckboxItem>
                       <DropdownMenuCheckboxItem checked={priorityFilter.includes('low')} onCheckedChange={() => togglePriorityFilter('low')} onSelect={(e) => e.preventDefault()}>Low</DropdownMenuCheckboxItem>
                     </DropdownMenuSubContent>
                   </DropdownMenuSub>
-                  {(statusFilter.length > 0 || priorityFilter.length > 0) && (
+                  <DropdownMenuSub>
+                    <DropdownMenuSubTrigger>Energy Level</DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                      <DropdownMenuCheckboxItem checked={energyFilter.includes('high')} onCheckedChange={() => toggleEnergyFilter('high')} onSelect={(e) => e.preventDefault()}>High (Deep Work)</DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem checked={energyFilter.includes('medium')} onCheckedChange={() => toggleEnergyFilter('medium')} onSelect={(e) => e.preventDefault()}>Medium (Standard)</DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem checked={energyFilter.includes('low')} onCheckedChange={() => toggleEnergyFilter('low')} onSelect={(e) => e.preventDefault()}>Low (Brain-dead)</DropdownMenuCheckboxItem>
+                      <DropdownMenuCheckboxItem checked={energyFilter.includes('none')} onCheckedChange={() => toggleEnergyFilter('none')} onSelect={(e) => e.preventDefault()}>Not specified</DropdownMenuCheckboxItem>
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                  {(statusFilter.length > 0 || priorityFilter.length > 0 || energyFilter.length > 0) && (
                     <>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onSelect={() => { setStatusFilter([]); setPriorityFilter([]); }}>Clear Filters</DropdownMenuItem>
+                      <DropdownMenuItem onSelect={() => { setStatusFilter([]); setPriorityFilter([]); setEnergyFilter([]); }}>Clear Filters</DropdownMenuItem>
                     </>
                   )}
                 </DropdownMenuContent>
@@ -793,7 +839,12 @@ function TasksPageContent() {
                                   task={selectedTask}
                                   allTags={allTags}
                                   onSubmit={async (data) => {
-                                    const updatedData = { ...selectedTask, ...data };
+                                    const updatedData = {
+                                      ...selectedTask,
+                                      ...data,
+                                      goalId: data.goalId === null ? undefined : data.goalId,
+                                      energyLevel: data.energyLevel === null ? undefined : data.energyLevel
+                                    };
                                     await handleUpdateTask(updatedData);
                                     setIsEditingFormOpen(false);
                                   }}
@@ -875,7 +926,7 @@ function TasksPageContent() {
                           </div>
 
                           <div className="space-y-4">
-                            {selectedTask?.subtasks?.map(subtask => (
+                            {selectedTask?.subtasks?.map((subtask, index) => (
                               <div key={subtask.id} className={cn(
                                 "flex flex-col sm:flex-row sm:items-start gap-4 group p-4 rounded-2xl border transition-all duration-300 shadow-sm",
                                 subtask.completed ? "bg-muted/30 border-border/40" : "bg-background hover:border-primary/40 hover:shadow-md"
@@ -927,6 +978,40 @@ function TasksPageContent() {
 
                                   <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-1">
                                     <div className="flex items-center gap-2">
+                                      <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                          <Badge variant="outline" className={cn("cursor-pointer shrink-0 truncate capitalize", subtask.priority && priorityStyles[subtask.priority])}>
+                                            {subtask.priority || "Priority"} <ChevronDown className="ml-1 h-3 w-3 inline" />
+                                          </Badge>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                          <DropdownMenuRadioGroup value={subtask.priority || ""} onValueChange={(val) => handleUpdateSubtask({ ...subtask, priority: val as Priority })}>
+                                            <DropdownMenuRadioItem value="urgent">Urgent</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="high">High</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="medium">Medium</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="low">Low</DropdownMenuRadioItem>
+                                          </DropdownMenuRadioGroup>
+                                        </DropdownMenuContent>
+                                      </DropdownMenu>
+
+                                      <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                          <Badge variant="secondary" className="cursor-pointer shrink-0 truncate capitalize font-normal border shadow-sm">
+                                            {subtask.energyLevel ? `Energy: ${subtask.energyLevel}` : "Energy"} <ChevronDown className="ml-1 h-3 w-3 inline" />
+                                          </Badge>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                          <DropdownMenuRadioGroup value={subtask.energyLevel || "none"} onValueChange={(val) => handleUpdateSubtask({ ...subtask, energyLevel: val === "none" ? undefined : val as any })}>
+                                            <DropdownMenuRadioItem value="none">Not specified</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="high">High (Deep Work)</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="medium">Medium (Standard)</DropdownMenuRadioItem>
+                                            <DropdownMenuRadioItem value="low">Low (Brain-dead)</DropdownMenuRadioItem>
+                                          </DropdownMenuRadioGroup>
+                                        </DropdownMenuContent>
+                                      </DropdownMenu>
+                                    </div>
+
+                                    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                                       <TagInput
                                         tags={subtask.tags || []}
                                         allTags={allTags}
@@ -934,13 +1019,21 @@ function TasksPageContent() {
                                         placeholder="Add sub-tags..."
                                       />
                                     </div>
-                                    <div className="sm:ml-auto">
+                                    <div className="sm:ml-auto shrink-0 w-full sm:w-auto max-w-[200px]">
                                       <DateTimePicker date={subtask.startDate} setDate={(date) => handleSubtaskDateChange(subtask.id, 'startDate', date)} />
                                     </div>
                                   </div>
                                 </div>
 
-                                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-start gap-1 sm:self-start self-end -mt-2 sm:-mt-1 -mr-2">
+                                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center flex-col sm:flex-row gap-1 sm:self-start self-end -mt-2 sm:-mt-1 -mr-2">
+                                  <div className="flex flex-col sm:flex-row sm:mr-2">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10" disabled={index === 0} onClick={() => handleMoveSubtaskUp(index)}>
+                                      <ArrowUp className="h-4 w-4" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10" disabled={index === selectedTask.subtasks.length - 1} onClick={() => handleMoveSubtaskDown(index)}>
+                                      <ArrowDown className="h-4 w-4" />
+                                    </Button>
+                                  </div>
                                   <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10" onClick={() => setEditingSubtask(subtask)}>
                                     <Edit className="h-4 w-4" />
                                   </Button>

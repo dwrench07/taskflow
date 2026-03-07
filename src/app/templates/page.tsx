@@ -37,8 +37,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { ArrowLeft, Rocket } from "lucide-react";
 
 const priorityStyles: Record<Priority, string> = {
-    high: "bg-red-500/20 text-red-400 border-red-500/30 hover:bg-red-500/30",
-    medium: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/30",
+    urgent: "bg-red-600/30 text-red-500 border-red-600/50 shadow-[0_0_10px_rgba(220,38,38,0.3)] animate-pulse",
+    high: "bg-orange-500/20 text-orange-400 border-orange-500/30",
+    medium: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
     low: "bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30",
 };
 

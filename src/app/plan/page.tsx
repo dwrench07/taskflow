@@ -11,9 +11,10 @@ import { PlusCircle, ArrowLeftCircle, GripVertical, Loader2 } from "lucide-react
 import { Badge } from "@/components/ui/badge";
 
 const priorityStyles: Record<Priority, string> = {
+  urgent: "bg-red-600/30 text-red-500 border-red-600/50 shadow-[0_0_10px_rgba(220,38,38,0.3)] animate-pulse",
   high: "bg-red-500/20 text-red-400 border-red-500/30",
-  medium: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
-  low: "bg-green-500/20 text-green-400 border-green-500/30",
+  medium: "bg-yellow-500/20 text-yellow-500 border-yellow-500/30",
+  low: "bg-green-500/20 text-green-500 border-green-500/30",
 };
 
 function MiniTaskCard({

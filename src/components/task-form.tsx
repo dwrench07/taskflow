@@ -34,7 +34,8 @@ const formSchema = z.object({
   description: z.string().min(5, {
     message: "Description must be at least 5 characters.",
   }),
-  priority: z.enum(["low", "medium", "high"]),
+  priority: z.enum(["low", "medium", "high", "urgent"]),
+  energyLevel: z.enum(["high", "medium", "low"]).optional().nullable(),
   tags: z.array(z.string()).optional(),
   goalId: z.string().optional().nullable(),
 });
@@ -62,6 +63,7 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
       priority: task?.priority || "medium",
       tags: task?.tags || [],
       goalId: task?.goalId || null,
+      energyLevel: task?.energyLevel || null,
     },
   });
 
@@ -114,6 +116,7 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
                     <SelectItem value="low">Low</SelectItem>
                     <SelectItem value="medium">Medium</SelectItem>
                     <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="urgent">Urgent</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -137,6 +140,31 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
                     {goals.map((g) => (
                       <SelectItem key={g.id} value={g.id}>{g.title}</SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="energyLevel"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Energy Required (Optional)</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value || "none"}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Energy Level" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="none">Not specified</SelectItem>
+                    <SelectItem value="high">High (Deep Work)</SelectItem>
+                    <SelectItem value="medium">Medium (Standard)</SelectItem>
+                    <SelectItem value="low">Low (Brain-dead)</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

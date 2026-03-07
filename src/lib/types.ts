@@ -1,4 +1,5 @@
-export type Priority = "low" | "medium" | "high";
+export type Priority = "low" | "medium" | "high" | "urgent";
+export type EnergyLevel = 'high' | 'medium' | 'low';
 export type Status = "todo" | "in-progress" | "done";
 export type HabitFrequency = "daily" | "weekly" | "monthly";
 
@@ -15,6 +16,8 @@ export interface Subtask {
   startDate?: string;
   endDate?: string;
   tags?: string[];
+  priority?: Priority;
+  energyLevel?: EnergyLevel;
 }
 
 export interface Task {
@@ -35,6 +38,7 @@ export interface Task {
   lastCompletedDate?: string;
   dailyStatus?: DailyStatus[];
   goalId?: string; // Optional link to a long-term goal
+  energyLevel?: EnergyLevel; // Optional energy requirement
 }
 
 // New Template Types
@@ -42,6 +46,8 @@ export interface TemplateSubtask {
   id: string;
   title: string;
   tags?: string[];
+  priority?: Priority;
+  energyLevel?: EnergyLevel;
 }
 
 export interface TaskTemplate {
@@ -52,6 +58,7 @@ export interface TaskTemplate {
   subtasks: TemplateSubtask[];
   tags?: string[];
   goalId?: string; // Optional link to a long-term goal
+  energyLevel?: EnergyLevel; // Optional energy requirement
 }
 
 export interface User {
@@ -66,7 +73,6 @@ export interface User {
 // Focus Timer Types
 export type FocusMode = 'pomodoro' | 'stopwatch' | 'countdown';
 export type ProductivityScore = 'high' | 'medium' | 'low';
-export type EnergyLevel = 'high' | 'medium' | 'low';
 
 export interface FocusSession {
   id: string;

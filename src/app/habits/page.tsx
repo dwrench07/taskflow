@@ -228,11 +228,11 @@ function HabitsPageContent() {
         return [...habits].sort((a, b) => (b.priority === 'high' ? 1 : -1) - (a.priority === 'high' ? 1 : -1) || calculateStreak(b) - calculateStreak(a));
     }, [habits]);
 
-    const refreshHabits = async () => {
-        setLoading(true);
+    const refreshHabits = async (showLoader = false) => {
+        if (showLoader) setLoading(true);
         const tasks = await getAllTasks();
         setAllTasks(tasks);
-        setLoading(false);
+        if (showLoader) setLoading(false);
         return tasks;
     };
 
@@ -240,7 +240,7 @@ function HabitsPageContent() {
         let isMounted = true;
 
         const loadTasks = async () => {
-            const tasks = await refreshHabits();
+            const tasks = await refreshHabits(true);
             const taskId = searchParams?.get('taskId');
             const habitToSelect = taskId ? tasks.find(t => t.id === taskId && t.isHabit) : null;
 

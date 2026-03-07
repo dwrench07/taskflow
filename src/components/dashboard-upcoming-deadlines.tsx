@@ -12,9 +12,10 @@ import Link from "next/link";
 import { Calendar } from "lucide-react";
 
 const priorityStyles: Record<Priority, string> = {
-    high: "border-red-500/50 bg-red-500/10 text-red-400",
-    medium: "border-yellow-500/50 bg-yellow-500/10 text-yellow-400",
-    low: "border-green-500/50 bg-green-500/10 text-green-400",
+    urgent: "bg-red-600/30 text-red-500 border-red-600/50 shadow-[0_0_10px_rgba(220,38,38,0.3)] animate-pulse",
+    high: "bg-red-500/20 text-red-400 border-red-500/30",
+    medium: "bg-yellow-500/20 text-yellow-500 border-yellow-500/30",
+    low: "bg-green-500/20 text-green-500 border-green-500/30",
 };
 
 export function DashboardUpcomingDeadlines({ allTasks }: { allTasks: Task[] }) {

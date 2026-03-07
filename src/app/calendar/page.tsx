@@ -64,9 +64,10 @@ interface CalendarEventData extends Omit<Partial<Task>, 'dailyStatus'> {
 }
 
 const priorityStyles: Record<Priority, string> = {
-  high: "bg-red-500/80 text-white",
-  medium: "bg-yellow-500/80 text-white",
-  low: "bg-green-500/80 text-white",
+  urgent: "bg-red-600/30 text-red-500 border-red-600/50 shadow-[0_0_10px_rgba(220,38,38,0.3)] animate-pulse",
+  high: "bg-red-500/20 text-red-700 border-red-500/30 dark:text-red-400",
+  medium: "bg-yellow-500/20 text-yellow-700 border-yellow-500/30 dark:text-yellow-400",
+  low: "bg-green-500/20 text-green-700 border-green-500/30 dark:text-green-400",
 };
 
 const statusIcons: Record<Exclude<DailyHabitStatus, 'not recorded'>, React.ReactNode> = {
@@ -132,15 +133,15 @@ export default function CalendarPage() {
   const { toast } = useToast();
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
 
-  const refreshTasks = async () => {
-    setLoading(true);
+  const refreshTasks = async (showLoader = false) => {
+    if (showLoader) setLoading(true);
     const tasks = await getAllTasks();
     setAllTasks(tasks);
-    setLoading(false);
+    if (showLoader) setLoading(false);
   };
 
   useEffect(() => {
-    refreshTasks();
+    refreshTasks(true);
   }, []);
 
   const getEventsForDay = (day: Date): CalendarEventData[] => {
