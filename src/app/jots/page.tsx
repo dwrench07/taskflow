@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { getFocusSessions, getAllTasks } from "@/lib/data";
 import { FocusSession, Task } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { StickyNote, Loader2, Calendar } from "lucide-react";
 import { format, parseISO } from "date-fns";
 

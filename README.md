@@ -35,11 +35,13 @@ TaskFlow is a premium, multi-tenant productivity application designed to help us
 
 ### Phase 3: Strategic Alignment & Deep Work
 - [ ] **Goal Tracking**: Long-term objective management. Link habits and tasks to high-level goals.
+- [ ] **Calendar Refinements & Subtask Planning**: Schedule individual subtasks to the daily plan and intuitively sort events. Includes fixes to hide duplicate parent tasks and natively display context.
 
 ### Phase 4: Custom Organization & Behavioral Insights
 - [ ] **Tagging & Filtering**: Comprehensive system to label and filter all items by project, context, or area of life.
 - [ ] **Habit UI Optimization**: Simplify the interface to reduce overwhelm and focus on daily consistency.
 - [ ] **Daily Review & Avoidance Analytics**: A sophisticated feedback loop that identifies "yesterday's leftovers." It forces a conscious choice on unfinished tasks (Move, Push, Break, or Drop) and builds a behavioral profile of your avoidance patterns based on task categorization and effort sizing (S, M, L).
+- [ ] **Activation Energy Check**: Identify pushing behaviors when tasks are marked important but lack the threshold action energy needed to start.
 
 ### Phase 5: Advanced Productivity Features (Completed)
 - [x] Add "Urgent" priority level.
@@ -49,6 +51,18 @@ TaskFlow is a premium, multi-tenant productivity application designed to help us
 
 ### Phase 6: Visual Progress & Documentation
 - [ ] **Progress Visualizer (Before & After)**: Capture and compare "Before", "After", and incremental "In-between" snapshots (text and images) to track long-term transformations.
+
+### Phase 7: System Integration & Advanced Features
+- [ ] **Browser Notifications**: Implement reminders for task deadlines and focus session starts.
+- [ ] **Background Execution**: Support Service Workers/PWA capabilities to keep timers and sync running while the tab is inactive.
+- [ ] **Sound/Alerts**: Add configurable notification sounds for session completion.
+
+### Phase 8: Psychological Productivity Frameworks
+- [ ] **Mental Model Views**: Implement dedicated views to process daily tasks using different psychological framework metrics:
+    - **Eisenhower Matrix** (Urgent vs. Important quadrants).
+    - **Eat the Frog Method** (Flagging and prioritizing high-resistance tasks).
+    - **Parkinson's Law** (Timeboxing extensions and "fill the time" boundary matching).
+- [ ] **Extensibility**: Allow users to construct and apply different scientifically-proven models depending on life category or context.
 
 ## 🏁 Getting Started
 

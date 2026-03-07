@@ -237,25 +237,19 @@ function HabitsPageContent() {
     };
 
     useEffect(() => {
-        let isMounted = true;
+        refreshHabits(true);
+    }, []);
 
-        const loadTasks = async () => {
-            const tasks = await refreshHabits(true);
-            const taskId = searchParams?.get('taskId');
-            const habitToSelect = taskId ? tasks.find(t => t.id === taskId && t.isHabit) : null;
-
-            if (!isMounted) return;
-
-            if (habitToSelect) {
-                setSelectedHabit(habitToSelect);
-            } else {
-                setSelectedHabit(null);
-            }
+    useEffect(() => {
+        if (loading && allTasks.length === 0) return; // Wait for initial load
+        const taskId = searchParams?.get('taskId');
+        if (taskId) {
+            const habitToSelect = allTasks.find(t => t.id === taskId && t.isHabit);
+            setSelectedHabit(habitToSelect || null);
+        } else {
+            setSelectedHabit(null);
         }
-        loadTasks();
-
-        return () => { isMounted = false; };
-    }, [searchParams, isMobile]);
+    }, [searchParams, allTasks, loading]);
 
     useEffect(() => {
         if (selectedHabit) {
@@ -471,7 +465,16 @@ function HabitsPageContent() {
                                 >
                                     <CardHeader>
                                         <div className="flex justify-between items-start gap-2 w-full min-w-0">
-                                            <CardTitle className="flex-1 truncate text-left min-w-0">{habit.title}</CardTitle>
+                                            <TooltipProvider delayDuration={300}>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <CardTitle className="flex-1 truncate text-left min-w-0 text-[1.1rem] leading-tight cursor-help">{habit.title}</CardTitle>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent side="top" className="max-w-[250px] break-words z-50">
+                                                        <p>{habit.title}</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
                                             <div className="flex items-center gap-2 flex-shrink-0">
                                                 <Badge variant={streak > 0 ? "default" : "secondary"} className="flex items-center gap-1.5 whitespace-nowrap">
                                                     <Flame className={cn("h-4 w-4", streak > 0 ? "text-orange-300" : "text-muted-foreground")} />

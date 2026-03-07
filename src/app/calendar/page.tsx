@@ -50,6 +50,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useRouter } from "next/navigation";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TaskForm } from "@/components/task-form";
 
 type CalendarView = "month" | "week" | "day";
@@ -130,6 +131,7 @@ export default function CalendarPage() {
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<CalendarView>("day");
+  const [dayFilter, setDayFilter] = useState<"all" | "done" | "undone">("all");
   const { toast } = useToast();
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
 
@@ -208,18 +210,20 @@ export default function CalendarPage() {
     );
   }
 
+  const isEventCompleted = (event: CalendarEventData, day: Date) => {
+    if (event.isSubtask) {
+      const parent = allTasks.find(t => t.id === event.parentId);
+      const subtask = parent?.subtasks.find(st => st.id === event.id);
+      return subtask?.completed ?? false;
+    }
+    if (event.isHabit) {
+      return event.completionHistory?.some(d => isSameDay(parseISO(d), day)) ?? false;
+    }
+    return event.status === 'done';
+  }
+
   const getCompletedCount = (events: CalendarEventData[], day: Date) => {
-    return events.filter(e => {
-      if (e.isSubtask) {
-        const parent = allTasks.find(t => t.id === e.parentId);
-        const subtask = parent?.subtasks.find(st => st.id === e.id);
-        return subtask?.completed ?? false;
-      }
-      if (e.isHabit) {
-        return e.completionHistory?.some(d => isSameDay(parseISO(d), day)) ?? false;
-      }
-      return e.status === 'done';
-    }).length;
+    return events.filter(e => isEventCompleted(e, day)).length;
   }
 
   const getHabitStatsForDay = (day: Date) => {
@@ -513,24 +517,43 @@ export default function CalendarPage() {
               <CardTitle>{format(currentDate, 'EEEE, MMMM d')}</CardTitle>
               <CardDescription>{dailyEvents.length} items scheduled today. {getCompletedCount(dailyEvents, currentDate)} completed.</CardDescription>
             </div>
-            <Button onClick={() => setIsCreateTaskOpen(true)}>
-              <PlusCircle className="mr-2 h-4 w-4" />Create Task
-            </Button>
+            <div className="flex items-center gap-3">
+              <Select value={dayFilter} onValueChange={(v: any) => setDayFilter(v)}>
+                <SelectTrigger className="w-[120px] h-9">
+                  <SelectValue placeholder="Filter..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All items</SelectItem>
+                  <SelectItem value="undone">To Do</SelectItem>
+                  <SelectItem value="done">Completed</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button onClick={() => setIsCreateTaskOpen(true)}>
+                <PlusCircle className="mr-2 h-4 w-4" />Create Task
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {dailyEvents.length > 0 ? (
-              dailyEvents.map((event) => {
-                let isCompleted = false;
+            {(() => {
+              const filteredEvents = dailyEvents.filter((event) => {
+                const completed = isEventCompleted(event, currentDate);
+                if (dayFilter === 'done') return completed;
+                if (dayFilter === 'undone') return !completed;
+                return true;
+              });
 
-                if (event.isSubtask) {
-                  const parentTask = allTasks.find(t => t.id === event.parentId);
-                  const subtask = parentTask?.subtasks.find(st => st.id === event.id);
-                  isCompleted = subtask?.completed ?? false;
-                } else if (event.isHabit) {
-                  isCompleted = event.completionHistory?.some(d => isSameDay(parseISO(d), currentDate)) ?? false;
-                } else {
-                  isCompleted = event.status === 'done';
-                }
+              if (filteredEvents.length === 0) {
+                return (
+                  <div className="flex flex-col items-center justify-center gap-4 text-center h-60">
+                    <CalendarIcon className="w-16 h-16 text-muted-foreground" />
+                    <p className="text-muted-foreground">{dailyEvents.length > 0 ? "No tasks match this filter." : "No tasks or habits scheduled for today."}</p>
+                    <Button onClick={() => setIsCreateTaskOpen(true)} variant="outline"><PlusCircle className="mr-2 h-4 w-4" />Create a task for today</Button>
+                  </div>
+                );
+              }
+
+              return filteredEvents.map((event) => {
+                const isCompleted = isEventCompleted(event, currentDate);
 
                 const startDate = event.isHabit ? add(startOfDay(currentDate), { hours: 9 }) : (event.startDate ? parseISO(event.startDate) : startOfDay(currentDate));
                 const endDate = event.isHabit ? add(startOfDay(currentDate), { hours: 9, minutes: 30 }) : (event.endDate ? parseISO(event.endDate) : startDate);
@@ -585,14 +608,8 @@ export default function CalendarPage() {
                     </div>
                   </div>
                 )
-              })
-            ) : (
-              <div className="flex flex-col items-center justify-center gap-4 text-center h-60">
-                <CalendarIcon className="w-16 h-16 text-muted-foreground" />
-                <p className="text-muted-foreground">No tasks or habits scheduled for today.</p>
-                <Button onClick={() => setIsCreateTaskOpen(true)} variant="outline"><PlusCircle className="mr-2 h-4 w-4" />Create a task for today</Button>
-              </div>
-            )}
+              });
+            })()}
           </CardContent>
         </Card>
       ) : null}
