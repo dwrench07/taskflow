@@ -101,6 +101,9 @@ This section serves as a brainstorming space for future enhancements to TaskFlow
 * **Vision Board:** A Pinterest-style board for Life Pillars to visually motivate long-term objectives.
 * **Milestones / OKRs:** Breaking down goals into quantifiable metrics.
 * **JSON Import Tool:** Build an import feature accepting raw JSON payloads, allowing users to easily generate and import complex tasks, habits, or templates via LLMs.
+* **"Back of Mind" Repository:** A dedicated space for long-term thoughts and topics that are easily forgotten but should heavily influence major decisions.
+* **Mistake & Feedback Tracking:** A log for personal mistakes and external feedback. Build a mechanism to incorporate the feedback and visually demonstrate to users/stakeholders how the change was applied.
+* **Strategic Execution Framework:** A deliberate UI step before task execution that forces the user to think *strategically* about how to accomplish a task efficiently, rather than blindly jumping in.
 
 ### 🏆 Gamification
 * **Gratification & Rewards:** The concept of unlocking things (badges, milestones, or other rewards) as you progress. The goal is to make life interesting and provide motivation.
