@@ -35,7 +35,7 @@ import { calculateStreak } from "@/lib/habits";
 const habitFormSchema = z.object({
     title: z.string().min(2, "Title must be at least 2 characters."),
     description: z.string().optional(),
-    priority: z.enum(["low", "medium", "high"]),
+    priority: z.enum(["low", "medium", "high", "urgent"]),
     streakGoal: z.coerce.number().int().positive().optional(),
     habitFrequency: z.enum(["daily", "weekly", "monthly"]),
 });
@@ -106,6 +106,7 @@ function HabitForm({ habit, onSubmit, onOpenChange }: { habit?: Task; onSubmit: 
                                         <SelectItem value="low">Low</SelectItem>
                                         <SelectItem value="medium">Medium</SelectItem>
                                         <SelectItem value="high">High</SelectItem>
+                                        <SelectItem value="urgent">Urgent</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 <FormMessage />
@@ -359,7 +360,7 @@ function HabitsPageContent() {
     }
 
     const handleDeleteHabit = async (habitId: string) => {
-        deleteTask(habitId);
+        await deleteTask(habitId);
         if (selectedHabit?.id === habitId) {
             setSelectedHabit(null);
         }

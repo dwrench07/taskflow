@@ -35,12 +35,12 @@ function MiniTaskCard({
   isDragging?: boolean;
 }) {
   const renderTitle = (title: string) => {
-    const match = title.match(/^(.*)\s*\(Subtask:\s*(.*)\)$/);
+    const match = title.match(/^(.*)\s*—\s*(.*)$/);
     if (match) {
       return (
         <span>
           {match[1]}{" "}
-          <i className="text-muted-foreground font-normal">(Subtask: {match[2]})</i>
+          <span className="text-muted-foreground font-normal opacity-75">— {match[2]}</span>
         </span>
       );
     }
@@ -126,7 +126,7 @@ export default function PlanPage() {
             subtasks: [],
             notes: [],
             isSubtask: true,
-            title: `${t.title} (Subtask: ${st.title})`
+            title: `${st.title} — ${t.title}`
           } as unknown as Task;
         }
       }
@@ -156,7 +156,7 @@ export default function PlanPage() {
             subtasks: [],
             notes: [],
             isSubtask: true,
-            title: `${task.title} (Subtask: ${st.title})`
+            title: `${st.title} — ${task.title}`
           } as unknown as Task);
         }
       });

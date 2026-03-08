@@ -22,14 +22,18 @@ TaskFlow is a premium, multi-tenant productivity application designed to help us
 
 ## 🗺️ Roadmap
 
+> **Workflow Note:** Anything actively being built should be moved to this execution list and added to a specific Phase first before building. Any newly proposed ideas should first be added under the "Future Vision & Idea Sandbox" below.
+
 ### Phase 1: Stability & Performance (Current)
-- [ ] Fix task and habit deletion issues.
-- [ ] Set Calendar default view to Day view.
-- [ ] Optimize MongoDB connection logic for Vercel deployments.
+- [x] Fix task and habit deletion issues.
+- [x] Set Calendar default view to Day view.
+- [x] Optimize MongoDB connection logic for Vercel deployments.
 - [ ] Complete full TypeScript type-safety across the codebase.
 
 ### Phase 2: Focus & Productivity
 - [ ] **Focus Timer**: A multi-mode timer (Pomodoro, Stopwatch, Custom) with direct integration from Tasks and Habits. Includes post-session Productivity & Energy Scoring, Deep Work multipliers, a Distraction Log, Avoidance tracking (Frog Eater badge), and a 5-Day Analytics Bar Chart.
+- [x] **Timer API Integration**: Log individual timer events (start, pause, stop) via API for precise tracking of focus interruptions and to avoid losing state when navigating away/closing tabs. If tab is closed without ending, auto-end at duration limit (or switch to start time of next timer if overlapped).
+- [x] **Timer Audio Cues**: Beep functionality (1 beep at 50%, 2 beeps at 80% to wind up, and 3 beeps at 100% completion).
 - [ ] **Analytics Dashboard**: Enhanced charts for task completion trends, habit consistency heatmaps, and goal progress curves.
 - [ ] **Template Overhaul**: Improved task templates for rapid recurring setup.
 
@@ -77,6 +81,7 @@ TaskFlow is a premium, multi-tenant productivity application designed to help us
 > **⚠️ CAUTION: The Brainstorming Rule**
 > Many of these concepts—especially the Goals feature and Life Architecture—require significant thought to get right. Do not build them immediately. 
 > The process must be: **Brainstorm, leave it for one day to brew, and then implement.**
+> Once an idea is ready to be built, it **MUST** be moved out of this sandbox and into the Roadmap execution phases above before any code is written.
 
 This section serves as a brainstorming space for future enhancements to TaskFlow.
 
@@ -86,24 +91,29 @@ This section serves as a brainstorming space for future enhancements to TaskFlow
 * **Widget Organization:** Rethink the widget layout on the dashboard. Move upcoming deadlines to the top.
 * **Two-Tier Dashboard System:** Consider a simple "numbers-only" view pulling a sidebar vs a separate full details page to avoid feeling overwhelmed.
 * **Habit Streaks:** Better highlight active streaks, specifically counting how many are > 2 days.
-* **Goal Standing:** Find a way to clearly show where you stand currently in different aspects of your goals without being overwhelming.
 
 ### 🧠 Focus & Insights
-* **Timer Beep:** Add an audio cue (beep) when the focus timer is done.
 * **Fix View Jots:** Fix the broken functionality for viewing Jots.
 * **Guided Journaling:** Weekly reflection prompts tied to focus sessions and daily plan completions.
 * **AI Distraction Analysis:** Processing the "Jots" from focus sessions to identify common internal/external triggers and suggest environment changes.
+* **Focus Timer Resilience:** Fix the timer state dropping when navigating away (Persist active timer and jots locally or via service).
 
 ### 🎯 Task Management
 * **Child Task Deadlines:** Track and display child task deadlines alongside parent tasks to monitor if projects are going as planned.
+* **Subtask Hierarchy & Context:** Display the parent task name on subtask items for context instead of duplicating the main task. This should be displayed in reverse order (e.g., `Subtask Name — Parent Task Name`).
 * **One-time Tasks / Chores:** Figure out how and where to organize simple one-off tasks (like "buy milk") so they don't clutter up the main workflow.
 * **Standalone Challenges:** System for arbitrary challenges (e.g., "Focus 6 hours straight", "Random test on weekly learnings") that don't fit into standard tasks.
-* **Vision Board:** A Pinterest-style board for Life Pillars to visually motivate long-term objectives.
-* **Milestones / OKRs:** Breaking down goals into quantifiable metrics.
 * **JSON Import Tool:** Build an import feature accepting raw JSON payloads, allowing users to easily generate and import complex tasks, habits, or templates via LLMs.
 * **"Back of Mind" Repository:** A dedicated space for long-term thoughts and topics that are easily forgotten but should heavily influence major decisions.
 * **Mistake & Feedback Tracking:** A log for personal mistakes and external feedback. Build a mechanism to incorporate the feedback and visually demonstrate to users/stakeholders how the change was applied.
 * **Strategic Execution Framework:** A deliberate UI step before task execution that forces the user to think *strategically* about how to accomplish a task efficiently, rather than blindly jumping in.
+
+### 🧗 Goal Tracking & OKRs (Strategic Alignment)
+*   **Goal Standing Visualization:** Find a way to clearly show where you stand currently in different aspects of your goals without being overwhelming.
+*   **Milestones / OKRs Structure:** Break down high-level, abstract goals into quantifiable, timeline-based metrics.
+*   **Vision Board:** A Pinterest-style board for Life Pillars (Health, Wealth, Relationships, etc.) to visually motivate long-term objectives.
+*   **Goal-to-Task Linkage:** Enforce strict links so that executing a daily task visually fills up the progress bar of its parent Goal.
+*   **Quarterly Goal Review:** A dedicated feature to stop daily execution and force a review of the big picture every quarter.
 
 ### 🏆 Gamification
 * **Gratification & Rewards:** The concept of unlocking things (badges, milestones, or other rewards) as you progress. The goal is to make life interesting and provide motivation.

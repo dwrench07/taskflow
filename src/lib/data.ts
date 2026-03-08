@@ -201,6 +201,47 @@ export async function addFocusSession(session: Omit<FocusSession, 'id'>): Promis
   }
 }
 
+export async function getActiveFocusSession(): Promise<FocusSession | null> {
+  try {
+    const response = await fetch('/api/focus-sessions/active');
+    if (response.ok) {
+      return await response.json();
+    }
+    return null;
+  } catch (error) {
+    console.error('Failed to fetch active focus session:', error);
+    return null;
+  }
+}
+
+export async function startFocusSession(payload: { mode: string, expectedDuration?: number, taskId?: string }): Promise<FocusSession> {
+  const response = await fetch('/api/focus-sessions/active', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'start', payload }),
+  });
+
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw new Error(`Failed to start focus session: ${response.statusText}`);
+  }
+}
+
+export async function updateActiveFocusSession(action: 'pause' | 'resume' | 'stop', payload?: any): Promise<FocusSession | null> {
+  const response = await fetch('/api/focus-sessions/active', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, payload }),
+  });
+
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw new Error(`Failed to update focus session: ${response.statusText}`);
+  }
+}
+
 // === GOALS ===
 
 export async function getAllGoals(): Promise<Goal[]> {

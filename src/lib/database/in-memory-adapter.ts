@@ -202,10 +202,49 @@ export class MemoryAdapter implements DatabaseAdapter {
         return Array.from(this.focusSessions.values()).filter(session => !userId || session.userId === userId);
     }
 
+    async getActiveFocusSession(userId?: string | null): Promise<any | null> {
+        return Array.from(this.focusSessions.values()).find(
+            session => session.status === 'active' && (!userId || session.userId === userId)
+        ) || null;
+    }
+
     async addFocusSession(session: any, userId?: string | null): Promise<any> {
         const sessionWithId = { ...session, userId: userId || session.userId, id: session.id || Date.now().toString() };
         this.focusSessions.set(sessionWithId.id, sessionWithId);
         return sessionWithId;
+    }
+
+    async updateFocusSession(session: any, userId?: string | null): Promise<void> {
+        const sessionWithUserId = { ...session, userId: userId || session.userId };
+        if (this.focusSessions.has(sessionWithUserId.id)) {
+            this.focusSessions.set(sessionWithUserId.id, sessionWithUserId);
+        }
+    }
+
+    async finalizeOrphanedSessions(userId?: string | null): Promise<void> {
+        const now = new Date().getTime();
+        for (const [id, session] of this.focusSessions.entries()) {
+            if (session.status === 'active' && (!userId || session.userId === userId)) {
+                if (session.expectedEndTime && new Date(session.expectedEndTime).getTime() < now) {
+                    const updatedSession = { ...session };
+                    updatedSession.status = 'completed';
+                    updatedSession.endTime = updatedSession.expectedEndTime;
+                    if (!updatedSession.events) updatedSession.events = [];
+                    updatedSession.events.push({
+                        type: 'stop',
+                        timestamp: updatedSession.expectedEndTime
+                    });
+
+                    const startEvent = updatedSession.events.find((e: any) => e.type === 'start');
+                    if (startEvent) {
+                        const ms = new Date(updatedSession.expectedEndTime).getTime() - new Date(startEvent.timestamp).getTime();
+                        updatedSession.duration = Math.floor(ms / 60000);
+                    }
+
+                    this.focusSessions.set(id, updatedSession);
+                }
+            }
+        }
     }
 
     async getGoals(userId?: string | null): Promise<any[]> {

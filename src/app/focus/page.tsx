@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import {
     FocusSession,
@@ -10,7 +10,7 @@ import {
     Task
 } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { getFocusSessions, addFocusSession, getAllTasks } from "@/lib/data";
+import { getFocusSessions, addFocusSession, getAllTasks, getActiveFocusSession, startFocusSession, updateActiveFocusSession } from "@/lib/data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -52,6 +52,69 @@ export default function FocusPage() {
     const [energy, setEnergy] = useState<EnergyLevel>("medium");
     const [isSaving, setIsSaving] = useState(false);
 
+    // Audio Cues
+    const beepsPlayedRef = useRef(new Set<number>());
+
+    const playBeep = (count: number) => {
+        if (typeof window === 'undefined') return;
+        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+        if (!AudioContext) return;
+
+        try {
+            const ctx = new AudioContext();
+            for (let i = 0; i < count; i++) {
+                const osc = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+                osc.connect(gainNode);
+                gainNode.connect(ctx.destination);
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, ctx.currentTime + i * 0.4);
+
+                gainNode.gain.setValueAtTime(0.1, ctx.currentTime + i * 0.4);
+                gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.4 + 0.3);
+
+                osc.start(ctx.currentTime + i * 0.4);
+                osc.stop(ctx.currentTime + i * 0.4 + 0.3);
+            }
+        } catch (err) {
+            console.error("Audio playback failed:", err);
+        }
+    };
+
+    // Reset beeps when deactivated (e.g., manually paused or stopped)
+    useEffect(() => {
+        if (!isActive) {
+            beepsPlayedRef.current.clear();
+        }
+    }, [isActive]);
+
+    // Track elapsed time for beeping logic
+    useEffect(() => {
+        if (!isActive || mode === 'stopwatch') return;
+
+        const targetSeconds = mode === 'pomodoro' ? 25 * 60 : customMinutes * 60;
+        const halfTime = Math.floor(targetSeconds * 0.5);
+        const eightyTime = Math.floor(targetSeconds * 0.8);
+
+        if (elapsedTime >= targetSeconds) {
+            if (!beepsPlayedRef.current.has(100)) {
+                playBeep(3);
+                beepsPlayedRef.current.add(100);
+            }
+        } else if (elapsedTime >= eightyTime && eightyTime > 0) {
+            if (!beepsPlayedRef.current.has(80)) {
+                playBeep(2);
+                beepsPlayedRef.current.add(80);
+            }
+        } else if (elapsedTime >= halfTime && halfTime > 0) {
+            if (!beepsPlayedRef.current.has(50)) {
+                playBeep(1);
+                beepsPlayedRef.current.add(50);
+            }
+        }
+    }, [elapsedTime, isActive, mode, customMinutes]);
+
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
@@ -59,6 +122,27 @@ export default function FocusPage() {
             const fetchedSessions = await getFocusSessions();
             setTasks(Array.isArray(fetchedTasks) ? fetchedTasks : []);
             setSessions(fetchedSessions || []);
+
+            // Resume resilient active session if it exists on backend
+            const activeSession = await getActiveFocusSession();
+            if (activeSession) {
+                setSessionStartTime(new Date(activeSession.startTime));
+                setMode(activeSession.mode);
+                setTargetTaskId(activeSession.taskId);
+                setDistractions(activeSession.distractions || []);
+
+                if (activeSession.expectedEndTime && activeSession.mode !== 'stopwatch') {
+                    const remainingMs = new Date(activeSession.expectedEndTime).getTime() - Date.now();
+                    setTimeRemaining(Math.max(0, Math.floor(remainingMs / 1000)));
+                    const elapsedMs = Date.now() - new Date(activeSession.startTime).getTime();
+                    setElapsedTime(Math.floor(elapsedMs / 1000));
+                } else {
+                    const elapsedMs = Date.now() - new Date(activeSession.startTime).getTime();
+                    setElapsedTime(Math.floor(elapsedMs / 1000));
+                }
+                setIsActive(true);
+            }
+
             setLoading(false);
         };
         fetchData();
@@ -109,24 +193,31 @@ export default function FocusPage() {
         setDistractions([]);
     };
 
-    const handleStart = () => {
+    const handleStart = async () => {
         if (!sessionStartTime) {
             setSessionStartTime(new Date());
+            const expectedDuration = mode === 'pomodoro' ? 25 : (mode === 'countdown' ? customMinutes : 120);
+            await startFocusSession({ mode, expectedDuration, taskId: targetTaskId });
+        } else {
+            await updateActiveFocusSession('resume');
         }
         setIsActive(true);
     };
 
-    const handlePause = () => {
+    const handlePause = async () => {
         setIsActive(false);
+        await updateActiveFocusSession('pause');
     }
 
-    const handleStop = (overrideElapsed?: any) => {
+    const handleStop = async (overrideElapsed?: any) => {
         setIsActive(false);
+        await updateActiveFocusSession('pause');
         const currentElapsed = typeof overrideElapsed === 'number' ? overrideElapsed : elapsedTime;
         if (currentElapsed > 60) { // Only prompt if > 1 minute tracked
             setIsModalOpen(true);
         } else {
             // Reset if too short
+            await updateActiveFocusSession('stop');
             setSessionStartTime(null);
             setElapsedTime(0);
             handleModeChange(mode);
@@ -138,14 +229,9 @@ export default function FocusPage() {
         setIsSaving(true);
 
         try {
-            const deepWorkScore = distractions.length === 0 && elapsedTime >= (30 * 60) ? 2 : 1; // 2x multiplier for 30m+ pure focus
+            const deepWorkScore = distractions.length === 0 && elapsedTime >= (30 * 60) ? 2 : 1;
 
-            await addFocusSession({
-                taskId: targetTaskId,
-                startTime: sessionStartTime.toISOString(),
-                endTime: new Date().toISOString(),
-                duration: Math.ceil(elapsedTime / 60), // in minutes
-                mode,
+            await updateActiveFocusSession('stop', {
                 productivityScore: productivity,
                 energyLevel: energy,
                 distractions,

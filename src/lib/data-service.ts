@@ -363,6 +363,63 @@ export async function addFocusSessionAsync(newSession: Omit<FocusSession, 'id'>,
     }
 }
 
+/**
+ * Get the active focus session
+ */
+export async function getActiveFocusSessionAsync(userId?: string | null): Promise<FocusSession | null> {
+    if (!isServer) {
+        return mockFocusSessions.find(s => s.status === 'active' && (!userId || s.userId === userId)) || null;
+    }
+
+    try {
+        const db = await getDatabase();
+        return await db.getActiveFocusSession(userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to get active focus session from database, returning mock data', error);
+        return mockFocusSessions.find(s => s.status === 'active' && (!userId || s.userId === userId)) || null;
+    }
+}
+
+/**
+ * Update a focus session
+ */
+export async function updateFocusSessionAsync(session: FocusSession, userId?: string | null): Promise<void> {
+    if (!isServer) {
+        const index = mockFocusSessions.findIndex(s => s.id === session.id);
+        if (index !== -1) {
+            mockFocusSessions[index] = session;
+        }
+        return;
+    }
+
+    try {
+        const db = await getDatabase();
+        await db.updateFocusSession(session, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to update focus session in database', { session, error });
+        const index = mockFocusSessions.findIndex(s => s.id === session.id);
+        if (index !== -1) {
+            mockFocusSessions[index] = session;
+        }
+    }
+}
+
+/**
+ * Finalize orphaned sessions
+ */
+export async function finalizeOrphanedSessionsAsync(userId?: string | null): Promise<void> {
+    if (!isServer) {
+        return; // No-op on client side mocks
+    }
+
+    try {
+        const db = await getDatabase();
+        await db.finalizeOrphanedSessions(userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to finalize orphaned sessions', error);
+    }
+}
+
 // === GOALS ===
 
 /**

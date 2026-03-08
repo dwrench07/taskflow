@@ -281,6 +281,19 @@ export class MongoDBAdapter implements DatabaseAdapter {
         }
     }
 
+    async getActiveFocusSession(userId?: string | null): Promise<FocusSession | null> {
+        this.ensureConnected();
+        try {
+            const query: any = { status: 'active' };
+            if (userId) query.userId = userId;
+            const session = await this.focusSessionsCollection!.findOne(query);
+            return session ? this.convertFromMongo<FocusSession>(session) : null;
+        } catch (error) {
+            this.logger.error('Failed to get active focus session', error);
+            throw new Error(`Failed to get active focus session: ${error}`);
+        }
+    }
+
     async addFocusSession(session: FocusSession, userId?: string | null): Promise<FocusSession> {
         this.ensureConnected();
         try {
@@ -295,6 +308,68 @@ export class MongoDBAdapter implements DatabaseAdapter {
         } catch (error) {
             this.logger.error('Failed to add focus session', { session, error });
             throw new Error(`Failed to add focus session: ${error}`);
+        }
+    }
+
+    async updateFocusSession(session: FocusSession, userId?: string | null): Promise<void> {
+        this.ensureConnected();
+        try {
+            const sessionToUpdate = this.convertToMongo({ ...session, userId });
+            const { _id, ...updateData } = sessionToUpdate;
+
+            const query: any = { _id: session.id };
+            if (userId) query.userId = userId;
+
+            const result = await this.focusSessionsCollection!.updateOne(query, {
+                $set: {
+                    ...updateData,
+                    updatedAt: new Date().toISOString()
+                }
+            });
+
+            if (result.matchedCount === 0) {
+                throw new Error('Focus session not found');
+            }
+        } catch (error) {
+            this.logger.error('Failed to update focus session', { session, error });
+            throw new Error(`Failed to update focus session: ${error}`);
+        }
+    }
+
+    async finalizeOrphanedSessions(userId?: string | null): Promise<void> {
+        this.ensureConnected();
+        try {
+            const query: any = { status: 'active', expectedEndTime: { $lt: new Date().toISOString() } };
+            if (userId) query.userId = userId;
+
+            // Find all orphaned and auto-close them.
+            // We set their stop event to exactly their expected end time.
+            const orphaned = await this.focusSessionsCollection!.find(query).toArray();
+            for (const doc of orphaned) {
+                const session = this.convertFromMongo<FocusSession>(doc);
+                session.status = 'completed';
+                session.endTime = session.expectedEndTime;
+
+                // Add an artificial stop event 
+                if (!session.events) session.events = [];
+                session.events.push({
+                    type: 'stop',
+                    timestamp: session.expectedEndTime!
+                });
+
+                // Compute exact duration based on events... this can be complex, 
+                // but as a fallback, we know it's roughly the expected duration.
+                const startEvent = session.events.find(e => e.type === 'start');
+                if (startEvent && session.expectedEndTime) {
+                    const ms = new Date(session.expectedEndTime).getTime() - new Date(startEvent.timestamp).getTime();
+                    session.duration = Math.floor(ms / 60000);
+                }
+
+                await this.updateFocusSession(session, userId);
+            }
+        } catch (error) {
+            this.logger.error('Failed to finalize orphaned sessions', error);
+            throw new Error(`Failed to finalize orphaned sessions: ${error}`);
         }
     }
 

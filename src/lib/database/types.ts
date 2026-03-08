@@ -44,6 +44,9 @@ export interface DatabaseAdapter {
     // Focus Session operations
     getFocusSessions(userId?: string | null): Promise<FocusSession[]>;
     addFocusSession(session: FocusSession, userId?: string | null): Promise<FocusSession>;
+    getActiveFocusSession(userId?: string | null): Promise<FocusSession | null>;
+    updateFocusSession(session: FocusSession, userId?: string | null): Promise<void>;
+    finalizeOrphanedSessions(userId?: string | null): Promise<void>;
 
     // Goal operations
     getGoals(userId?: string | null): Promise<Goal[]>;

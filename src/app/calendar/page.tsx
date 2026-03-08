@@ -95,12 +95,12 @@ function CalendarEvent({ event }: { event: CalendarEventData }) {
 
   const renderTitle = (title: string, isSubtask?: boolean) => {
     if (isSubtask) {
-      const match = title.match(/^(.*)\s*\(Subtask:\s*(.*)\)$/);
+      const match = title.match(/^(.*)\s*—\s*(.*)$/);
       if (match) {
         return (
-          <span className="truncate">
+          <span className="truncate flex-1 min-w-0">
             {match[1]}{" "}
-            <i className="font-normal opacity-90">(Subtask: {match[2]})</i>
+            <span className="font-normal opacity-75">— {match[2]}</span>
           </span>
         );
       }
@@ -169,7 +169,7 @@ export default function CalendarPage() {
                 isSubtask: true,
                 priority: task.priority,
                 isHabit: false,
-                title: `${task.title} (Subtask: ${subtask.title})`,
+                title: `${subtask.title} — ${task.title}`,
                 id: subtask.id,
               });
             }
@@ -572,14 +572,16 @@ export default function CalendarPage() {
                       <Link href={getLink()} className="hover:underline">
                         <p className={cn("font-semibold flex items-center flex-wrap gap-1", isCompleted && "line-through text-muted-foreground")}>
                           {(() => {
-                            const match = event.title.match(/^(.*)\s*\(Subtask:\s*(.*)\)$/);
-                            if (event.isSubtask && match) {
-                              return (
-                                <>
-                                  <span>{match[1]}</span>
-                                  <i className="text-sm font-normal text-muted-foreground">(Subtask: {match[2]})</i>
-                                </>
-                              );
+                            if (event.isSubtask) {
+                              const match = event.title.match(/^(.*)\s*—\s*(.*)$/);
+                              if (match) {
+                                return (
+                                  <h4 className="font-semibold text-lg flex flex-col">
+                                    {match[1]}{" "}
+                                    <span className="text-sm font-normal text-muted-foreground opacity-80">— {match[2]}</span>
+                                  </h4>
+                                );
+                              }
                             }
                             return <span>{event.title}</span>;
                           })()}

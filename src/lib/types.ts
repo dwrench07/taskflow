@@ -74,18 +74,28 @@ export interface User {
 export type FocusMode = 'pomodoro' | 'stopwatch' | 'countdown';
 export type ProductivityScore = 'high' | 'medium' | 'low';
 
+export interface TimerEvent {
+  type: 'start' | 'pause' | 'resume' | 'stop';
+  timestamp: string; // ISO date string
+}
+
 export interface FocusSession {
   id: string;
   userId?: string;             // Attached to the tenant
   taskId?: string;             // Optional association with a Task/Habit
   startTime: string;           // ISO date string
-  endTime: string;             // ISO date string
-  duration: number;            // Total active focus time in minutes
+  endTime?: string;            // ISO date string (optional until complete)
+  duration: number;            // Total active focus time in minutes (so far)
   mode: FocusMode;
   productivityScore?: ProductivityScore;
   energyLevel?: EnergyLevel;
   distractions: string[];
   deepWorkScore?: number;      // Multiplier logic
+
+  // Timer API Integration Fields
+  events?: TimerEvent[];
+  expectedEndTime?: string;    // ISO date string if a timer was started with a known duration
+  status?: 'active' | 'completed' | 'abandoned';
 }
 
 export interface Goal {

@@ -39,6 +39,8 @@ function createConfig(): AppConfig {
                 tasks: process.env.MONGODB_TASKS_COLLECTION || 'tasks',
                 templates: process.env.MONGODB_TEMPLATES_COLLECTION || 'templates',
                 dailyPlans: process.env.MONGODB_DAILY_PLANS_COLLECTION || 'dailyPlans',
+                focusSessions: process.env.MONGODB_FOCUS_SESSIONS_COLLECTION || 'focus_sessions',
+                goals: process.env.MONGODB_GOALS_COLLECTION || 'goals',
                 // Rename users_dev to users in production
                 users: process.env.NODE_ENV === 'production'
                     ? (process.env.MONGODB_USERS_COLLECTION || 'users')
@@ -53,6 +55,8 @@ function createConfig(): AppConfig {
                 tasks: 'tasks',
                 templates: 'templates',
                 dailyPlans: 'dailyPlans',
+                focusSessions: 'focus_sessions',
+                goals: 'goals',
                 // Add users collection for in-memory DB
                 users: process.env.NODE_ENV === 'production' ? 'users' : 'users_dev',
             },
