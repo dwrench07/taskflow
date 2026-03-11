@@ -2,7 +2,7 @@
  * Data service layer that uses the database abstraction
  */
 
-import type { Task, TaskTemplate, User, FocusSession, Goal } from './types';
+import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore } from './types';
 import type { DatabaseAdapter, DailyPlan } from './database/types';
 import { DatabaseFactory } from './database/factory';
 import { config, isServer } from './config';
@@ -115,8 +115,16 @@ const mockUsers: User[] = [
 ];
 
 const mockFocusSessions: FocusSession[] = [];
-
 const mockGoals: Goal[] = [];
+
+const mockPillars: Pillar[] = [
+    { id: 'pillar-1', title: 'Health', description: 'Physical and mental well-being', color: '#ef4444' },
+    { id: 'pillar-2', title: 'Wealth', description: 'Financial stability and growth', color: '#22c55e' },
+    { id: 'pillar-3', title: 'Wisdom', description: 'Learning and personal growth', color: '#3b82f6' },
+];
+
+const mockMilestones: Milestone[] = [];
+const mockChores: Chore[] = [];
 
 /**
  * Get all tasks
@@ -396,7 +404,7 @@ export async function updateFocusSessionAsync(session: FocusSession, userId?: st
         const db = await getDatabase();
         await db.updateFocusSession(session, userId);
     } catch (error) {
-        defaultLogger.warn('Failed to update focus session in database', { session, error });
+        defaultLogger.warn('Failed to update focus session in database', { session: session, error });
         const index = mockFocusSessions.findIndex(s => s.id === session.id);
         if (index !== -1) {
             mockFocusSessions[index] = session;
@@ -659,5 +667,141 @@ export async function createUserAsync(user: User): Promise<User | null> {
     } catch (error: any) {
         defaultLogger.error(`Failed to create user`, error);
         throw new Error(error.message || 'Failed to create user');
+    }
+}
+
+// === PILLARS ===
+
+export async function getPillarsAsync(userId?: string | null): Promise<Pillar[]> {
+    if (!isServer) return mockPillars;
+    try {
+        const db = await getDatabase();
+        return await db.getPillars(userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to get pillars from database', error);
+        return mockPillars;
+    }
+}
+
+export async function getPillarByIdAsync(id: string, userId?: string | null): Promise<Pillar | null> {
+    if (!isServer) {
+        return mockPillars.find(p => p.id === id) || null;
+    }
+    try {
+        const db = await getDatabase();
+        return await db.getPillar(id, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to get pillar from database', { id, error });
+        return mockPillars.find(p => p.id === id) || null;
+    }
+}
+
+export async function addPillarAsync(pillar: Omit<Pillar, 'id'>, userId?: string | null): Promise<Pillar> {
+    const withId: Pillar = { ...pillar, id: `pillar-${Date.now()}` };
+    if (!isServer) { mockPillars.push(withId); return withId; }
+    try {
+        const db = await getDatabase();
+        return await db.addPillar(withId, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to add pillar to database', error);
+        mockPillars.push(withId);
+        return withId;
+    }
+}
+
+export async function deletePillarAsync(id: string, userId?: string | null): Promise<boolean> {
+    if (!isServer) {
+        const idx = mockPillars.findIndex(p => p.id === id);
+        if (idx !== -1) { mockPillars.splice(idx, 1); return true; }
+        return false;
+    }
+    try {
+        const db = await getDatabase();
+        return await db.deletePillar(id, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to delete pillar', error);
+        return false;
+    }
+}
+
+// === MILESTONES ===
+
+export async function getMilestonesAsync(userId?: string | null): Promise<Milestone[]> {
+    if (!isServer) return mockMilestones;
+    try {
+        const db = await getDatabase();
+        return await db.getMilestones(userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to get milestones', error);
+        return mockMilestones;
+    }
+}
+
+export async function addMilestoneAsync(milestone: Omit<Milestone, 'id'>, userId?: string | null): Promise<Milestone> {
+    const withId: Milestone = { ...milestone, id: `milestone-${Date.now()}` } as Milestone;
+    if (!isServer) { mockMilestones.push(withId); return withId; }
+    try {
+        const db = await getDatabase();
+        return await db.addMilestone(withId, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to add milestone', error);
+        mockMilestones.push(withId);
+        return withId;
+    }
+}
+
+export async function deleteMilestoneAsync(id: string, userId?: string | null): Promise<boolean> {
+    if (!isServer) {
+        const idx = mockMilestones.findIndex(m => m.id === id);
+        if (idx !== -1) { mockMilestones.splice(idx, 1); return true; }
+        return false;
+    }
+    try {
+        const db = await getDatabase();
+        return await db.deleteMilestone(id, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to delete milestone', error);
+        return false;
+    }
+}
+
+// === CHORES ===
+
+export async function getChoresAsync(userId?: string | null): Promise<Chore[]> {
+    if (!isServer) return mockChores;
+    try {
+        const db = await getDatabase();
+        return await db.getChores(userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to get chores', error);
+        return mockChores;
+    }
+}
+
+export async function addChoreAsync(chore: Omit<Chore, 'id'>, userId?: string | null): Promise<Chore> {
+    const withId: Chore = { ...chore, id: `chore-${Date.now()}` } as Chore;
+    if (!isServer) { mockChores.push(withId); return withId; }
+    try {
+        const db = await getDatabase();
+        return await db.addChore(withId, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to add chore', error);
+        mockChores.push(withId);
+        return withId;
+    }
+}
+
+export async function deleteChoreAsync(id: string, userId?: string | null): Promise<boolean> {
+    if (!isServer) {
+        const idx = mockChores.findIndex(c => c.id === id);
+        if (idx !== -1) { mockChores.splice(idx, 1); return true; }
+        return false;
+    }
+    try {
+        const db = await getDatabase();
+        return await db.deleteChore(id, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to delete chore', error);
+        return false;
     }
 }

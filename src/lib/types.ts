@@ -39,8 +39,11 @@ export interface Task {
   lastCompletedDate?: string;
   dailyStatus?: DailyStatus[];
   goalId?: string; // Optional link to a long-term goal
+  milestoneId?: string; // Link to a specific milestone
   energyLevel?: EnergyLevel; // Optional energy requirement
   order?: number;
+  blocks?: string[]; // IDs of tasks that are blocked by this task
+  blockedBy?: string[]; // IDs of tasks that this task is blocked by
 }
 
 // New Template Types
@@ -60,6 +63,7 @@ export interface TaskTemplate {
   subtasks: TemplateSubtask[];
   tags?: string[];
   goalId?: string; // Optional link to a long-term goal
+  milestoneId?: string;
   energyLevel?: EnergyLevel; // Optional energy requirement
 }
 
@@ -109,4 +113,32 @@ export interface Goal {
   startDate?: string;
   tags?: string[];
   userId?: string; // Attached to the tenant
+  pillarId?: string; // Link to a life pillar
+}
+
+export interface Pillar {
+  id: string;
+  title: string;
+  description: string;
+  color?: string; // Visual categorization
+  icon?: string;
+  userId?: string;
+}
+
+export interface Milestone extends Goal {
+  // Inherits title, description, status, etc from Goal
+  // We can add milestone specific fields here if they diverge later
+  targetDate?: string;
+}
+
+export interface Chore {
+  id: string;
+  title: string;
+  description: string;
+  frequency: HabitFrequency;
+  lastCompleted?: string;
+  priority: Priority;
+  energyLevel: EnergyLevel;
+  userId?: string;
+  tags?: string[];
 }

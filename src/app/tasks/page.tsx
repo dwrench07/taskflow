@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { ListTodo, FileText, Calendar as CalendarIcon, Clock, PlusCircle, Edit, Trash2, Tag, ChevronDown, ClipboardList, ArrowUpDown, ArrowLeft, Search, XCircle, Save, Loader2, Timer, Check, ArrowUp, ArrowDown } from "lucide-react";
+import { ListTodo, FileText, Calendar as CalendarIcon, Clock, PlusCircle, Edit, Trash2, Tag, ChevronDown, ClipboardList, ArrowUpDown, ArrowLeft, Search, XCircle, Save, Loader2, Timer, Check, ArrowUp, ArrowDown, Lock } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -67,18 +67,29 @@ const statusStyles: Record<Status, string> = {
 
 type SortOption = "priority" | "title" | "startDate" | "status";
 
-function TaskListItem({ task, onSelect, isSelected }: { task: Task; onSelect: () => void; isSelected: boolean }) {
+function TaskListItem({ task, allTasks, onSelect, isSelected }: { task: Task; allTasks: Task[]; onSelect: () => void; isSelected: boolean }) {
+  const isBlocked = task.status !== "done" && task.blockedBy && task.blockedBy.some(blockerId => {
+    const blocker = allTasks.find(t => t.id === blockerId);
+    return blocker && blocker.status !== "done";
+  });
   const completionPercentage =
     task?.subtasks?.length > 0
       ? (task.subtasks.filter((st) => st.completed).length / task.subtasks.length) * 100
       : task.status === "done" ? 100 : 0;
 
   return (
-    <button onClick={onSelect} className={cn(
-      "w-full block text-left p-4 rounded-xl border transition-all duration-300 ease-in-out animate-fade-in shadow-sm hover:shadow-md outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 overflow-hidden max-w-full min-w-0",
+    <button onClick={onSelect} disabled={isBlocked} className={cn(
+      "w-full block text-left p-4 rounded-xl border transition-all duration-300 ease-in-out animate-fade-in shadow-sm hover:shadow-md outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 overflow-hidden max-w-full min-w-0 relative",
       isSelected ? 'bg-primary/10 border-primary scale-[1.01]' : 'bg-card hover:bg-muted/50 hover:scale-[1.02] hover:border-primary/50',
-      task.status === 'done' && 'border-green-500/20 opacity-80'
+      task.status === 'done' && 'border-green-500/20 opacity-80',
+      isBlocked && 'opacity-50 grayscale select-none pointer-events-none hover:scale-100 hover:bg-card'
     )}>
+      {isBlocked && (
+        <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-background/80 backdrop-blur text-red-500 px-2 py-1 rounded-md border border-red-500/20 shadow-sm z-10">
+          <Lock className="w-3.5 h-3.5" />
+          <span className="text-xs font-semibold tracking-wide">LOCKED</span>
+        </div>
+      )}
       <div className="flex justify-between items-start gap-2 w-full">
         <p className="font-semibold truncate flex-1 text-left min-w-0 break-words">{task.title}</p>
         <Badge variant="outline" className={cn("capitalize flex-shrink-0 mt-0.5", priorityStyles[task.priority])}>
@@ -676,7 +687,10 @@ function TasksPageContent() {
                       const sanitizedData = {
                         ...data,
                         goalId: data.goalId === null ? undefined : data.goalId,
-                        energyLevel: data.energyLevel === null ? undefined : data.energyLevel
+                        milestoneId: data.milestoneId === "none" || data.milestoneId === null ? undefined : data.milestoneId,
+                        energyLevel: data.energyLevel === null ? undefined : data.energyLevel,
+                        blocks: data.blocks || [],
+                        blockedBy: data.blockedBy || [],
                       };
                       handleAddTask(sanitizedData);
                       setIsFormOpen(false);
@@ -770,6 +784,7 @@ function TasksPageContent() {
                 <TaskListItem
                   key={task.id}
                   task={task}
+                  allTasks={allTasks}
                   isSelected={selectedTask?.id === task.id}
                   onSelect={() => handleSelectTask(task)}
                 />
@@ -843,7 +858,10 @@ function TasksPageContent() {
                                       ...selectedTask,
                                       ...data,
                                       goalId: data.goalId === null ? undefined : data.goalId,
-                                      energyLevel: data.energyLevel === null ? undefined : data.energyLevel
+                                      energyLevel: data.energyLevel === null ? undefined : data.energyLevel,
+                                      milestoneId: data.milestoneId === "none" || data.milestoneId === null ? undefined : data.milestoneId,
+                                      blockedBy: data.blockedBy || [],
+                                      blocks: data.blocks || [],
                                     };
                                     await handleUpdateTask(updatedData);
                                     setIsEditingFormOpen(false);

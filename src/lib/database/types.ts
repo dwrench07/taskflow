@@ -3,7 +3,7 @@
  * Provides a unified interface for different database implementations
  */
 
-import type { Task, TaskTemplate, User, FocusSession, Goal } from '../types';
+import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore } from '../types';
 
 export interface DailyPlan {
     id: string;
@@ -60,6 +60,27 @@ export interface DatabaseAdapter {
     getUserByEmail(email: string): Promise<User | null>;
     createUser(user: User): Promise<User>;
 
+    // Pillar operations
+    getPillars(userId?: string | null): Promise<Pillar[]>;
+    getPillar(id: string, userId?: string | null): Promise<Pillar | null>;
+    addPillar(pillar: Pillar, userId?: string | null): Promise<Pillar>;
+    updatePillar(pillar: Pillar, userId?: string | null): Promise<Pillar>;
+    deletePillar(id: string, userId?: string | null): Promise<boolean>;
+
+    // Milestone operations
+    getMilestones(userId?: string | null): Promise<Milestone[]>;
+    getMilestone(id: string, userId?: string | null): Promise<Milestone | null>;
+    addMilestone(milestone: Milestone, userId?: string | null): Promise<Milestone>;
+    updateMilestone(milestone: Milestone, userId?: string | null): Promise<Milestone>;
+    deleteMilestone(id: string, userId?: string | null): Promise<boolean>;
+
+    // Chore operations
+    getChores(userId?: string | null): Promise<Chore[]>;
+    getChore(id: string, userId?: string | null): Promise<Chore | null>;
+    addChore(chore: Chore, userId?: string | null): Promise<Chore>;
+    updateChore(chore: Chore, userId?: string | null): Promise<Chore>;
+    deleteChore(id: string, userId?: string | null): Promise<boolean>;
+
     // Health check
     healthCheck(): Promise<boolean>;
 }
@@ -82,6 +103,9 @@ export interface DatabaseConfig {
         users: string;
         focusSessions: string;
         goals: string;
+        pillars: string;
+        milestones: string;
+        chores: string;
     };
 }
 

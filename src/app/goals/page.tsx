@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Target, PlusCircle, MoreVertical, Edit, Trash2, Calendar, Target as TargetIcon } from "lucide-react";
+import { Target, PlusCircle, MoreVertical, Edit, Trash2, Calendar, Target as TargetIcon, CheckCircle2, Circle } from "lucide-react";
 import { GoalForm } from "@/components/goal-form";
 import { useToast } from "@/hooks/use-toast";
 
@@ -193,6 +193,30 @@ export default function GoalsPage() {
                                                 />
                                             </div>
                                         </div>
+
+                                        {(() => {
+                                            const goalTasks = tasks.filter(t => t.goalId === goal.id);
+                                            const activeTasks = goalTasks.filter(t => t.status !== 'done' && t.status !== 'abandoned').slice(0, 3);
+                                            
+                                            if (activeTasks.length === 0) return null;
+                                            
+                                            return (
+                                                <div className="bg-muted/30 rounded-xl p-3 space-y-2 border border-border/30 mt-4">
+                                                    <p className="text-xs font-medium text-muted-foreground mb-1">Active Tasks</p>
+                                                    {activeTasks.map(task => (
+                                                        <div key={task.id} className="flex items-center gap-2 text-sm line-clamp-1">
+                                                            <Circle className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+                                                            <span className="truncate">{task.title}</span>
+                                                        </div>
+                                                    ))}
+                                                    {goalTasks.filter(t => t.status !== 'done' && t.status !== 'abandoned').length > 3 && (
+                                                        <p className="text-xs text-muted-foreground italic pl-5">
+                                                            +{goalTasks.filter(t => t.status !== 'done' && t.status !== 'abandoned').length - 3} more...
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            );
+                                        })()}
 
                                         <div className="flex flex-wrap gap-2 pt-2">
                                             <Badge variant={goal.status === 'completed' ? 'default' : goal.status === 'abandoned' ? 'destructive' : 'secondary'} className="capitalize">

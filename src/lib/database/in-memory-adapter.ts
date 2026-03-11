@@ -1,6 +1,6 @@
 
 import type { DatabaseAdapter, DatabaseLogger } from './types';
-import type { User } from '../types';
+import type { User, Pillar, Milestone, Chore } from '../types';
 
 // Initial mock data for development
 const initialTasks = [
@@ -47,26 +47,6 @@ const initialTasks = [
         startDate: "2024-08-12T09:00:00.000Z",
         subtasks: [],
         notes: ["Focus on social media and content marketing.", "Need to coordinate with the sales team for promotions."],
-    },
-    {
-        id: 'habit-1',
-        title: 'Daily Reading',
-        description: 'Read for at least 30 minutes every day',
-        priority: 'medium',
-        status: 'in-progress',
-        isHabit: true,
-        habitFrequency: 'daily',
-        streakGoal: 30,
-        completionHistory: ['2024-08-01', '2024-08-02', '2024-08-03'],
-        lastCompletedDate: '2024-08-03',
-        subtasks: [],
-        notes: [],
-        tags: ['reading', 'personal-development'],
-        dailyStatus: [
-            { date: '2024-08-01', status: 'changes observed' },
-            { date: '2024-08-02', status: 'changes observed' },
-            { date: '2024-08-03', status: 'no changes' },
-        ]
     }
 ];
 
@@ -110,6 +90,9 @@ export class MemoryAdapter implements DatabaseAdapter {
     private users: Map<string, User> = new Map();
     private focusSessions: Map<string, any> = new Map();
     private goals: Map<string, any> = new Map();
+    private pillars: Map<string, any> = new Map();
+    private milestones: Map<string, any> = new Map();
+    private chores: Map<string, any> = new Map();
     private connected = false;
 
     constructor(private logger: DatabaseLogger) { }
@@ -134,6 +117,9 @@ export class MemoryAdapter implements DatabaseAdapter {
         this.dailyPlans.clear();
         this.users.clear();
         this.goals.clear();
+        this.pillars.clear();
+        this.milestones.clear();
+        this.chores.clear();
         this.logger.info('Disconnected from in-memory database');
     }
 
@@ -142,22 +128,25 @@ export class MemoryAdapter implements DatabaseAdapter {
     }
 
     async getAllTasks(userId?: string | null): Promise<any[]> {
-        return Array.from(this.tasks.values());
+        return Array.from(this.tasks.values()).filter(t => !userId || t.userId === userId);
     }
 
     async getTask(id: string, userId?: string | null): Promise<any | null> {
-        return this.tasks.get(id) || null;
+        const item = this.tasks.get(id);
+        if (item && (!userId || item.userId === userId)) return item;
+        return null;
     }
 
     async addTask(task: any, userId?: string | null): Promise<any> {
-        const taskWithId = { ...task, id: task.id || Date.now().toString() };
+        const taskWithId = { ...task, userId: userId || task.userId, id: task.id || Date.now().toString() };
         this.tasks.set(taskWithId.id, taskWithId);
         return taskWithId;
     }
 
     async updateTask(task: any, userId?: string | null): Promise<any> {
-        this.tasks.set(task.id, task);
-        return task;
+        const taskWithUserId = { ...task, userId: userId || task.userId };
+        this.tasks.set(taskWithUserId.id, taskWithUserId);
+        return taskWithUserId;
     }
 
     async deleteTask(id: string, userId?: string | null): Promise<boolean> {
@@ -292,5 +281,74 @@ export class MemoryAdapter implements DatabaseAdapter {
 
     async healthCheck(): Promise<boolean> {
         return this.connected;
+    }
+
+    // Pillar operations
+    async getPillars(userId?: string | null): Promise<any[]> {
+        return Array.from(this.pillars.values()).filter(p => !userId || p.userId === userId);
+    }
+    async getPillar(id: string, userId?: string | null): Promise<any | null> {
+        const pillar = this.pillars.get(id);
+        if (pillar && (!userId || pillar.userId === userId)) return pillar;
+        return null;
+    }
+    async addPillar(pillar: any, userId?: string | null): Promise<any> {
+        const pillarWithId = { ...pillar, userId: userId || pillar.userId, id: pillar.id || Date.now().toString() };
+        this.pillars.set(pillarWithId.id, pillarWithId);
+        return pillarWithId;
+    }
+    async updatePillar(pillar: any, userId?: string | null): Promise<any> {
+        const pWithId = { ...pillar, userId: userId || pillar.userId };
+        this.pillars.set(pWithId.id, pWithId);
+        return pWithId;
+    }
+    async deletePillar(id: string, userId?: string | null): Promise<boolean> {
+        return this.pillars.delete(id);
+    }
+
+    // Milestone operations
+    async getMilestones(userId?: string | null): Promise<any[]> {
+        return Array.from(this.milestones.values()).filter(m => !userId || m.userId === userId);
+    }
+    async getMilestone(id: string, userId?: string | null): Promise<any | null> {
+        const milestone = this.milestones.get(id);
+        if (milestone && (!userId || milestone.userId === userId)) return milestone;
+        return null;
+    }
+    async addMilestone(milestone: any, userId?: string | null): Promise<any> {
+        const mWithId = { ...milestone, userId: userId || milestone.userId, id: milestone.id || Date.now().toString() };
+        this.milestones.set(mWithId.id, mWithId);
+        return mWithId;
+    }
+    async updateMilestone(milestone: any, userId?: string | null): Promise<any> {
+        const mWithId = { ...milestone, userId: userId || milestone.userId };
+        this.milestones.set(mWithId.id, mWithId);
+        return mWithId;
+    }
+    async deleteMilestone(id: string, userId?: string | null): Promise<boolean> {
+        return this.milestones.delete(id);
+    }
+
+    // Chore operations
+    async getChores(userId?: string | null): Promise<any[]> {
+        return Array.from(this.chores.values()).filter(c => !userId || c.userId === userId);
+    }
+    async getChore(id: string, userId?: string | null): Promise<any | null> {
+        const chore = this.chores.get(id);
+        if (chore && (!userId || chore.userId === userId)) return chore;
+        return null;
+    }
+    async addChore(chore: any, userId?: string | null): Promise<any> {
+        const cWithId = { ...chore, userId: userId || chore.userId, id: chore.id || Date.now().toString() };
+        this.chores.set(cWithId.id, cWithId);
+        return cWithId;
+    }
+    async updateChore(chore: any, userId?: string | null): Promise<any> {
+        const cWithId = { ...chore, userId: userId || chore.userId };
+        this.chores.set(cWithId.id, cWithId);
+        return cWithId;
+    }
+    async deleteChore(id: string, userId?: string | null): Promise<boolean> {
+        return this.chores.delete(id);
     }
 }

@@ -25,7 +25,8 @@ import {
 } from "@/components/ui/select"
 import { type Task, type Goal } from "@/lib/types";
 import { TagInput } from "./tag-input";
-import { getAllGoals } from "@/lib/data";
+import { getAllGoals, getAllMilestones, getAllTasks } from "@/lib/data";
+import { type Milestone } from "@/lib/types";
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -38,6 +39,9 @@ const formSchema = z.object({
   energyLevel: z.enum(["high", "medium", "low"]).optional().nullable(),
   tags: z.array(z.string()).optional(),
   goalId: z.string().optional().nullable(),
+  milestoneId: z.string().optional().nullable(),
+  blockedBy: z.array(z.string()).optional(),
+  blocks: z.array(z.string()).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -50,10 +54,21 @@ interface TaskFormProps {
 
 export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
   const [goals, setGoals] = useState<Goal[]>([]);
+  const [milestones, setMilestones] = useState<Milestone[]>([]);
+  const [allExistingTasks, setAllExistingTasks] = useState<Task[]>([]);
 
   useEffect(() => {
-    getAllGoals().then(setGoals).catch(console.error);
-  }, []);
+    Promise.all([
+      getAllGoals(),
+      getAllMilestones(),
+      getAllTasks(),
+    ]).then(([fetchedGoals, fetchedMilestones, fetchedTasks]) => {
+      setGoals(fetchedGoals);
+      setMilestones(fetchedMilestones);
+      // Don't allow a task to block itself
+      setAllExistingTasks(fetchedTasks.filter(t => t.id !== task?.id));
+    }).catch(console.error);
+  }, [task?.id]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -63,7 +78,10 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
       priority: task?.priority || "medium",
       tags: task?.tags || [],
       goalId: task?.goalId || null,
+      milestoneId: task?.milestoneId || null,
       energyLevel: task?.energyLevel || null,
+      blockedBy: task?.blockedBy || [],
+      blocks: task?.blocks || [],
     },
   });
 
@@ -150,6 +168,29 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
+            name="milestoneId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Linked Milestone (Optional)</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value || "none"}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="No milestone linked" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {milestones.map((m) => (
+                      <SelectItem key={m.id} value={m.id}>{m.title}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
             name="energyLevel"
             render={({ field }) => (
               <FormItem>
@@ -190,6 +231,68 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
             </FormItem>
           )}
         />
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="blockedBy"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Blocked By (Dependencies)</FormLabel>
+                <FormControl>
+                  <div className="border rounded-md p-2 max-h-48 overflow-y-auto space-y-2">
+                    {allExistingTasks.length === 0 && <p className="text-sm text-muted-foreground p-2">No other tasks available.</p>}
+                    {allExistingTasks.map(t => (
+                      <label key={`blockedBy-${t.id}`} className="flex items-center space-x-2 text-sm">
+                        <input 
+                          type="checkbox" 
+                          checked={field.value?.includes(t.id)}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            const current = field.value || [];
+                            field.onChange(checked ? [...current, t.id] : current.filter(id => id !== t.id));
+                          }}
+                          className="rounded border-gray-300 text-primary focus:ring-primary"
+                        />
+                        <span className="truncate">{t.title}</span>
+                      </label>
+                    ))}
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="blocks"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Blocks (Dependents)</FormLabel>
+                <FormControl>
+                  <div className="border rounded-md p-2 max-h-48 overflow-y-auto space-y-2">
+                    {allExistingTasks.length === 0 && <p className="text-sm text-muted-foreground p-2">No other tasks available.</p>}
+                    {allExistingTasks.map(t => (
+                      <label key={`blocks-${t.id}`} className="flex items-center space-x-2 text-sm">
+                        <input 
+                          type="checkbox" 
+                          checked={field.value?.includes(t.id)}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            const current = field.value || [];
+                            field.onChange(checked ? [...current, t.id] : current.filter(id => id !== t.id));
+                          }}
+                          className="rounded border-gray-300 text-primary focus:ring-primary"
+                        />
+                        <span className="truncate">{t.title}</span>
+                      </label>
+                    ))}
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         <Button type="submit">
           {task ? 'Save Changes' : 'Create Task'}
         </Button>

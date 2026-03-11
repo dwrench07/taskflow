@@ -75,6 +75,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 id // Explicitly preserve the ID
             };
 
+            // Check dependencies before allowing completion
+            if (safelyMergedTask.status === 'done' && existingTask.blockedBy && existingTask.blockedBy.length > 0) {
+                for (const blockerId of existingTask.blockedBy) {
+                    const blockerTask = await getTaskAsync(blockerId, userId);
+                    if (blockerTask && blockerTask.status !== 'done') {
+                        return res.status(400).json({
+                            error: `Cannot complete task. Blocked by incomplete task: ${blockerTask.title}`
+                        });
+                    }
+                }
+            }
+
             await updateTaskAsync(safelyMergedTask, userId);
             return res.status(200).json({ message: 'Task updated successfully' });
         }

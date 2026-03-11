@@ -11,7 +11,9 @@ import {
   ClipboardList,
   Repeat,
   Timer,
-  StickyNote
+  StickyNote,
+  Map,
+  CheckSquare
 } from "lucide-react";
 
 import {
@@ -40,6 +42,8 @@ const menuItems = [
   { href: "/plan", label: "Plan", icon: FilePenLine },
   { href: "/calendar", label: "Calendar", icon: Calendar },
   { href: "/jots", label: "Jots", icon: StickyNote },
+  { href: "/alignment", label: "Alignment", icon: Map },
+  { href: "/chores", label: "Chores", icon: CheckSquare },
   { href: "/profile", label: "Profile", icon: User },
 ];
 

@@ -1,4 +1,4 @@
-import type { Task, TaskTemplate, FocusSession, Goal } from './types';
+import type { Task, TaskTemplate, FocusSession, Goal, Pillar, Milestone, Chore } from './types';
 
 // === API FUNCTIONS FOR CLIENT-SIDE USAGE ===
 // These functions make direct API calls and are used by React components
@@ -307,4 +307,96 @@ export async function deleteGoal(goalId: string): Promise<void> {
   if (!response.ok) {
     throw new Error(`Failed to delete goal: ${response.statusText}`);
   }
+}
+
+// === PILLARS ===
+
+export async function getAllPillars(): Promise<Pillar[]> {
+  try {
+    const response = await fetch('/api/pillars');
+    if (response.ok) return await response.json();
+    return [];
+  } catch (error) {
+    console.error('Failed to fetch pillars:', error);
+    return [];
+  }
+}
+
+export async function getPillarById(id: string): Promise<Pillar | null> {
+  try {
+    const response = await fetch(`/api/pillars/${id}`);
+    if (response.ok) return await response.json();
+    return null;
+  } catch (error) {
+    console.error(`Failed to fetch pillar ${id}:`, error);
+    return null;
+  }
+}
+
+export async function addPillar(pillar: Omit<Pillar, 'id'>): Promise<Pillar> {
+  const response = await fetch('/api/pillars', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(pillar),
+  });
+  if (response.ok) return await response.json();
+  throw new Error(`Failed to add pillar: ${response.statusText}`);
+}
+
+export async function deletePillar(id: string): Promise<void> {
+  await fetch(`/api/pillars/${id}`, { method: 'DELETE' });
+}
+
+// === MILESTONES ===
+
+export async function getAllMilestones(): Promise<Milestone[]> {
+  try {
+    const response = await fetch('/api/milestones');
+    if (response.ok) return await response.json();
+    return [];
+  } catch (error) {
+    console.error('Failed to fetch milestones:', error);
+    return [];
+  }
+}
+
+export async function addMilestone(milestone: Omit<Milestone, 'id'>): Promise<Milestone> {
+  const response = await fetch('/api/milestones', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(milestone),
+  });
+  if (response.ok) return await response.json();
+  throw new Error(`Failed to add milestone: ${response.statusText}`);
+}
+
+export async function deleteMilestone(id: string): Promise<void> {
+  await fetch(`/api/milestones/${id}`, { method: 'DELETE' });
+}
+
+// === CHORES ===
+
+export async function getAllChores(): Promise<Chore[]> {
+  try {
+    const response = await fetch('/api/chores');
+    if (response.ok) return await response.json();
+    return [];
+  } catch (error) {
+    console.error('Failed to fetch chores:', error);
+    return [];
+  }
+}
+
+export async function addChore(chore: Omit<Chore, 'id'>): Promise<Chore> {
+  const response = await fetch('/api/chores', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(chore),
+  });
+  if (response.ok) return await response.json();
+  throw new Error(`Failed to add chore: ${response.statusText}`);
+}
+
+export async function deleteChore(id: string): Promise<void> {
+  await fetch(`/api/chores/${id}`, { method: 'DELETE' });
 }

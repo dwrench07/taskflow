@@ -466,28 +466,28 @@ export default function CalendarPage() {
 
       const newOrder = arrayMove(filteredEvents, oldIndex, newIndex);
 
-      // Update order field for each affected item
-      const updatePromises = newOrder.map(async (event, index) => {
-        if (event.isHabit) {
-          const habit = allTasks.find((t) => t.id === event.id);
-          if (habit && habit.order !== index) {
-            await updateTaskData({ ...habit, order: index });
+      const tasksToUpdate = new Map<string, Task>();
+
+      newOrder.forEach((event, index) => {
+        if (event.isHabit || (!event.isHabit && !event.isSubtask)) {
+          const taskId = event.id;
+          const task = tasksToUpdate.get(taskId) || allTasks.find((t) => t.id === taskId);
+          if (task && task.order !== index) {
+            tasksToUpdate.set(taskId, { ...task, order: index });
           }
         } else if (event.isSubtask) {
-          const parentTask = allTasks.find((t) => t.id === event.parentId);
+          const parentId = event.parentId!;
+          const parentTask = tasksToUpdate.get(parentId) || allTasks.find((t) => t.id === parentId);
           if (parentTask) {
             const updatedSubtasks = parentTask.subtasks.map((st) =>
               st.id === event.id ? { ...st, order: index } : st
             );
-            await updateTaskData({ ...parentTask, subtasks: updatedSubtasks });
-          }
-        } else {
-          const task = allTasks.find((t) => t.id === event.id);
-          if (task && task.order !== index) {
-            await updateTaskData({ ...task, order: index });
+            tasksToUpdate.set(parentId, { ...parentTask, subtasks: updatedSubtasks });
           }
         }
       });
+
+      const updatePromises = Array.from(tasksToUpdate.values()).map(task => updateTaskData(task));
 
       await Promise.all(updatePromises);
       refreshTasks();

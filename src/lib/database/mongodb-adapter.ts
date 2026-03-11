@@ -4,7 +4,7 @@
 
 import { MongoClient, Db, Collection, ObjectId } from 'mongodb';
 import type { DatabaseAdapter, DatabaseConfig, DatabaseLogger, DatabaseError, DailyPlan } from './types';
-import type { Task, TaskTemplate, User, FocusSession, Goal } from '../types';
+import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore } from '../types';
 
 export class MongoDBAdapter implements DatabaseAdapter {
     private client: MongoClient | null = null;
@@ -17,6 +17,9 @@ export class MongoDBAdapter implements DatabaseAdapter {
     private usersCollection: Collection<any> | null = null;
     private focusSessionsCollection: Collection<any> | null = null;
     private goalsCollection: Collection<any> | null = null;
+    private pillarsCollection: Collection<any> | null = null;
+    private milestonesCollection: Collection<any> | null = null;
+    private choresCollection: Collection<any> | null = null;
 
     constructor(
         private config: DatabaseConfig,
@@ -50,6 +53,9 @@ export class MongoDBAdapter implements DatabaseAdapter {
             this.usersCollection = this.db.collection(this.config.collections?.users || 'users');
             this.focusSessionsCollection = this.db.collection(this.config.collections?.focusSessions || 'focus_sessions');
             this.goalsCollection = this.db.collection(this.config.collections?.goals || 'goals');
+            this.pillarsCollection = this.db.collection(this.config.collections?.pillars || 'pillars');
+            this.milestonesCollection = this.db.collection(this.config.collections?.milestones || 'milestones');
+            this.choresCollection = this.db.collection(this.config.collections?.chores || 'chores');
 
             // Create indexes for better performance
             await this.createIndexes();
@@ -456,6 +462,204 @@ export class MongoDBAdapter implements DatabaseAdapter {
         }
     }
 
+    // Pillar operations
+    async getPillars(userId?: string | null): Promise<Pillar[]> {
+        this.ensureConnected();
+        try {
+            const query = userId ? { userId } : {};
+            const items = await this.pillarsCollection!.find(query).toArray();
+            return items.map(p => this.convertFromMongo<Pillar>(p));
+        } catch (error) {
+            this.logger.error('Failed to get pillars', error);
+            throw new Error(`Failed to get pillars: ${error}`);
+        }
+    }
+
+    async getPillar(id: string, userId?: string | null): Promise<Pillar | null> {
+        this.ensureConnected();
+        try {
+            const query: any = { _id: id };
+            if (userId) query.userId = userId;
+            const item = await this.pillarsCollection!.findOne(query);
+            return item ? this.convertFromMongo<Pillar>(item) : null;
+        } catch (error) {
+            this.logger.error('Failed to get pillar', { id, error });
+            throw new Error(`Failed to get pillar: ${error}`);
+        }
+    }
+
+    async addPillar(pillar: Pillar, userId?: string | null): Promise<Pillar> {
+        this.ensureConnected();
+        try {
+            const toInsert = this.convertToMongo({ ...pillar, userId });
+            const result = await this.pillarsCollection!.insertOne(toInsert);
+            return { ...pillar, id: result.insertedId.toString(), userId: userId || pillar.userId };
+        } catch (error) {
+            this.logger.error('Failed to add pillar', { pillar, error });
+            throw new Error(`Failed to add pillar: ${error}`);
+        }
+    }
+
+    async updatePillar(pillar: Pillar, userId?: string | null): Promise<Pillar> {
+        this.ensureConnected();
+        try {
+            const toUpdate = this.convertToMongo({ ...pillar, userId });
+            const { _id, ...updateData } = toUpdate;
+            const query: any = { _id: pillar.id };
+            if (userId) query.userId = userId;
+            await this.pillarsCollection!.updateOne(query, { $set: { ...updateData, updatedAt: new Date().toISOString() } });
+            return { ...pillar, userId: userId || pillar.userId };
+        } catch (error) {
+            this.logger.error('Failed to update pillar', { pillar, error });
+            throw new Error(`Failed to update pillar: ${error}`);
+        }
+    }
+
+    async deletePillar(id: string, userId?: string | null): Promise<boolean> {
+        this.ensureConnected();
+        try {
+            const query: any = { _id: id };
+            if (userId) query.userId = userId;
+            const result = await this.pillarsCollection!.deleteOne(query);
+            return result.deletedCount > 0;
+        } catch (error) {
+            this.logger.error('Failed to delete pillar', { id, error });
+            throw new Error(`Failed to delete pillar: ${error}`);
+        }
+    }
+
+    // Milestone operations
+    async getMilestones(userId?: string | null): Promise<Milestone[]> {
+        this.ensureConnected();
+        try {
+            const query = userId ? { userId } : {};
+            const items = await this.milestonesCollection!.find(query).toArray();
+            return items.map(m => this.convertFromMongo<Milestone>(m));
+        } catch (error) {
+            this.logger.error('Failed to get milestones', error);
+            throw new Error(`Failed to get milestones: ${error}`);
+        }
+    }
+
+    async getMilestone(id: string, userId?: string | null): Promise<Milestone | null> {
+        this.ensureConnected();
+        try {
+            const query: any = { _id: id };
+            if (userId) query.userId = userId;
+            const item = await this.milestonesCollection!.findOne(query);
+            return item ? this.convertFromMongo<Milestone>(item) : null;
+        } catch (error) {
+            this.logger.error('Failed to get milestone', { id, error });
+            throw new Error(`Failed to get milestone: ${error}`);
+        }
+    }
+
+    async addMilestone(milestone: Milestone, userId?: string | null): Promise<Milestone> {
+        this.ensureConnected();
+        try {
+            const toInsert = this.convertToMongo({ ...milestone, userId });
+            const result = await this.milestonesCollection!.insertOne(toInsert);
+            return { ...milestone, id: result.insertedId.toString(), userId: userId || milestone.userId };
+        } catch (error) {
+            this.logger.error('Failed to add milestone', { milestone, error });
+            throw new Error(`Failed to add milestone: ${error}`);
+        }
+    }
+
+    async updateMilestone(milestone: Milestone, userId?: string | null): Promise<Milestone> {
+        this.ensureConnected();
+        try {
+            const toUpdate = this.convertToMongo({ ...milestone, userId });
+            const { _id, ...updateData } = toUpdate;
+            const query: any = { _id: milestone.id };
+            if (userId) query.userId = userId;
+            await this.milestonesCollection!.updateOne(query, { $set: { ...updateData, updatedAt: new Date().toISOString() } });
+            return milestone;
+        } catch (error) {
+            this.logger.error('Failed to update milestone', { milestone, error });
+            throw new Error(`Failed to update milestone: ${error}`);
+        }
+    }
+
+    async deleteMilestone(id: string, userId?: string | null): Promise<boolean> {
+        this.ensureConnected();
+        try {
+            const query: any = { _id: id };
+            if (userId) query.userId = userId;
+            const result = await this.milestonesCollection!.deleteOne(query);
+            return result.deletedCount > 0;
+        } catch (error) {
+            this.logger.error('Failed to delete milestone', { id, error });
+            throw new Error(`Failed to delete milestone: ${error}`);
+        }
+    }
+
+    // Chore operations
+    async getChores(userId?: string | null): Promise<Chore[]> {
+        this.ensureConnected();
+        try {
+            const query = userId ? { userId } : {};
+            const items = await this.choresCollection!.find(query).toArray();
+            return items.map(c => this.convertFromMongo<Chore>(c));
+        } catch (error) {
+            this.logger.error('Failed to get chores', error);
+            throw new Error(`Failed to get chores: ${error}`);
+        }
+    }
+
+    async getChore(id: string, userId?: string | null): Promise<Chore | null> {
+        this.ensureConnected();
+        try {
+            const query: any = { _id: id };
+            if (userId) query.userId = userId;
+            const item = await this.choresCollection!.findOne(query);
+            return item ? this.convertFromMongo<Chore>(item) : null;
+        } catch (error) {
+            this.logger.error('Failed to get chore', { id, error });
+            throw new Error(`Failed to get chore: ${error}`);
+        }
+    }
+
+    async addChore(chore: Chore, userId?: string | null): Promise<Chore> {
+        this.ensureConnected();
+        try {
+            const toInsert = this.convertToMongo({ ...chore, userId });
+            const result = await this.choresCollection!.insertOne(toInsert);
+            return { ...chore, id: result.insertedId.toString(), userId: userId || chore.userId };
+        } catch (error) {
+            this.logger.error('Failed to add chore', { chore, error });
+            throw new Error(`Failed to add chore: ${error}`);
+        }
+    }
+
+    async updateChore(chore: Chore, userId?: string | null): Promise<Chore> {
+        this.ensureConnected();
+        try {
+            const toUpdate = this.convertToMongo({ ...chore, userId });
+            const { _id, ...updateData } = toUpdate;
+            const query: any = { _id: chore.id };
+            if (userId) query.userId = userId;
+            await this.choresCollection!.updateOne(query, { $set: { ...updateData, updatedAt: new Date().toISOString() } });
+            return chore;
+        } catch (error) {
+            this.logger.error('Failed to update chore', { chore, error });
+            throw new Error(`Failed to update chore: ${error}`);
+        }
+    }
+
+    async deleteChore(id: string, userId?: string | null): Promise<boolean> {
+        this.ensureConnected();
+        try {
+            const query: any = { _id: id };
+            if (userId) query.userId = userId;
+            const result = await this.choresCollection!.deleteOne(query);
+            return result.deletedCount > 0;
+        } catch (error) {
+            this.logger.error('Failed to delete chore', { id, error });
+            throw new Error(`Failed to delete chore: ${error}`);
+        }
+    }
+
     // User operations
     async getUser(id: string): Promise<User | null> {
         this.ensureConnected();
@@ -570,6 +774,13 @@ export class MongoDBAdapter implements DatabaseAdapter {
             await this.goalsCollection!.createIndex({ userId: 1 });
             await this.goalsCollection!.createIndex({ status: 1 });
             await this.goalsCollection!.createIndex({ createdAt: 1 });
+
+            // New indexes
+            await this.pillarsCollection!.createIndex({ userId: 1 });
+            await this.milestonesCollection!.createIndex({ userId: 1 });
+            await this.milestonesCollection!.createIndex({ status: 1 });
+            await this.choresCollection!.createIndex({ userId: 1 });
+            await this.choresCollection!.createIndex({ lastCompleted: 1 });
 
             this.logger.info('Database indexes created successfully');
         } catch (error) {
