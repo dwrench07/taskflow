@@ -450,6 +450,8 @@ export default function CalendarPage() {
     })
   );
 
+  const dailyEvents = getEventsForDay(currentDate);
+
   const handleDragEnd = async (dragEvent: DragEndEvent) => {
     const { active, over } = dragEvent;
 
@@ -487,11 +489,27 @@ export default function CalendarPage() {
         }
       });
 
-      const updatePromises = Array.from(tasksToUpdate.values()).map(task => updateTaskData(task));
+      // ---- Optimistic UI Update ----
+      setAllTasks((prevTasks) => {
+        const nextTasks = [...prevTasks];
+        tasksToUpdate.forEach((updatedTask, taskId) => {
+          const index = nextTasks.findIndex(t => t.id === taskId);
+          if (index !== -1) {
+            nextTasks[index] = updatedTask;
+          }
+        });
+        return nextTasks;
+      });
+      // -----------------------------
 
-      await Promise.all(updatePromises);
-      refreshTasks();
-      toast({ title: "Order updated" });
+      try {
+        const updatePromises = Array.from(tasksToUpdate.values()).map(task => updateTaskData(task));
+        await Promise.all(updatePromises);
+      } catch (error) {
+        console.error("Failed to persist order", error);
+        toast({ title: "Failed to save order", variant: "destructive" });
+        refreshTasks(); // Rollback on error
+      }
     }
   }
 
@@ -521,9 +539,6 @@ export default function CalendarPage() {
     setCurrentDate(day);
     setView("day");
   };
-
-  const dailyEvents = getEventsForDay(currentDate);
-
 
   return (
     <div className="flex flex-col gap-8">

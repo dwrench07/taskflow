@@ -10,7 +10,7 @@ import {
     Task
 } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { getFocusSessions, addFocusSession, getAllTasks, getActiveFocusSession, startFocusSession, updateActiveFocusSession } from "@/lib/data";
+import { getFocusSessions, addFocusSession, getAllTasks, getActiveFocusSession, startFocusSession, updateActiveFocusSession, updateFocusSession } from "@/lib/data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +41,7 @@ export default function FocusPage() {
     const [targetTaskId, setTargetTaskId] = useState<string | undefined>(initialTaskId || undefined);
     const [sessionGoal, setSessionGoal] = useState<string>("");
     const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
+    const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
     // Distraction Log
     const [distractions, setDistractions] = useState<string[]>([]);
@@ -126,6 +127,7 @@ export default function FocusPage() {
             // Resume resilient active session if it exists on backend
             const activeSession = await getActiveFocusSession();
             if (activeSession) {
+                setActiveSessionId(activeSession.id);
                 setSessionStartTime(new Date(activeSession.startTime));
                 setMode(activeSession.mode);
                 setTargetTaskId(activeSession.taskId);
@@ -197,7 +199,8 @@ export default function FocusPage() {
         if (!sessionStartTime) {
             setSessionStartTime(new Date());
             const expectedDuration = mode === 'pomodoro' ? 25 : (mode === 'countdown' ? customMinutes : 120);
-            await startFocusSession({ mode, expectedDuration, taskId: targetTaskId });
+            const newSession = await startFocusSession({ mode, expectedDuration, taskId: targetTaskId });
+            setActiveSessionId(newSession.id);
         } else {
             await updateActiveFocusSession('resume');
         }
@@ -219,6 +222,7 @@ export default function FocusPage() {
             // Reset if too short
             await updateActiveFocusSession('stop');
             setSessionStartTime(null);
+            setActiveSessionId(null);
             setElapsedTime(0);
             handleModeChange(mode);
         }
@@ -247,6 +251,7 @@ export default function FocusPage() {
             // Reset
             setIsModalOpen(false);
             setSessionStartTime(null);
+            setActiveSessionId(null);
             setElapsedTime(0);
             setDistractions([]);
             handleModeChange(mode);
@@ -414,8 +419,12 @@ export default function FocusPage() {
                                     onKeyDown={e => {
                                         if (e.key === 'Enter' && currentDistraction.trim()) {
                                             const timeStamp = mode === 'stopwatch' ? formatTime(elapsedTime) : formatTime(timeRemaining);
-                                            setDistractions([...distractions, `[ ] [${timeStamp}] ${currentDistraction.trim()}`]);
+                                            const newDistractions = [...distractions, `[ ] [${timeStamp}] ${currentDistraction.trim()}`];
+                                            setDistractions(newDistractions);
                                             setCurrentDistraction("");
+                                            if (activeSessionId) {
+                                                updateFocusSession(activeSessionId, { distractions: newDistractions }).catch(console.error);
+                                            }
                                         }
                                     }}
                                     disabled={!isActive}
