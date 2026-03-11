@@ -3,11 +3,21 @@
 
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
-import { allTasks } from "@/lib/data";
-import { useMemo } from 'react';
+import { getAllTasks } from "@/lib/data";
+import { useMemo, useEffect, useState } from 'react';
 import { subDays, format, parseISO, isSameDay } from 'date-fns';
+import { Task } from "@/lib/types";
 
 export function DashboardCompletionChart() {
+  const [allTasks, setAllTasks] = useState<Task[]>([]);
+
+  useEffect(() => {
+    const fetchTasks = async () => {
+      const tasks = await getAllTasks();
+      setAllTasks(tasks);
+    };
+    fetchTasks();
+  }, []);
 
   const data = useMemo(() => {
     const last7Days = Array.from({ length: 7 }).map((_, i) => subDays(new Date(), i)).reverse();

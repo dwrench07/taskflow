@@ -23,7 +23,7 @@ import { Badge } from "./ui/badge"
 interface TagInputProps {
   tags: string[];
   allTags: string[];
-  onUpdateTags: (tags: string[]) => Promise<void>;
+  onUpdateTags: (tags: string[]) => void | Promise<void>;
   placeholder?: string;
 }
 

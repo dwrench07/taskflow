@@ -36,7 +36,7 @@ const templateSubtaskSchema = z.object({
 const formSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters."),
   description: z.string().min(5, "Description must be at least 5 characters."),
-  priority: z.enum(["low", "medium", "high"]),
+  priority: z.enum(["low", "medium", "high", "urgent"]),
   tags: z.array(z.string()).optional(),
   subtasks: z.array(templateSubtaskSchema).optional(),
 });

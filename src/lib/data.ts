@@ -242,6 +242,20 @@ export async function updateActiveFocusSession(action: 'pause' | 'resume' | 'sto
   }
 }
 
+export async function updateFocusSession(id: string, updates: Partial<FocusSession>): Promise<FocusSession> {
+  const response = await fetch(`/api/focus-sessions/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updates),
+  });
+
+  if (response.ok) {
+    return await response.json();
+  } else {
+    throw new Error(`Failed to update focus session: ${response.statusText}`);
+  }
+}
+
 // === GOALS ===
 
 export async function getAllGoals(): Promise<Goal[]> {

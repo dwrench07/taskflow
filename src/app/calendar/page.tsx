@@ -52,6 +52,24 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TaskForm } from "@/components/task-form";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { GripVertical } from "lucide-react";
 
 type CalendarView = "month" | "week" | "day";
 
@@ -122,6 +140,97 @@ function CalendarEvent({ event }: { event: CalendarEventData }) {
       {event.isHabit && event.dailyStatus && event.dailyStatus !== 'not recorded' && statusIcons[event.dailyStatus]}
       <span className="font-semibold flex-1 truncate">{renderTitle(event.title, event.isSubtask)}</span>
       {event.isHabit && <Repeat className="inline-block h-3 w-3 ml-1.5 opacity-90" />}
+    </div>
+  );
+}
+
+function SortableCalendarItem({
+  event,
+  currentDate,
+  handleToggleCompletion,
+  handleSetDailyStatus,
+  isEventCompleted,
+  priorityStyles,
+  statusIcons,
+}: {
+  event: CalendarEventData;
+  currentDate: Date;
+  handleToggleCompletion: (event: CalendarEventData, checked: boolean) => void;
+  handleSetDailyStatus: (habitId: string, status: DailyHabitStatus) => void;
+  isEventCompleted: (event: CalendarEventData, day: Date) => boolean;
+  priorityStyles: Record<Priority, string>;
+  statusIcons: Record<Exclude<DailyHabitStatus, "not recorded">, React.ReactNode>;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: event.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : undefined,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const isCompleted = isEventCompleted(event, currentDate);
+  const startDate = event.isHabit ? add(startOfDay(currentDate), { hours: 9 }) : (event.startDate ? parseISO(event.startDate) : startOfDay(currentDate));
+  const endDate = event.isHabit ? add(startOfDay(currentDate), { hours: 9, minutes: 30 }) : (event.endDate ? parseISO(event.endDate) : startDate);
+  const getLink = () => event.isHabit ? `/habits?taskId=${event.id}` : `/tasks?taskId=${event.isSubtask ? event.parentId : event.id}`;
+  const dailyStatus = event.dailyStatus;
+  const statusIcon = dailyStatus && dailyStatus !== 'not recorded' ? statusIcons[dailyStatus] : null;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn("flex items-start gap-4 p-3 rounded-lg bg-muted/50 group", isDragging && "shadow-lg bg-muted")}
+    >
+      <div {...attributes} {...listeners} className="mt-1 cursor-grab active:cursor-grabbing text-muted-foreground opacity-50 hover:opacity-100 transition-opacity">
+        <GripVertical className="h-5 w-5" />
+      </div>
+      <Checkbox id={`cal-check-${event.id}`} checked={isCompleted} onCheckedChange={(checked) => handleToggleCompletion(event, !!checked)} className="mt-1" />
+      <div className="flex-shrink-0 text-xs md:text-sm">
+        <p className="font-semibold">{format(startDate, 'h:mm a')}</p>
+        <p className="text-muted-foreground">{format(endDate, 'h:mm a')}</p>
+      </div>
+      <div className="flex-1">
+        <Link href={getLink()} className="hover:underline">
+          <p className={cn("font-semibold flex items-center flex-wrap gap-1", isCompleted && "line-through text-muted-foreground")}>
+            {(() => {
+              if (event.isSubtask) {
+                const match = event.title.match(/^(.*)\s*—\s*(.*)$/);
+                if (match) {
+                  return (
+                    <h4 className="font-semibold text-lg flex flex-col">
+                      {match[1]}{" "}
+                      <span className="text-sm font-normal text-muted-foreground opacity-80">— {match[2]}</span>
+                    </h4>
+                  );
+                }
+              }
+              return <span>{event.title}</span>;
+            })()}
+          </p>
+        </Link>
+        <div className="flex items-center gap-2 mt-1">
+          <Badge variant="outline" className={cn("capitalize", priorityStyles[event.priority])}>{event.priority}</Badge>
+          {event.isHabit && <Badge variant="outline"><Repeat className="h-3 w-3 mr-1" />Habit</Badge>}
+          {statusIcon && <Badge variant="outline" className="flex items-center gap-1">{statusIcon}<span className="capitalize">{dailyStatus?.replace(' observed', '')}</span></Badge>}
+        </div>
+      </div>
+      <div className="flex items-center gap-1">
+        {event.isHabit && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onSelect={() => handleSetDailyStatus(event.id, 'changes observed')}><Smile className="mr-2 h-4 w-4 text-green-500" /> Changes Observed</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => handleSetDailyStatus(event.id, 'no changes')}><Meh className="mr-2 h-4 w-4 text-yellow-500" /> No Changes</DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => handleSetDailyStatus(event.id, 'negative')}><Frown className="mr-2 h-4 w-4 text-red-500" /> Negative</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+        {isCompleted && <CheckCircle className="h-5 w-5 text-green-500" />}
+      </div>
     </div>
   );
 }
@@ -202,7 +311,14 @@ export default function CalendarPage() {
     const sortedEvents = events.sort((a, b) => {
       const aDate = a.startDate ? parseISO(a.startDate).getTime() : 0;
       const bDate = b.startDate ? parseISO(b.startDate).getTime() : 0;
-      return aDate - bDate;
+      
+      if (aDate !== bDate) {
+        return aDate - bDate;
+      }
+      
+      const aOrder = a.order ?? 0;
+      const bOrder = b.order ?? 0;
+      return aOrder - bOrder;
     });
 
     return sortedEvents.filter((event, index, self) =>
@@ -325,6 +441,58 @@ export default function CalendarPage() {
     updateTaskData(updatedHabit);
     refreshTasks();
     toast({ title: "Observation recorded", description: `Status for "${habit.title}" set to "${status}".` });
+  }
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = async (dragEvent: DragEndEvent) => {
+    const { active, over } = dragEvent;
+
+    if (over && active.id !== over.id) {
+      const filteredEvents = dailyEvents.filter((event) => {
+        const completed = isEventCompleted(event, currentDate);
+        if (dayFilter === 'done') return completed;
+        if (dayFilter === 'undone') return !completed;
+        return true;
+      });
+
+      const oldIndex = filteredEvents.findIndex((e) => e.id === active.id);
+      const newIndex = filteredEvents.findIndex((e) => e.id === over.id);
+
+      const newOrder = arrayMove(filteredEvents, oldIndex, newIndex);
+
+      // Update order field for each affected item
+      const updatePromises = newOrder.map(async (event, index) => {
+        if (event.isHabit) {
+          const habit = allTasks.find((t) => t.id === event.id);
+          if (habit && habit.order !== index) {
+            await updateTaskData({ ...habit, order: index });
+          }
+        } else if (event.isSubtask) {
+          const parentTask = allTasks.find((t) => t.id === event.parentId);
+          if (parentTask) {
+            const updatedSubtasks = parentTask.subtasks.map((st) =>
+              st.id === event.id ? { ...st, order: index } : st
+            );
+            await updateTaskData({ ...parentTask, subtasks: updatedSubtasks });
+          }
+        } else {
+          const task = allTasks.find((t) => t.id === event.id);
+          if (task && task.order !== index) {
+            await updateTaskData({ ...task, order: index });
+          }
+        }
+      });
+
+      await Promise.all(updatePromises);
+      refreshTasks();
+      toast({ title: "Order updated" });
+    }
   }
 
 
@@ -552,65 +720,33 @@ export default function CalendarPage() {
                 );
               }
 
-              return filteredEvents.map((event) => {
-                const isCompleted = isEventCompleted(event, currentDate);
-
-                const startDate = event.isHabit ? add(startOfDay(currentDate), { hours: 9 }) : (event.startDate ? parseISO(event.startDate) : startOfDay(currentDate));
-                const endDate = event.isHabit ? add(startOfDay(currentDate), { hours: 9, minutes: 30 }) : (event.endDate ? parseISO(event.endDate) : startDate);
-                const getLink = () => event.isHabit ? '/habits' : `/tasks?taskId=${event.isSubtask ? event.parentId : event.id}`;
-                const dailyStatus = event.dailyStatus;
-                const statusIcon = dailyStatus && dailyStatus !== 'not recorded' ? statusIcons[dailyStatus] : null;
-
-                return (
-                  <div key={event.id} className="flex items-start gap-4 p-3 rounded-lg bg-muted/50">
-                    <Checkbox id={`cal-check-${event.id}`} checked={isCompleted} onCheckedChange={(checked) => handleToggleCompletion(event, !!checked)} className="mt-1" />
-                    <div className="flex-shrink-0 text-xs md:text-sm">
-                      <p className="font-semibold">{format(startDate, 'h:mm a')}</p>
-                      <p className="text-muted-foreground">{format(endDate, 'h:mm a')}</p>
+              return (
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={filteredEvents.map((e) => e.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="space-y-4">
+                      {filteredEvents.map((event) => (
+                        <SortableCalendarItem
+                          key={event.id}
+                          event={event}
+                          currentDate={currentDate}
+                          handleToggleCompletion={handleToggleCompletion}
+                          handleSetDailyStatus={handleSetDailyStatus}
+                          isEventCompleted={isEventCompleted}
+                          priorityStyles={priorityStyles}
+                          statusIcons={statusIcons}
+                        />
+                      ))}
                     </div>
-                    <div className="flex-1">
-                      <Link href={getLink()} className="hover:underline">
-                        <p className={cn("font-semibold flex items-center flex-wrap gap-1", isCompleted && "line-through text-muted-foreground")}>
-                          {(() => {
-                            if (event.isSubtask) {
-                              const match = event.title.match(/^(.*)\s*—\s*(.*)$/);
-                              if (match) {
-                                return (
-                                  <h4 className="font-semibold text-lg flex flex-col">
-                                    {match[1]}{" "}
-                                    <span className="text-sm font-normal text-muted-foreground opacity-80">— {match[2]}</span>
-                                  </h4>
-                                );
-                              }
-                            }
-                            return <span>{event.title}</span>;
-                          })()}
-                        </p>
-                      </Link>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline" className={cn("capitalize", priorityStyles[event.priority])}>{event.priority}</Badge>
-                        {event.isHabit && <Badge variant="outline"><Repeat className="h-3 w-3 mr-1" />Habit</Badge>}
-                        {statusIcon && <Badge variant="outline" className="flex items-center gap-1">{statusIcon}<span className="capitalize">{dailyStatus?.replace(' observed', '')}</span></Badge>}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {event.isHabit && (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent>
-                            <DropdownMenuItem onSelect={() => handleSetDailyStatus(event.id, 'changes observed')}><Smile className="mr-2 h-4 w-4 text-green-500" /> Changes Observed</DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => handleSetDailyStatus(event.id, 'no changes')}><Meh className="mr-2 h-4 w-4 text-yellow-500" /> No Changes</DropdownMenuItem>
-                            <DropdownMenuItem onSelect={() => handleSetDailyStatus(event.id, 'negative')}><Frown className="mr-2 h-4 w-4 text-red-500" /> Negative</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      )}
-                      {isCompleted && <CheckCircle className="h-5 w-5 text-green-500" />}
-                    </div>
-                  </div>
-                )
-              });
+                  </SortableContext>
+                </DndContext>
+              );
             })()}
           </CardContent>
         </Card>

@@ -18,6 +18,7 @@ export interface Subtask {
   tags?: string[];
   priority?: Priority;
   energyLevel?: EnergyLevel;
+  order?: number;
 }
 
 export interface Task {
@@ -39,6 +40,7 @@ export interface Task {
   dailyStatus?: DailyStatus[];
   goalId?: string; // Optional link to a long-term goal
   energyLevel?: EnergyLevel; // Optional energy requirement
+  order?: number;
 }
 
 // New Template Types

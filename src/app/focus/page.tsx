@@ -414,7 +414,7 @@ export default function FocusPage() {
                                     onKeyDown={e => {
                                         if (e.key === 'Enter' && currentDistraction.trim()) {
                                             const timeStamp = mode === 'stopwatch' ? formatTime(elapsedTime) : formatTime(timeRemaining);
-                                            setDistractions([...distractions, `[${timeStamp}] ${currentDistraction.trim()}`]);
+                                            setDistractions([...distractions, `[ ] [${timeStamp}] ${currentDistraction.trim()}`]);
                                             setCurrentDistraction("");
                                         }
                                     }}

@@ -7,12 +7,14 @@ import { useMemo } from "react";
 import { Priority, Task } from "@/lib/types";
 
 const COLORS: Record<Priority, string> = {
+  urgent: "hsl(var(--destructive))",
   high: "hsl(var(--chart-5))",
   medium: "hsl(var(--chart-4))",
   low: "hsl(var(--chart-2))",
 };
 
 const priorityLabels: Record<Priority, string> = {
+    urgent: "Urgent",
     high: "High",
     medium: "Medium",
     low: "Low",
@@ -20,7 +22,7 @@ const priorityLabels: Record<Priority, string> = {
 
 export function DashboardPriorityChart({ allTasks }: { allTasks: Task[] }) {
   const data = useMemo(() => {
-    const priorityCounts: Record<Priority, number> = { high: 0, medium: 0, low: 0 };
+    const priorityCounts: Record<Priority, number> = { urgent: 0, high: 0, medium: 0, low: 0 };
     
     (Array.isArray(allTasks) ? allTasks : [])
       .filter(task => task.status !== 'done' && !task.isHabit)
@@ -28,7 +30,7 @@ export function DashboardPriorityChart({ allTasks }: { allTasks: Task[] }) {
         priorityCounts[task.priority]++;
       });
 
-    return (["high", "medium", "low"] as Priority[]).map(priority => ({
+    return (["urgent", "high", "medium", "low"] as Priority[]).map(priority => ({
       name: priorityLabels[priority],
       value: priorityCounts[priority],
       fill: COLORS[priority],

@@ -445,7 +445,7 @@ function HabitsPageContent() {
 
             <div className="w-full min-w-0 h-[calc(100vh-theme(spacing.36))]">
                 <ScrollArea className="h-full pr-4">
-                    <div className="grid gap-6 pb-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    <div className="grid gap-3 sm:gap-6 pb-8 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                         {sortedHabits.map(habit => {
                             const streak = calculateStreak(habit);
                             const completedToday = hasCompletedToday(habit);
@@ -464,27 +464,27 @@ function HabitsPageContent() {
                                     )}
                                     onClick={() => handleSelectHabit(habit)}
                                 >
-                                    <CardHeader>
-                                        <div className="flex justify-between items-start gap-2 w-full min-w-0">
+                                    <CardHeader className="p-3 pb-0 sm:p-6 sm:pb-0">
+                                        <div className="flex justify-between items-start gap-1 sm:gap-3 w-full min-w-0">
                                             <TooltipProvider delayDuration={300}>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
-                                                        <CardTitle className="flex-1 truncate text-left min-w-0 text-[1.1rem] leading-tight cursor-help">{habit.title}</CardTitle>
+                                                        <CardTitle className="flex-1 truncate text-left min-w-0 text-base sm:text-xl leading-tight cursor-help">{habit.title}</CardTitle>
                                                     </TooltipTrigger>
                                                     <TooltipContent side="top" className="max-w-[250px] break-words z-50">
                                                         <p>{habit.title}</p>
                                                     </TooltipContent>
                                                 </Tooltip>
                                             </TooltipProvider>
-                                            <div className="flex items-center gap-2 flex-shrink-0">
-                                                <Badge variant={streak > 0 ? "default" : "secondary"} className="flex items-center gap-1.5 whitespace-nowrap">
-                                                    <Flame className={cn("h-4 w-4", streak > 0 ? "text-orange-300" : "text-muted-foreground")} />
-                                                    {streak} Day{streak !== 1 && 's'}
+                                            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                                                <Badge variant={streak > 0 ? "default" : "secondary"} className="flex items-center gap-1 sm:gap-1.5 px-1.5 py-0 h-5 sm:h-auto sm:px-2 sm:py-0.5 text-[10px] sm:text-xs whitespace-nowrap">
+                                                    <Flame className={cn("h-3 w-3 sm:h-4 sm:w-4", streak > 0 ? "text-orange-300" : "text-muted-foreground")} />
+                                                    {streak} <span className="hidden sm:inline sm:ml-1">Day{streak !== 1 && 's'}</span>
                                                 </Badge>
                                                 <AlertDialog>
                                                     <AlertDialogTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={e => e.stopPropagation()}>
-                                                            <Trash2 className="h-4 w-4 text-destructive/50 hover:text-destructive" />
+                                                        <Button variant="ghost" size="icon" className="h-5 w-5 sm:h-8 sm:w-8" onClick={e => e.stopPropagation()}>
+                                                            <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 text-destructive/50 hover:text-destructive" />
                                                         </Button>
                                                     </AlertDialogTrigger>
                                                     <AlertDialogContent>
@@ -502,34 +502,37 @@ function HabitsPageContent() {
                                                 </AlertDialog>
                                             </div>
                                         </div>
-                                        <CardDescription className="pt-2 line-clamp-2 text-left min-w-0">{habit.description}</CardDescription>
+                                        <CardDescription className="pt-1 sm:pt-2 line-clamp-1 sm:line-clamp-2 text-[11px] sm:text-sm text-left min-w-0">{habit.description}</CardDescription>
                                     </CardHeader>
-                                    <CardContent className="flex-grow flex flex-col justify-end">
-                                        <Badge variant="outline" className="capitalize w-fit">
-                                            {habit.habitFrequency}
-                                        </Badge>
+                                    <CardContent className="p-3 sm:p-6 pt-2 sm:pt-4 flex-grow flex flex-col justify-end">
+                                        <div className="flex justify-between items-center mb-2 sm:mb-4">
+                                            <Badge variant="outline" className="capitalize text-[10px] sm:text-xs py-0 sm:py-0.5 h-5 sm:h-auto px-1.5 sm:px-2.5 opacity-70 sm:opacity-100">
+                                                {habit.habitFrequency}
+                                            </Badge>
+                                            {habit.streakGoal && goalMet && <Trophy className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-500 animate-pulse" />}
+                                        </div>
                                         {habit.streakGoal && (
-                                            <div className="mt-auto pt-4 space-y-2">
-                                                <div className="flex justify-between items-center text-sm text-muted-foreground">
-                                                    <span>Goal: {habit.streakGoal} days</span>
-                                                    {goalMet && <Trophy className="h-4 w-4 text-yellow-500" />}
+                                            <div className="mb-3 sm:mb-4 space-y-1 sm:space-y-2">
+                                                <div className="flex justify-between items-center text-[10px] sm:text-sm text-muted-foreground">
+                                                    <span>Goal: {habit.streakGoal} <span className="hidden sm:inline">days</span></span>
+                                                    <span>{Math.round(progress)}%</span>
                                                 </div>
-                                                <Progress value={progress} className={cn(goalMet && "[&>div]:bg-green-500")} />
+                                                <Progress value={progress} className={cn("h-1 sm:h-2.5", goalMet && "[&>div]:bg-green-500")} />
                                             </div>
                                         )}
-                                        <div className="flex items-stretch gap-2 w-full mt-4">
+                                        <div className="flex items-center gap-1.5 sm:gap-2 w-full mt-auto">
                                             <Button
                                                 onClick={(e) => { e.stopPropagation(); handleToggleCompletion(habit.id); }}
                                                 variant={completedToday ? "secondary" : "default"}
-                                                className="w-full"
+                                                className="h-8 sm:h-10 text-xs sm:text-sm flex-1 px-2"
                                             >
-                                                {completedToday ? <Undo2 className="mr-2 h-4 w-4" /> : <Zap className="mr-2 h-4 w-4" />}
+                                                {completedToday ? <Undo2 className="mr-1.5 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> : <Zap className="mr-1.5 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />}
                                                 {completedToday ? "Undo" : "Done"}
                                             </Button>
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="outline" size="icon" onClick={e => e.stopPropagation()}>
-                                                        <MoreVertical className="h-4 w-4" />
+                                                    <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10 shrink-0" onClick={e => e.stopPropagation()}>
+                                                        <MoreVertical className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent onClick={e => e.stopPropagation()}>

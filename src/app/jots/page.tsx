@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getFocusSessions, getAllTasks } from "@/lib/data";
+import { getFocusSessions, getAllTasks, updateFocusSession } from "@/lib/data";
 import { FocusSession, Task } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { StickyNote, Loader2, Calendar } from "lucide-react";
 import { format, parseISO } from "date-fns";
+import { cn } from "@/lib/utils";
 
 export default function JotsPage() {
     const [sessions, setSessions] = useState<FocusSession[]>([]);
@@ -36,6 +38,37 @@ export default function JotsPage() {
         if (!taskId) return "General Focus Session";
         const task = tasks.find(t => t.id === taskId);
         return task?.title || "Unknown Task";
+    }
+
+    const handleToggleJot = async (sessionId: string, jotIndex: number) => {
+        const session = sessions.find(s => s.id === sessionId);
+        if (!session) return;
+
+        const newDistractions = [...session.distractions];
+        const currentJot = newDistractions[jotIndex];
+
+        // Toggle logic: [ ] -> [x], [x] -> [ ], or no prefix -> [ ]
+        let updatedJot = currentJot;
+        if (currentJot.startsWith('[ ]')) {
+            updatedJot = currentJot.replace('[ ]', '[x]');
+        } else if (currentJot.startsWith('[x]')) {
+            updatedJot = currentJot.replace('[x]', '[ ]');
+        } else {
+            updatedJot = '[x] ' + currentJot; // If it didn't have a prefix, mark it as done
+        }
+
+        newDistractions[jotIndex] = updatedJot;
+
+        // Optimistic update
+        setSessions(prev => prev.map(s => s.id === sessionId ? { ...s, distractions: newDistractions } : s));
+
+        try {
+            await updateFocusSession(sessionId, { distractions: newDistractions });
+        } catch (error) {
+            console.error("Failed to update jot:", error);
+            // Rollback on error
+            setSessions(prev => prev.map(s => s.id === sessionId ? { ...s, distractions: session.distractions } : s));
+        }
     }
 
     return (
@@ -82,21 +115,41 @@ export default function JotsPage() {
                             <CardContent className="pt-4 pb-2 px-1">
                                 <ul className="space-y-2">
                                     {session.distractions.map((jot, i) => {
-                                        // The jot is stored as "[MM:SS] text", let's make it look nicer
-                                        const match = jot.match(/^\[(\d{2}:\d{2})\]\s*(.*)$/);
-                                        if (match) {
-                                            return (
-                                                <li key={i} className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 px-3 py-2 rounded-md hover:bg-muted/50 transition-colors">
-                                                    <span className="text-xs font-mono text-muted-foreground/70 bg-muted/50 px-1.5 py-0.5 rounded shrink-0 self-start mt-0.5">
-                                                        {match[1]}
-                                                    </span>
-                                                    <span className="text-sm text-foreground/90">{match[2]}</span>
-                                                </li>
-                                            );
+                                        const isTodo = jot.startsWith('[ ]') || jot.startsWith('[x]');
+                                        const isDone = jot.startsWith('[x]');
+                                        
+                                        // Clean jot content for display
+                                        let cleanJot = jot;
+                                        if (isTodo) {
+                                            cleanJot = jot.substring(4); // Remove "[ ] " or "[x] "
                                         }
+
+                                        const match = cleanJot.match(/^\[(\d{2}:\d{2})\]\s*(.*)$/);
+                                        const timestamp = match ? match[1] : null;
+                                        const content = match ? match[2] : cleanJot;
+
                                         return (
-                                            <li key={i} className="text-sm px-3 py-2 rounded-md hover:bg-muted/50 transition-colors">
-                                                {jot}
+                                            <li key={i} className="flex items-start gap-3 px-3 py-2 rounded-md hover:bg-muted/50 transition-colors group">
+                                                {isTodo && (
+                                                    <Checkbox 
+                                                        checked={isDone} 
+                                                        onCheckedChange={() => handleToggleJot(session.id, i)}
+                                                        className="mt-1"
+                                                    />
+                                                )}
+                                                <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3 flex-1 min-w-0">
+                                                    {timestamp && (
+                                                        <span className="text-xs font-mono text-muted-foreground/70 bg-muted/50 px-1.5 py-0.5 rounded shrink-0 self-start mt-0.5">
+                                                            {timestamp}
+                                                        </span>
+                                                    )}
+                                                    <span className={cn(
+                                                        "text-sm text-foreground/90 break-words",
+                                                        isDone && "line-through text-muted-foreground"
+                                                    )}>
+                                                        {content}
+                                                    </span>
+                                                </div>
                                             </li>
                                         );
                                     })}
