@@ -103,7 +103,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         // Append any extra payload data like productivity score
                         if (payload?.productivityScore) activeSession.productivityScore = payload.productivityScore;
                         if (payload?.energyLevel) activeSession.energyLevel = payload.energyLevel;
-                        if (payload?.distractions) activeSession.distractions = [...activeSession.distractions, ...payload.distractions];
+                        if (payload?.distractions !== undefined) {
+                            activeSession.distractions = payload.distractions;
+                        }
+                        if (payload?.deepWorkScore !== undefined) {
+                            activeSession.deepWorkScore = payload.deepWorkScore;
+                        }
                     }
 
                     await updateFocusSessionAsync(activeSession, userId);
