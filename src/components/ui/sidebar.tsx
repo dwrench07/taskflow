@@ -130,6 +130,36 @@ const SidebarProvider = React.forwardRef<
       [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
     )
 
+    // Gesture handling for mobile swipe-to-open
+    const touchStart = React.useRef<{ x: number, y: number } | null>(null)
+    const handleTouchStart = React.useCallback((e: React.TouchEvent) => {
+      const touch = e.touches[0]
+      touchStart.current = { x: touch.clientX, y: touch.clientY }
+    }, [])
+
+    const handleTouchEnd = React.useCallback((e: React.TouchEvent) => {
+      if (!isMobile || !touchStart.current || openMobile) return
+
+      const touch = e.changedTouches[0]
+      const deltaX = touch.clientX - touchStart.current.x
+      const deltaY = touch.clientY - touchStart.current.y
+
+      // Thresholds:
+      // 1. Start X > 30 and Start X < 150 (Avoid OS "back" gesture zone which is usually 0-30px)
+      // 2. Horizontal distance > 80
+      // 3. Vertical deviation < 50 (mostly horizontal)
+      if (
+        touchStart.current.x > 30 &&
+        touchStart.current.x < 150 &&
+        deltaX > 80 &&
+        Math.abs(deltaY) < 50
+      ) {
+        setOpenMobile(true)
+      }
+
+      touchStart.current = null
+    }, [isMobile, openMobile, setOpenMobile])
+
     return (
       <SidebarContext.Provider value={contextValue}>
         <TooltipProvider delayDuration={0}>
@@ -146,6 +176,8 @@ const SidebarProvider = React.forwardRef<
               className
             )}
             ref={ref}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
             {...props}
           >
             {children}
