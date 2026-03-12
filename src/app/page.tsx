@@ -100,6 +100,7 @@ export default function DashboardPage() {
         pnrCount,
         habitsDoneToday,
         habitsTotal: habits.length,
+        habitsWithStreak: habits.filter(h => (h.streak || 0) > 0).length,
         habitDelta,
         focusMinutes,
         topTasksDoneToday,
@@ -180,7 +181,7 @@ export default function DashboardPage() {
             <SummaryCard
                 icon={Flame}
                 title="Habits"
-                value={`${stats.habitsDoneToday}/${stats.habitsTotal}`}
+                value={`${stats.habitsWithStreak}/${stats.habitsTotal}`}
                 subtitle="Consistency is key"
                 color="text-green-500"
                 trend={{ value: stats.habitDelta, isGood: true }}
