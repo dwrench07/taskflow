@@ -27,6 +27,7 @@ import { type Task, type Goal } from "@/lib/types";
 import { TagInput } from "./tag-input";
 import { getAllGoals, getAllMilestones, getAllTasks } from "@/lib/data";
 import { type Milestone } from "@/lib/types";
+import { DateTimePicker } from "./date-time-picker";
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -42,6 +43,9 @@ const formSchema = z.object({
   milestoneId: z.string().optional().nullable(),
   blockedBy: z.array(z.string()).optional(),
   blocks: z.array(z.string()).optional(),
+  startDate: z.string().optional().nullable(),
+  endDate: z.string().optional().nullable(),
+  doDate: z.string().optional().nullable(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -82,6 +86,9 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
       energyLevel: task?.energyLevel || null,
       blockedBy: task?.blockedBy || [],
       blocks: task?.blocks || [],
+      startDate: task?.startDate || null,
+      endDate: task?.endDate || null,
+      doDate: task?.doDate || null,
     },
   });
 
@@ -208,6 +215,59 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
                     <SelectItem value="low">Low (Brain-dead)</SelectItem>
                   </SelectContent>
                 </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <FormField
+            control={form.control}
+            name="startDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Start Date</FormLabel>
+                <FormControl>
+                  <DateTimePicker 
+                    date={field.value || undefined} 
+                    setDate={(date) => field.onChange(date.toISOString())} 
+                    label="Earliest start date"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="doDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-primary font-bold">Drop Dead Date</FormLabel>
+                <FormControl>
+                  <DateTimePicker 
+                    date={field.value || undefined} 
+                    setDate={(date) => field.onChange(date.toISOString())} 
+                    label="Must do by..."
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="endDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Final Due Date</FormLabel>
+                <FormControl>
+                  <DateTimePicker 
+                    date={field.value || undefined} 
+                    setDate={(date) => field.onChange(date.toISOString())} 
+                    label="Hard deadline"
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}

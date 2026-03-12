@@ -21,6 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { TaskForm } from "@/components/task-form";
 import { TagInput } from "@/components/tag-input";
+import { DateTimePicker } from "@/components/date-time-picker";
 import { Textarea } from "@/components/ui/textarea";
 import {
   DropdownMenu,
@@ -116,62 +117,6 @@ function TaskListItem({ task, allTasks, onSelect, isSelected }: { task: Task; al
   );
 }
 
-function DateTimePicker({ date, setDate }: { date?: string; setDate: (date: Date) => void }) {
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const selectedDate = date ? new Date(date) : undefined;
-
-  const formattedDate = isMounted && date ? format(new Date(date), "PPP p") : "Pick a date and time";
-
-  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const time = e.target.value;
-    if (!time) return;
-    const [hours, minutes] = time.split(':').map(Number);
-    const newDate = new Date(selectedDate || new Date());
-    newDate.setHours(hours, minutes);
-    setDate(newDate);
-  }
-
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          variant={"outline"}
-          className={cn(
-            "w-full justify-start text-left font-normal overflow-hidden",
-            !date && "text-muted-foreground"
-          )}
-        >
-          <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
-          <span className="truncate">{formattedDate}</span>
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0">
-        <Calendar
-          mode="single"
-          selected={selectedDate}
-          onSelect={(d) => { if (d) setDate(d) }}
-          initialFocus
-        />
-        <div className="p-3 border-t border-border">
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            <Input
-              type="time"
-              className="w-full"
-              defaultValue={selectedDate ? format(selectedDate, 'HH:mm') : ''}
-              onChange={handleTimeChange}
-            />
-          </div>
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
-}
 
 function CreateFromTemplateDialog({ onSelectTemplate, onOpenChange }: { onSelectTemplate: (template: TaskTemplate) => void; onOpenChange: (isOpen: boolean) => void }) {
   const [templates, setTemplates] = useState<TaskTemplate[]>([]);
@@ -482,14 +427,14 @@ function TasksPageContent() {
     }
   }
 
-  const handleDateChange = async (field: 'startDate' | 'endDate', date: Date) => {
+  const handleDateChange = async (field: 'startDate' | 'endDate' | 'doDate', date: Date) => {
     if (selectedTask) {
       const updatedTask = { ...selectedTask, [field]: date.toISOString() };
       await handleUpdateTask(updatedTask);
     }
   }
 
-  const handleSubtaskDateChange = async (subtaskId: string, field: 'startDate' | 'endDate', date: Date) => {
+  const handleSubtaskDateChange = async (subtaskId: string, field: 'startDate' | 'endDate' | 'doDate', date: Date) => {
     if (selectedTask) {
       if (field === 'startDate') {
         const taskStartDate = selectedTask.startDate ? new Date(selectedTask.startDate) : null;
@@ -689,6 +634,9 @@ function TasksPageContent() {
                         goalId: data.goalId === null ? undefined : data.goalId,
                         milestoneId: data.milestoneId === "none" || data.milestoneId === null ? undefined : data.milestoneId,
                         energyLevel: data.energyLevel === null ? undefined : data.energyLevel,
+                        startDate: data.startDate || undefined,
+                        endDate: data.endDate || undefined,
+                        doDate: data.doDate || undefined,
                         blocks: data.blocks || [],
                         blockedBy: data.blockedBy || [],
                       };
@@ -860,6 +808,9 @@ function TasksPageContent() {
                                       goalId: data.goalId === null ? undefined : data.goalId,
                                       energyLevel: data.energyLevel === null ? undefined : data.energyLevel,
                                       milestoneId: data.milestoneId === "none" || data.milestoneId === null ? undefined : data.milestoneId,
+                                      startDate: data.startDate || undefined,
+                                      endDate: data.endDate || undefined,
+                                      doDate: data.doDate || undefined,
                                       blockedBy: data.blockedBy || [],
                                       blocks: data.blocks || [],
                                     };
@@ -919,12 +870,16 @@ function TasksPageContent() {
                               </h4>
                               <div className="grid gap-4 pt-2">
                                 <div className="flex flex-col gap-2">
-                                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Start Time</span>
+                                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Earliest Start</span>
                                   <DateTimePicker date={selectedTask.startDate} setDate={(date) => handleDateChange('startDate', date)} />
                                 </div>
+                                <div className="flex flex-col gap-2 p-3 bg-primary/5 rounded-xl border border-primary/20">
+                                  <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Drop Dead Date (Point of no return)</span>
+                                  <DateTimePicker date={selectedTask.doDate} setDate={(date) => handleDateChange('doDate', date)} label="Must do by..." />
+                                </div>
                                 <div className="flex flex-col gap-2">
-                                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Deadline</span>
-                                  <DateTimePicker date={selectedTask.endDate} setDate={(date) => handleDateChange('endDate', date)} />
+                                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Final Deadline</span>
+                                  <DateTimePicker date={selectedTask.endDate} setDate={(date) => handleDateChange('endDate', date)} label="Hard deadline" />
                                 </div>
                               </div>
                             </div>
@@ -1037,8 +992,19 @@ function TasksPageContent() {
                                         placeholder="Add sub-tags..."
                                       />
                                     </div>
-                                    <div className="sm:ml-auto shrink-0 w-full sm:w-auto max-w-[200px]">
-                                      <DateTimePicker date={subtask.startDate} setDate={(date) => handleSubtaskDateChange(subtask.id, 'startDate', date)} />
+                                    <div className="flex flex-wrap items-center gap-2 pt-2 sm:ml-auto shrink-0 w-full sm:w-auto max-w-2xl">
+                                      <div className="flex flex-col gap-1 min-w-[140px]">
+                                        <span className="text-[10px] font-bold text-muted-foreground uppercase px-1">Start</span>
+                                        <DateTimePicker date={subtask.startDate} setDate={(date) => handleSubtaskDateChange(subtask.id, 'startDate', date)} />
+                                      </div>
+                                      <div className="flex flex-col gap-1 min-w-[140px] px-2 bg-primary/5 rounded-lg border border-primary/10">
+                                        <span className="text-[10px] font-bold text-primary uppercase px-1">Drop Dead</span>
+                                        <DateTimePicker date={subtask.doDate} setDate={(date) => handleSubtaskDateChange(subtask.id, 'doDate', date)} label="Must do..." />
+                                      </div>
+                                      <div className="flex flex-col gap-1 min-w-[140px]">
+                                        <span className="text-[10px] font-bold text-muted-foreground uppercase px-1">Deadline</span>
+                                        <DateTimePicker date={subtask.endDate} setDate={(date) => handleSubtaskDateChange(subtask.id, 'endDate', date)} label="Hard deadline" />
+                                      </div>
                                     </div>
                                   </div>
                                 </div>

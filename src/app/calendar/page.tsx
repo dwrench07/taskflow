@@ -80,6 +80,7 @@ interface CalendarEventData extends Omit<Partial<Task>, 'dailyStatus'> {
   isSubtask?: boolean;
   parentId?: string;
   dailyStatus?: DailyHabitStatus;
+  isDueDayOnly?: boolean;
 }
 
 const priorityStyles: Record<Priority, string> = {
@@ -137,6 +138,11 @@ function CalendarEvent({ event }: { event: CalendarEventData }) {
       tabIndex={0}
       onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleClick(e as any)}
     >
+      {event.isDueDayOnly && (
+        <span className="bg-red-500 text-[8px] text-white px-1 py-0 rounded font-bold uppercase shrink-0">
+          Due
+        </span>
+      )}
       {event.isHabit && event.dailyStatus && event.dailyStatus !== 'not recorded' && statusIcons[event.dailyStatus]}
       <span className="font-semibold flex-1 truncate">{renderTitle(event.title, event.isSubtask)}</span>
       {event.isHabit && <Repeat className="inline-block h-3 w-3 ml-1.5 opacity-90" />}
@@ -296,12 +302,21 @@ export default function CalendarPage() {
           });
           isTaskAdded = true;
         }
-        else if (task.startDate) {
-          const taskStart = parseISO(task.startDate);
-          const taskEnd = task.endDate ? parseISO(task.endDate) : taskStart;
-          if (isWithinInterval(day, { start: startOfDay(taskStart), end: endOfDay(taskEnd) })) {
+        else {
+          const taskStart = task.startDate ? parseISO(task.startDate) : null;
+          const taskDo = task.doDate ? parseISO(task.doDate) : null;
+          const taskEnd = task.endDate ? parseISO(task.endDate) : null;
+
+          const isDoDay = taskDo ? isSameDay(day, taskDo) : (taskStart ? isSameDay(day, taskStart) : false);
+          const isDueDay = taskEnd ? isSameDay(day, taskEnd) : false;
+
+          if (isDoDay || isDueDay) {
             const { dailyStatus, ...restTask } = task;
-            events.push({ ...restTask, isSubtask: false });
+            events.push({ 
+              ...restTask, 
+              isSubtask: false,
+              isDueDayOnly: isDueDay && !isDoDay 
+            });
             isTaskAdded = true;
           }
         }

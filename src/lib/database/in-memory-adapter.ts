@@ -13,6 +13,7 @@ const initialTasks = [
         tags: ["design", "website", "ux"],
         startDate: "2024-08-01T10:00:00.000Z",
         endDate: "2024-08-10T17:00:00.000Z",
+        doDate: "2024-08-05T10:00:00.000Z",
         subtasks: [
             { id: "sub-1-1", title: "Create wireframes", completed: true, tags: ['design'] },
             { id: "sub-1-2", title: "Develop high-fidelity mockups", completed: false, tags: ['design'] },
@@ -29,6 +30,7 @@ const initialTasks = [
         tags: ["development", "backend", "api"],
         startDate: "2024-08-05T09:00:00.000Z",
         endDate: "2024-08-15T18:00:00.000Z",
+        doDate: "2024-08-10T09:00:00.000Z",
         subtasks: [
             { id: "sub-2-1", title: "Set up database schema for users", completed: false },
             { id: "sub-2-2", title: "Implement JWT generation", completed: false, tags: ['auth'] },

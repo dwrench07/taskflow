@@ -19,6 +19,7 @@ export interface Subtask {
   priority?: Priority;
   energyLevel?: EnergyLevel;
   order?: number;
+  doDate?: string;
 }
 
 export interface Task {
@@ -44,6 +45,8 @@ export interface Task {
   order?: number;
   blocks?: string[]; // IDs of tasks that are blocked by this task
   blockedBy?: string[]; // IDs of tasks that this task is blocked by
+  doDate?: string;
+  streak?: number;
 }
 
 // New Template Types
@@ -97,6 +100,7 @@ export interface FocusSession {
   energyLevel?: EnergyLevel;
   distractions: string[];
   deepWorkScore?: number;      // Multiplier logic
+  taskTitle?: string;
 
   // Timer API Integration Fields
   events?: TimerEvent[];
