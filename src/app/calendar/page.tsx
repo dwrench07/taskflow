@@ -216,10 +216,10 @@ function SortableCalendarItem({
             })()}
           </p>
         </Link>
-        <div className="flex items-center gap-2 mt-1">
-          <Badge variant="outline" className={cn("capitalize", priorityStyles[event.priority])}>{event.priority}</Badge>
-          {event.isHabit && <Badge variant="outline"><Repeat className="h-3 w-3 mr-1" />Habit</Badge>}
-          {statusIcon && <Badge variant="outline" className="flex items-center gap-1">{statusIcon}<span className="capitalize">{dailyStatus?.replace(' observed', '')}</span></Badge>}
+        <div className="flex items-center gap-1.5 mt-1 overflow-x-auto pb-1 no-scrollbar">
+          <Badge variant="outline" className={cn("capitalize shrink-0", priorityStyles[event.priority])}>{event.priority}</Badge>
+          {event.isHabit && <Badge variant="outline" className="shrink-0"><Repeat className="h-3 w-3 mr-1" />Habit</Badge>}
+          {statusIcon && <Badge variant="outline" className="flex items-center gap-1 shrink-0">{statusIcon}<span className="capitalize">{dailyStatus?.replace(' observed', '')}</span></Badge>}
         </div>
       </div>
       <div className="flex items-center gap-1">
@@ -715,9 +715,9 @@ export default function CalendarPage() {
               <CardTitle>{format(currentDate, 'EEEE, MMMM d')}</CardTitle>
               <CardDescription>{dailyEvents.length} items scheduled today. {getCompletedCount(dailyEvents, currentDate)} completed.</CardDescription>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
               <Select value={dayFilter} onValueChange={(v: any) => setDayFilter(v)}>
-                <SelectTrigger className="w-[120px] h-9">
+                <SelectTrigger className="w-full sm:w-[120px] h-9">
                   <SelectValue placeholder="Filter..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -726,7 +726,7 @@ export default function CalendarPage() {
                   <SelectItem value="done">Completed</SelectItem>
                 </SelectContent>
               </Select>
-              <Button onClick={() => setIsCreateTaskOpen(true)}>
+              <Button onClick={() => setIsCreateTaskOpen(true)} className="w-full sm:w-auto">
                 <PlusCircle className="mr-2 h-4 w-4" />Create Task
               </Button>
             </div>

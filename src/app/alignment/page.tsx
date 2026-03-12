@@ -106,7 +106,7 @@ export default function AlignmentPage() {
                 <Plus className="h-4 w-4" /> New Pillar
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader><DialogTitle>Create Life Pillar</DialogTitle></DialogHeader>
               <div className="space-y-4 pt-4">
                 <div className="space-y-2">
@@ -128,7 +128,7 @@ export default function AlignmentPage() {
                 <Plus className="h-4 w-4" /> New Milestone
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
               <DialogHeader><DialogTitle>Create Milestone</DialogTitle></DialogHeader>
               <div className="space-y-4 pt-4">
                 <div className="space-y-2">

@@ -622,7 +622,7 @@ function TasksPageContent() {
                   </DropdownMenu>
                   <CreateFromTemplateDialog onSelectTemplate={handleCreateTaskFromTemplate} onOpenChange={setIsTemplateDialogOpen} />
                 </Dialog>
-                <DialogContent>
+                <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Create New Task</DialogTitle>
                   </DialogHeader>
@@ -742,7 +742,7 @@ function TasksPageContent() {
         </Card>
 
         <Sheet open={!!selectedTask} onOpenChange={handleCloseSheet}>
-          <SheetContent side="right" className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl overflow-y-auto p-4 sm:p-6 lg:p-8">
+          <SheetContent side="right" className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-3xl 2xl:max-w-4xl overflow-y-auto p-4 sm:p-6 lg:p-8">
             {selectedTask && (
               <div className="flex-1 flex flex-col overflow-hidden min-w-0">
                 <div className="flex-1 pr-4 overflow-y-auto overflow-x-hidden">
@@ -794,7 +794,7 @@ function TasksPageContent() {
                                   <Edit className="h-4 w-4" />
                                 </Button>
                               </DialogTrigger>
-                              <DialogContent>
+                              <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
                                 <DialogHeader>
                                   <DialogTitle>Edit Task</DialogTitle>
                                 </DialogHeader>
@@ -847,7 +847,7 @@ function TasksPageContent() {
                       </CardHeader>
 
                       <CardContent className="px-0">
-                        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8 relative">
+                        <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 mb-8 relative">
                           <div className="lg:col-span-3 space-y-3 bg-muted/20 p-5 rounded-2xl border border-border/50 shadow-sm transition-all hover:shadow-md">
                             <h4 className="text-sm font-semibold flex items-center gap-2 text-foreground/80">
                               <Tag className="w-4 h-4 text-primary/70" />
@@ -862,7 +862,7 @@ function TasksPageContent() {
                               />
                             </div>
                           </div>
-                          <div className="lg:col-span-2 space-y-4 bg-muted/20 p-5 rounded-2xl border border-border/50 shadow-sm transition-all hover:shadow-md">
+                          <div className="xl:col-span-2 space-y-4 bg-muted/20 p-5 rounded-2xl border border-border/50 shadow-sm transition-all hover:shadow-md">
                             <div className="space-y-3">
                               <h4 className="text-sm font-semibold flex items-center gap-2 text-foreground/80">
                                 <CalendarIcon className="w-4 h-4 text-primary/70" />

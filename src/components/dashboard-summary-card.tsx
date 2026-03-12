@@ -58,7 +58,7 @@ export function SummaryCard({
           </CardContent>
         </Card>
       </PopoverTrigger>
-      <PopoverContent className="w-80 sm:w-96 p-0 overflow-hidden shadow-2xl border-primary/20" align="center" side="bottom" sideOffset={8}>
+      <PopoverContent className="w-[calc(100vw-2rem)] sm:w-96 p-0 overflow-hidden shadow-2xl border-primary/20" align="start" side="bottom" sideOffset={8}>
         <div className="bg-primary/5 p-3 border-b border-primary/10 flex items-center gap-2">
             <Icon className={cn("w-4 h-4", color)} />
             <h4 className="font-bold text-sm tracking-tight">{title} Details</h4>

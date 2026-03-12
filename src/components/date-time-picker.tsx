@@ -23,7 +23,7 @@ export function DateTimePicker({ date, setDate, label }: DateTimePickerProps) {
   }, []);
 
   const selectedDate = date ? new Date(date) : undefined;
-  const formattedDate = isMounted && date ? format(new Date(date), "PPP p") : (label || "Pick a date and time");
+  const formattedDate = isMounted && date ? format(new Date(date), "PP p") : (label || "Pick a date and time");
 
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const time = e.target.value;

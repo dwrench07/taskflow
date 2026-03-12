@@ -124,7 +124,7 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
             </FormItem>
           )}
         />
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="priority"
@@ -172,7 +172,7 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
             )}
           />
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="milestoneId"
@@ -220,7 +220,7 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
             )}
           />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
           <FormField
             control={form.control}
             name="startDate"
@@ -291,7 +291,7 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
             </FormItem>
           )}
         />
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
           <FormField
             control={form.control}
             name="blockedBy"
