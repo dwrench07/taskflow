@@ -1,46 +1,52 @@
-"use client";
-
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
-import { AppLayout } from '@/components/app-layout';
-import { Toaster } from '@/components/ui/toaster';
-import React, { useEffect, useState } from 'react';
 import { Inter } from 'next/font/google';
-import { cn } from '@/lib/utils';
-import { AuthProvider } from "@/context/AuthContext";
+import { RootClientLayout } from '@/components/root-client-layout';
 
 const fontSans = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
 });
 
+export const metadata: Metadata = {
+  title: 'Dash',
+  description: 'A premium task and habit tracking application.',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Dash',
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  icons: {
+    icon: [
+      { url: '/icon.png', sizes: 'any' },
+    ],
+    apple: [
+      { url: '/icon.png', sizes: 'any' },
+    ],
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#e11d48',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true); // Ensure the component is mounted before rendering
-  }, []);
-
   return (
     <html lang="en" suppressHydrationWarning className="dark">
-      <body className={cn(
-        "min-h-screen bg-background font-sans antialiased",
-        fontSans.variable
-      )}>
-        {isMounted ? (
-          <AuthProvider>
-            <AppLayout>
-              <React.Suspense fallback={<div>Loading...</div>}>
-                {children}
-              </React.Suspense>
-            </AppLayout>
-          </AuthProvider>
-        ) : null}
-        <Toaster />
-      </body>
+      <RootClientLayout fontVariable={fontSans.variable}>
+        {children}
+      </RootClientLayout>
     </html>
   );
 }

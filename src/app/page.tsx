@@ -115,7 +115,7 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-6 w-full max-w-[1600px] mx-auto px-4 sm:px-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent italic">TaskFlow</h1>
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent italic">Dash</h1>
           <p className="text-muted-foreground text-sm">Focus on what matters, ignore the rest.</p>
         </div>
         <div className="bg-muted/50 p-1 rounded-lg self-start sm:self-center flex items-center">
