@@ -15,6 +15,7 @@ import { DashboardTaskVelocity } from "@/components/dashboard-task-velocity";
 import { DashboardPointOfNoReturn } from "@/components/dashboard-point-of-no-return";
 import { SummaryCard } from "@/components/dashboard-summary-card";
 import { PNRDetail } from "@/components/dashboard-summary-pnr";
+import { calculateStreak } from "@/lib/habits";
 import { HabitDetail } from "@/components/dashboard-summary-habits";
 import { FocusDetail } from "@/components/dashboard-summary-focus";
 import { TaskDetail } from "@/components/dashboard-summary-tasks";
@@ -100,7 +101,7 @@ export default function DashboardPage() {
         pnrCount,
         habitsDoneToday,
         habitsTotal: habits.length,
-        habitsWithStreak: habits.filter(h => (h.streak || 0) > 0).length,
+        habitsWithStreak: habits.filter(h => calculateStreak(h) > 0).length,
         habitDelta,
         focusMinutes,
         topTasksDoneToday,
