@@ -56,10 +56,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       <Sidebar className="border-r border-white/5 bg-background/50 backdrop-blur-xl">
         <SidebarHeader className="p-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent shadow-lg shadow-primary/20">
-              <Activity className="h-5 w-5 text-white" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#e11d48] shadow-lg shadow-red-500/20 overflow-hidden">
+              <img src="/icon.png" alt="Dash Logo" className="h-full w-full object-cover" />
             </div>
-            <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">TaskFlow</h1>
+            <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">Dash</h1>
           </div>
         </SidebarHeader>
         <SidebarContent className="px-3">
@@ -99,10 +99,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b border-white/5 bg-background/50 backdrop-blur-xl px-4 sm:px-6 md:hidden">
           <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent shadow-sm">
-              <Activity className="h-4 w-4 text-white" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#e11d48] shadow-sm overflow-hidden">
+              <img src="/icon.png" alt="Dash Logo" className="h-full w-full object-cover" />
             </div>
-            <h1 className="text-lg font-bold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">TaskFlow</h1>
+            <h1 className="text-lg font-bold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">Dash</h1>
           </div>
         </header>
         <main className="flex-1 p-4 sm:p-6">{children}</main>
