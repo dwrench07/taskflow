@@ -1,6 +1,6 @@
-# TaskFlow
+# Dash (formerly TaskFlow)
 
-TaskFlow is a premium, multi-tenant productivity application designed to help users manage their time, habits, and long-term goals with absolute security and focus.
+Dash is a premium, multi-tenant productivity application designed to help users manage their time, habits, and long-term goals with absolute security and focus.
 
 ## 🚀 Key Features
 
@@ -83,7 +83,13 @@ TaskFlow is a premium, multi-tenant productivity application designed to help us
 > The process must be: **Brainstorm, leave it for one day to brew, and then implement.**
 > Once an idea is ready to be built, it **MUST** be moved out of this sandbox and into the Roadmap execution phases above before any code is written.
 
-This section serves as a brainstorming space for future enhancements to TaskFlow.
+This section serves as a brainstorming space for future enhancements to Dash.
+
+### 🧠 Cognitive Load & Action Clarity
+* **The 1-Second / 5-Minute Rule:** "I should be able to figure out what I am supposed to do at that particular minute in less than 1 second or I should stick to some way of looking at the app like I must 5 minutes to clearly understand etc. Something and only one or two ways of reading. This is because if the app is going to take 10 minutes to understand but if I spend, 5 seconds, I will find it painful to use the app."
+
+### 🕸️ Interest Mapping & Prioritization
+* **Massive Interest Graphs:** "I have 100s of interests so for me to be very productive, I should somehow be able to map these. This will in a way make it very clear which is connected to what and how to prioritize them."
 
 ### 📊 Analytics & Dashboards
 * **Morning Dashboard:** Clear picture of where you are at the start of the day. Motivation, insights, and upcoming deadlines.
