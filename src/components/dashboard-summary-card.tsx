@@ -63,7 +63,7 @@ export function SummaryCard({
             <Icon className={cn("w-4 h-4", color)} />
             <h4 className="font-bold text-sm tracking-tight">{title} Details</h4>
         </div>
-        <div className="max-h-[70vh] overflow-y-auto">
+        <div className="max-h-[60vh] overflow-y-auto custom-scrollbar">
           {children}
         </div>
       </PopoverContent>
