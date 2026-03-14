@@ -182,7 +182,7 @@ export default function DashboardPage() {
             <SummaryCard
                 icon={Flame}
                 title="Habits"
-                value={`${stats.habitsWithStreak}/${stats.habitsTotal}`}
+                value={`${stats.habitsDoneToday}/${stats.habitsTotal}`}
                 subtitle="Consistency is key"
                 color="text-green-500"
                 trend={{ value: stats.habitDelta, isGood: true }}

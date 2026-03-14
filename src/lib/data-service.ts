@@ -2,7 +2,7 @@
  * Data service layer that uses the database abstraction
  */
 
-import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore } from './types';
+import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection } from './types';
 import type { DatabaseAdapter, DailyPlan } from './database/types';
 import { DatabaseFactory } from './database/factory';
 import { config, isServer } from './config';
@@ -125,6 +125,8 @@ const mockPillars: Pillar[] = [
 
 const mockMilestones: Milestone[] = [];
 const mockChores: Chore[] = [];
+const mockInterests: Interest[] = [];
+const mockInterestConnections: InterestConnection[] = [];
 
 /**
  * Get all tasks
@@ -802,6 +804,104 @@ export async function deleteChoreAsync(id: string, userId?: string | null): Prom
         return await db.deleteChore(id, userId);
     } catch (error) {
         defaultLogger.warn('Failed to delete chore', error);
+        return false;
+    }
+}
+
+// === INTERESTS ===
+
+export async function getInterestsAsync(userId?: string | null): Promise<Interest[]> {
+    if (!isServer) return mockInterests;
+    try {
+        const db = await getDatabase();
+        return await db.getInterests(userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to get interests', error);
+        return mockInterests;
+    }
+}
+
+export async function addInterestAsync(interest: Omit<Interest, 'id'>, userId?: string | null): Promise<Interest> {
+    const withId: Interest = { ...interest, id: `interest-${Date.now()}` } as Interest;
+    if (!isServer) { mockInterests.push(withId); return withId; }
+    try {
+        const db = await getDatabase();
+        return await db.addInterest(withId, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to add interest', error);
+        mockInterests.push(withId);
+        return withId;
+    }
+}
+
+export async function updateInterestAsync(interest: Interest, userId?: string | null): Promise<void> {
+    if (!isServer) {
+        const idx = mockInterests.findIndex(i => i.id === interest.id);
+        if (idx !== -1) mockInterests[idx] = interest;
+        return;
+    }
+    try {
+        const db = await getDatabase();
+        await db.updateInterest(interest, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to update interest', error);
+        const idx = mockInterests.findIndex(i => i.id === interest.id);
+        if (idx !== -1) mockInterests[idx] = interest;
+    }
+}
+
+export async function deleteInterestAsync(id: string, userId?: string | null): Promise<boolean> {
+    if (!isServer) {
+        const idx = mockInterests.findIndex(i => i.id === id);
+        if (idx !== -1) { mockInterests.splice(idx, 1); return true; }
+        return false;
+    }
+    try {
+        const db = await getDatabase();
+        return await db.deleteInterest(id, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to delete interest', error);
+        return false;
+    }
+}
+
+// === INTEREST CONNECTIONS ===
+
+export async function getInterestConnectionsAsync(userId?: string | null): Promise<InterestConnection[]> {
+    if (!isServer) return mockInterestConnections;
+    try {
+        const db = await getDatabase();
+        return await db.getInterestConnections(userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to get interest connections', error);
+        return mockInterestConnections;
+    }
+}
+
+export async function addInterestConnectionAsync(connection: Omit<InterestConnection, 'id'>, userId?: string | null): Promise<InterestConnection> {
+    const withId: InterestConnection = { ...connection, id: `iconn-${Date.now()}` } as InterestConnection;
+    if (!isServer) { mockInterestConnections.push(withId); return withId; }
+    try {
+        const db = await getDatabase();
+        return await db.addInterestConnection(withId, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to add interest connection', error);
+        mockInterestConnections.push(withId);
+        return withId;
+    }
+}
+
+export async function deleteInterestConnectionAsync(id: string, userId?: string | null): Promise<boolean> {
+    if (!isServer) {
+        const idx = mockInterestConnections.findIndex(c => c.id === id);
+        if (idx !== -1) { mockInterestConnections.splice(idx, 1); return true; }
+        return false;
+    }
+    try {
+        const db = await getDatabase();
+        return await db.deleteInterestConnection(id, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to delete interest connection', error);
         return false;
     }
 }

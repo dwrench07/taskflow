@@ -4,7 +4,7 @@
 
 import { MongoClient, Db, Collection, ObjectId } from 'mongodb';
 import type { DatabaseAdapter, DatabaseConfig, DatabaseLogger, DatabaseError, DailyPlan } from './types';
-import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore } from '../types';
+import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection } from '../types';
 
 export class MongoDBAdapter implements DatabaseAdapter {
     private client: MongoClient | null = null;
@@ -20,6 +20,8 @@ export class MongoDBAdapter implements DatabaseAdapter {
     private pillarsCollection: Collection<any> | null = null;
     private milestonesCollection: Collection<any> | null = null;
     private choresCollection: Collection<any> | null = null;
+    private interestsCollection: Collection<any> | null = null;
+    private interestConnectionsCollection: Collection<any> | null = null;
 
     constructor(
         private config: DatabaseConfig,
@@ -56,6 +58,8 @@ export class MongoDBAdapter implements DatabaseAdapter {
             this.pillarsCollection = this.db.collection(this.config.collections?.pillars || 'pillars');
             this.milestonesCollection = this.db.collection(this.config.collections?.milestones || 'milestones');
             this.choresCollection = this.db.collection(this.config.collections?.chores || 'chores');
+            this.interestsCollection = this.db.collection(this.config.collections?.interests || 'interests');
+            this.interestConnectionsCollection = this.db.collection(this.config.collections?.interestConnections || 'interest_connections');
 
             // Create indexes for better performance
             await this.createIndexes();
@@ -660,6 +664,112 @@ export class MongoDBAdapter implements DatabaseAdapter {
         }
     }
 
+    // Interest operations
+    async getInterests(userId?: string | null): Promise<Interest[]> {
+        this.ensureConnected();
+        try {
+            const query = userId ? { userId } : {};
+            const items = await this.interestsCollection!.find(query).toArray();
+            return items.map(i => this.convertFromMongo<Interest>(i));
+        } catch (error) {
+            this.logger.error('Failed to get interests', error);
+            throw new Error(`Failed to get interests: ${error}`);
+        }
+    }
+
+    async getInterest(id: string, userId?: string | null): Promise<Interest | null> {
+        this.ensureConnected();
+        try {
+            const query: any = { _id: id };
+            if (userId) query.userId = userId;
+            const item = await this.interestsCollection!.findOne(query);
+            return item ? this.convertFromMongo<Interest>(item) : null;
+        } catch (error) {
+            this.logger.error('Failed to get interest', { id, error });
+            throw new Error(`Failed to get interest: ${error}`);
+        }
+    }
+
+    async addInterest(interest: Interest, userId?: string | null): Promise<Interest> {
+        this.ensureConnected();
+        try {
+            const toInsert = this.convertToMongo({ ...interest, userId });
+            const result = await this.interestsCollection!.insertOne(toInsert);
+            return { ...interest, id: result.insertedId.toString(), userId: userId || interest.userId };
+        } catch (error) {
+            this.logger.error('Failed to add interest', { interest, error });
+            throw new Error(`Failed to add interest: ${error}`);
+        }
+    }
+
+    async updateInterest(interest: Interest, userId?: string | null): Promise<Interest> {
+        this.ensureConnected();
+        try {
+            const toUpdate = this.convertToMongo({ ...interest, userId });
+            const { _id, ...updateData } = toUpdate;
+            const query: any = { _id: interest.id };
+            if (userId) query.userId = userId;
+            await this.interestsCollection!.updateOne(query, { $set: { ...updateData, updatedAt: new Date().toISOString() } });
+            return { ...interest, userId: userId || interest.userId };
+        } catch (error) {
+            this.logger.error('Failed to update interest', { interest, error });
+            throw new Error(`Failed to update interest: ${error}`);
+        }
+    }
+
+    async deleteInterest(id: string, userId?: string | null): Promise<boolean> {
+        this.ensureConnected();
+        try {
+            // Also delete any connections involving this interest
+            await this.interestConnectionsCollection!.deleteMany({ $or: [{ sourceId: id }, { targetId: id }] });
+            const query: any = { _id: id };
+            if (userId) query.userId = userId;
+            const result = await this.interestsCollection!.deleteOne(query);
+            return result.deletedCount > 0;
+        } catch (error) {
+            this.logger.error('Failed to delete interest', { id, error });
+            throw new Error(`Failed to delete interest: ${error}`);
+        }
+    }
+
+    // InterestConnection operations
+    async getInterestConnections(userId?: string | null): Promise<InterestConnection[]> {
+        this.ensureConnected();
+        try {
+            const query = userId ? { userId } : {};
+            const items = await this.interestConnectionsCollection!.find(query).toArray();
+            return items.map(c => this.convertFromMongo<InterestConnection>(c));
+        } catch (error) {
+            this.logger.error('Failed to get interest connections', error);
+            throw new Error(`Failed to get interest connections: ${error}`);
+        }
+    }
+
+    async addInterestConnection(connection: InterestConnection, userId?: string | null): Promise<InterestConnection> {
+        this.ensureConnected();
+        try {
+            const toInsert = this.convertToMongo({ ...connection, userId });
+            const result = await this.interestConnectionsCollection!.insertOne(toInsert);
+            return { ...connection, id: result.insertedId.toString(), userId: userId || connection.userId };
+        } catch (error) {
+            this.logger.error('Failed to add interest connection', { connection, error });
+            throw new Error(`Failed to add interest connection: ${error}`);
+        }
+    }
+
+    async deleteInterestConnection(id: string, userId?: string | null): Promise<boolean> {
+        this.ensureConnected();
+        try {
+            const query: any = { _id: id };
+            if (userId) query.userId = userId;
+            const result = await this.interestConnectionsCollection!.deleteOne(query);
+            return result.deletedCount > 0;
+        } catch (error) {
+            this.logger.error('Failed to delete interest connection', { id, error });
+            throw new Error(`Failed to delete interest connection: ${error}`);
+        }
+    }
+
     // User operations
     async getUser(id: string): Promise<User | null> {
         this.ensureConnected();
@@ -781,6 +891,11 @@ export class MongoDBAdapter implements DatabaseAdapter {
             await this.milestonesCollection!.createIndex({ status: 1 });
             await this.choresCollection!.createIndex({ userId: 1 });
             await this.choresCollection!.createIndex({ lastCompleted: 1 });
+            await this.interestsCollection!.createIndex({ userId: 1 });
+            await this.interestsCollection!.createIndex({ category: 1 });
+            await this.interestConnectionsCollection!.createIndex({ userId: 1 });
+            await this.interestConnectionsCollection!.createIndex({ sourceId: 1 });
+            await this.interestConnectionsCollection!.createIndex({ targetId: 1 });
 
             this.logger.info('Database indexes created successfully');
         } catch (error) {

@@ -3,7 +3,7 @@
  * Provides a unified interface for different database implementations
  */
 
-import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore } from '../types';
+import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection } from '../types';
 
 export interface DailyPlan {
     id: string;
@@ -81,6 +81,18 @@ export interface DatabaseAdapter {
     updateChore(chore: Chore, userId?: string | null): Promise<Chore>;
     deleteChore(id: string, userId?: string | null): Promise<boolean>;
 
+    // Interest operations
+    getInterests(userId?: string | null): Promise<Interest[]>;
+    getInterest(id: string, userId?: string | null): Promise<Interest | null>;
+    addInterest(interest: Interest, userId?: string | null): Promise<Interest>;
+    updateInterest(interest: Interest, userId?: string | null): Promise<Interest>;
+    deleteInterest(id: string, userId?: string | null): Promise<boolean>;
+
+    // InterestConnection operations
+    getInterestConnections(userId?: string | null): Promise<InterestConnection[]>;
+    addInterestConnection(connection: InterestConnection, userId?: string | null): Promise<InterestConnection>;
+    deleteInterestConnection(id: string, userId?: string | null): Promise<boolean>;
+
     // Health check
     healthCheck(): Promise<boolean>;
 }
@@ -106,6 +118,8 @@ export interface DatabaseConfig {
         pillars: string;
         milestones: string;
         chores: string;
+        interests: string;
+        interestConnections: string;
     };
 }
 

@@ -1,6 +1,6 @@
 
 import type { DatabaseAdapter, DatabaseLogger } from './types';
-import type { User, Pillar, Milestone, Chore } from '../types';
+import type { User, Pillar, Milestone, Chore, Interest, InterestConnection } from '../types';
 
 // Initial mock data for development
 const initialTasks = [
@@ -95,6 +95,8 @@ export class MemoryAdapter implements DatabaseAdapter {
     private pillars: Map<string, any> = new Map();
     private milestones: Map<string, any> = new Map();
     private chores: Map<string, any> = new Map();
+    private interests: Map<string, any> = new Map();
+    private interestConnections: Map<string, any> = new Map();
     private connected = false;
 
     constructor(private logger: DatabaseLogger) { }
@@ -122,6 +124,8 @@ export class MemoryAdapter implements DatabaseAdapter {
         this.pillars.clear();
         this.milestones.clear();
         this.chores.clear();
+        this.interests.clear();
+        this.interestConnections.clear();
         this.logger.info('Disconnected from in-memory database');
     }
 
@@ -352,5 +356,47 @@ export class MemoryAdapter implements DatabaseAdapter {
     }
     async deleteChore(id: string, userId?: string | null): Promise<boolean> {
         return this.chores.delete(id);
+    }
+
+    // Interest operations
+    async getInterests(userId?: string | null): Promise<any[]> {
+        return Array.from(this.interests.values()).filter(i => !userId || i.userId === userId);
+    }
+    async getInterest(id: string, userId?: string | null): Promise<any | null> {
+        const interest = this.interests.get(id);
+        if (interest && (!userId || interest.userId === userId)) return interest;
+        return null;
+    }
+    async addInterest(interest: any, userId?: string | null): Promise<any> {
+        const iWithId = { ...interest, userId: userId || interest.userId, id: interest.id || Date.now().toString() };
+        this.interests.set(iWithId.id, iWithId);
+        return iWithId;
+    }
+    async updateInterest(interest: any, userId?: string | null): Promise<any> {
+        const iWithId = { ...interest, userId: userId || interest.userId };
+        this.interests.set(iWithId.id, iWithId);
+        return iWithId;
+    }
+    async deleteInterest(id: string, userId?: string | null): Promise<boolean> {
+        // Also delete any connections involving this interest
+        for (const [connId, conn] of this.interestConnections.entries()) {
+            if (conn.sourceId === id || conn.targetId === id) {
+                this.interestConnections.delete(connId);
+            }
+        }
+        return this.interests.delete(id);
+    }
+
+    // InterestConnection operations
+    async getInterestConnections(userId?: string | null): Promise<any[]> {
+        return Array.from(this.interestConnections.values()).filter(c => !userId || c.userId === userId);
+    }
+    async addInterestConnection(connection: any, userId?: string | null): Promise<any> {
+        const cWithId = { ...connection, userId: userId || connection.userId, id: connection.id || Date.now().toString() };
+        this.interestConnections.set(cWithId.id, cWithId);
+        return cWithId;
+    }
+    async deleteInterestConnection(id: string, userId?: string | null): Promise<boolean> {
+        return this.interestConnections.delete(id);
     }
 }

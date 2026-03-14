@@ -1,4 +1,4 @@
-import type { Task, TaskTemplate, FocusSession, Goal, Pillar, Milestone, Chore } from './types';
+import type { Task, TaskTemplate, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection } from './types';
 
 // === API FUNCTIONS FOR CLIENT-SIDE USAGE ===
 // These functions make direct API calls and are used by React components
@@ -399,4 +399,67 @@ export async function addChore(chore: Omit<Chore, 'id'>): Promise<Chore> {
 
 export async function deleteChore(id: string): Promise<void> {
   await fetch(`/api/chores/${id}`, { method: 'DELETE' });
+}
+
+// === INTERESTS ===
+
+export async function getAllInterests(): Promise<Interest[]> {
+  try {
+    const response = await fetch('/api/interests');
+    if (response.ok) return await response.json();
+    return [];
+  } catch (error) {
+    console.error('Failed to fetch interests:', error);
+    return [];
+  }
+}
+
+export async function addInterest(interest: Omit<Interest, 'id'>): Promise<Interest> {
+  const response = await fetch('/api/interests', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(interest),
+  });
+  if (response.ok) return await response.json();
+  throw new Error(`Failed to add interest: ${response.statusText}`);
+}
+
+export async function updateInterest(interest: Interest): Promise<void> {
+  const response = await fetch(`/api/interests/${interest.id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(interest),
+  });
+  if (!response.ok) throw new Error(`Failed to update interest: ${response.statusText}`);
+}
+
+export async function deleteInterest(id: string): Promise<void> {
+  await fetch(`/api/interests/${id}`, { method: 'DELETE' });
+}
+
+// === INTEREST CONNECTIONS ===
+
+export async function getAllInterestConnections(): Promise<InterestConnection[]> {
+  try {
+    const response = await fetch('/api/interest-connections');
+    if (response.ok) return await response.json();
+    return [];
+  } catch (error) {
+    console.error('Failed to fetch interest connections:', error);
+    return [];
+  }
+}
+
+export async function addInterestConnection(connection: Omit<InterestConnection, 'id'>): Promise<InterestConnection> {
+  const response = await fetch('/api/interest-connections', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(connection),
+  });
+  if (response.ok) return await response.json();
+  throw new Error(`Failed to add interest connection: ${response.statusText}`);
+}
+
+export async function deleteInterestConnection(id: string): Promise<void> {
+  await fetch(`/api/interest-connections/${id}`, { method: 'DELETE' });
 }

@@ -146,3 +146,24 @@ export interface Chore {
   userId?: string;
   tags?: string[];
 }
+
+export interface Interest {
+  id: string;
+  name: string;
+  description?: string;
+  category?: string;
+  priority: Priority;
+  color?: string;
+  tags?: string[];
+  pillarId?: string;
+  userId?: string;
+}
+
+export interface InterestConnection {
+  id: string;
+  sourceId: string;
+  targetId: string;
+  label?: string;
+  strength?: number;
+  userId?: string;
+}

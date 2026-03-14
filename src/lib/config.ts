@@ -45,6 +45,11 @@ function createConfig(): AppConfig {
                 users: process.env.NODE_ENV === 'production'
                     ? (process.env.MONGODB_USERS_COLLECTION || 'users')
                     : (process.env.MONGODB_USERS_DEV_COLLECTION || 'users_dev'),
+                pillars: process.env.MONGODB_PILLARS_COLLECTION || 'pillars',
+                milestones: process.env.MONGODB_MILESTONES_COLLECTION || 'milestones',
+                chores: process.env.MONGODB_CHORES_COLLECTION || 'chores',
+                interests: process.env.MONGODB_INTERESTS_COLLECTION || 'interests',
+                interestConnections: process.env.MONGODB_INTEREST_CONNECTIONS_COLLECTION || 'interest_connections',
             },
         };
     } else {
@@ -59,6 +64,11 @@ function createConfig(): AppConfig {
                 goals: 'goals',
                 // Add users collection for in-memory DB
                 users: process.env.NODE_ENV === 'production' ? 'users' : 'users_dev',
+                pillars: 'pillars',
+                milestones: 'milestones',
+                chores: 'chores',
+                interests: 'interests',
+                interestConnections: 'interest_connections',
             },
         };
     }
