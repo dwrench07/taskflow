@@ -1,5 +1,5 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { ListTodo, Loader, CalendarCheck, Trophy, Flame } from "lucide-react";
+import { ListTodo, Loader, CalendarCheck, Trophy, Flame, TrendingUp } from "lucide-react";
 import { isToday, parseISO } from "date-fns";
 import { calculateStreak } from "@/lib/habits";
 import { Task } from "@/lib/types";
@@ -18,54 +18,54 @@ export function DashboardOverview({ allTasks }: { allTasks: Task[] }) {
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-      <Card className="transition-all duration-300 ease-in-out animate-fade-in hover:shadow-md hover:border-primary/50">
+      <Card className="glass-morphism border-primary/10 transition-all duration-300 animate-fade-in hover:shadow-[0_0_20px_rgba(139,92,246,0.1)] hover:border-primary/30">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">To-Do</CardTitle>
-          <ListTodo className="h-4 w-4 text-muted-foreground" />
+          <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">To-Do</CardTitle>
+          <ListTodo className="h-4 w-4 text-primary" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{todoCount}</div>
-          <p className="text-xs text-muted-foreground">Tasks waiting to be started</p>
+          <div className="text-2xl font-black tracking-tighter">{todoCount}</div>
+          <p className="text-[10px] text-muted-foreground/60 font-medium italic">Pending objectives</p>
         </CardContent>
       </Card>
-      <Card className="transition-all duration-300 ease-in-out animate-fade-in hover:shadow-md hover:border-primary/50" style={{ animationDelay: '50ms' }}>
+      <Card className="glass-morphism border-accent/10 transition-all duration-300 animate-fade-in hover:shadow-[0_0_20px_rgba(56,189,248,0.1)] hover:border-accent/30" style={{ animationDelay: '50ms' }}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">In Progress</CardTitle>
-          <Loader className="h-4 w-4 text-muted-foreground animate-spin" />
+          <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">In Progress</CardTitle>
+          <Loader className="h-4 w-4 text-accent animate-spin" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{inProgressCount}</div>
-          <p className="text-xs text-muted-foreground">Tasks currently being worked on</p>
+          <div className="text-2xl font-black tracking-tighter">{inProgressCount}</div>
+          <p className="text-[10px] text-muted-foreground/60 font-medium italic">Active focus</p>
         </CardContent>
       </Card>
-      <Card className="transition-all duration-300 ease-in-out animate-fade-in hover:shadow-md hover:border-primary/50" style={{ animationDelay: '100ms' }}>
+      <Card className="glass-morphism border-blue-500/10 transition-all duration-300 animate-fade-in hover:shadow-[0_0_20px_rgba(59,130,246,0.1)] hover:border-blue-500/30" style={{ animationDelay: '100ms' }}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Tasks Due Today</CardTitle>
-          <CalendarCheck className="h-4 w-4 text-muted-foreground" />
+          <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Due Today</CardTitle>
+          <CalendarCheck className="h-4 w-4 text-blue-400" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{tasksDueToday}</div>
-          <p className="text-xs text-muted-foreground">Tasks with a deadline for today</p>
+          <div className="text-2xl font-black tracking-tighter">{tasksDueToday}</div>
+          <p className="text-[10px] text-muted-foreground/60 font-medium italic">Deadlines approaching</p>
         </CardContent>
       </Card>
-      <Card className="transition-all duration-300 ease-in-out animate-fade-in hover:shadow-md hover:border-primary/50" style={{ animationDelay: '150ms' }}>
+      <Card className="glass-morphism border-yellow-500/10 transition-all duration-300 animate-fade-in hover:shadow-[0_0_20px_rgba(234,179,8,0.1)] hover:border-yellow-500/30" style={{ animationDelay: '150ms' }}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Habit Goals Met</CardTitle>
-          <Trophy className="h-4 w-4 text-muted-foreground" />
+          <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Habit Goals</CardTitle>
+          <Trophy className="h-4 w-4 text-yellow-400" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{habitGoalsMet}/{totalHabitsWithGoals}</div>
-          <p className="text-xs text-muted-foreground">Habit streak goals achieved</p>
+          <div className="text-2xl font-black tracking-tighter">{habitGoalsMet}/{totalHabitsWithGoals}</div>
+          <p className="text-[10px] text-muted-foreground/60 font-medium italic">Milestones achieved</p>
         </CardContent>
       </Card>
-      <Card className="transition-all duration-300 ease-in-out animate-fade-in hover:shadow-md hover:border-primary/50" style={{ animationDelay: '200ms' }}>
+      <Card className="glass-morphism border-orange-500/10 transition-all duration-300 animate-fade-in hover:shadow-[0_0_20px_rgba(249,115,22,0.1)] hover:border-orange-500/30" style={{ animationDelay: '200ms' }}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Active Streaks</CardTitle>
-          <Flame className="h-4 w-4 text-orange-500" />
+          <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Longevity</CardTitle>
+          <TrendingUp className="h-4 w-4 text-orange-500" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{activeStreaksCount}</div>
-          <p className="text-xs text-muted-foreground">Habits with streaks &gt; 2 days</p>
+          <div className="text-2xl font-black tracking-tighter">{activeStreaksCount}</div>
+          <p className="text-[10px] text-muted-foreground/60 font-medium italic">Habits &gt; 3 days streak</p>
         </CardContent>
       </Card>
     </div>

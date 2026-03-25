@@ -48,6 +48,14 @@
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 240 6% 15%;
     --sidebar-ring: 252 87% 67%;
+
+    /* Premium Category Gradients */
+    --urgent-gradient: linear-gradient(135deg, #ef4444 0%, #7f1d1d 100%);
+    --tasks-gradient: linear-gradient(135deg, #3b82f6 0%, #172554 100%);
+    --subtasks-gradient: linear-gradient(135deg, #6366f1 0%, #312e81 100%);
+    --pnr-gradient: linear-gradient(135deg, #f97316 0%, #7c2d12 100%);
+    --habits-gradient: linear-gradient(135deg, #22c55e 0%, #064e3b 100%);
+    --focus-gradient: linear-gradient(135deg, #06b6d4 0%, #164e63 100%);
   }
   .dark {
     /* Same as root since we're forcing a premium dark mode */
@@ -89,7 +97,17 @@
 
 @layer utilities {
   .glass {
-    @apply bg-background/50 backdrop-blur-md border border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)];
+    @apply bg-card/40 backdrop-blur-xl border border-white/5 shadow-[0_8px_32px_0_rgba(0,0,0,0.36)];
+  }
+  .glass-morphism {
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+  }
+  .text-glow {
+    text-shadow: 0 0 10px currentColor;
   }
 }
 

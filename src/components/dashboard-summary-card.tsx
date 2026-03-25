@@ -30,40 +30,71 @@ export function SummaryCard({
   className,
   trend
 }: SummaryCardProps) {
+  // Map color classes to gradient/glow effects
+  const getGlowColor = () => {
+    if (color.includes("red")) return "shadow-red-500/10 border-red-500/20";
+    if (color.includes("blue")) return "shadow-blue-500/10 border-blue-500/20";
+    if (color.includes("indigo")) return "shadow-indigo-500/10 border-indigo-500/20";
+    if (color.includes("orange")) return "shadow-orange-500/10 border-orange-500/20";
+    if (color.includes("green")) return "shadow-green-500/10 border-green-500/20";
+    return "shadow-primary/10 border-primary/20";
+  };
+
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Card className={cn(
-          "cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md active:scale-[0.98] border-border/50 bg-card/50 backdrop-blur-sm relative overflow-hidden",
+          "group cursor-pointer transition-all duration-500 hover:translate-y-[-4px]",
+          "glass-morphism border-opacity-20 relative overflow-hidden",
+          getGlowColor(),
           className
         )}>
-          <CardContent className="p-4 flex flex-col items-center text-center gap-1">
-            <div className={cn("p-2 rounded-full bg-muted/50 mb-1", color)}>
-              <Icon className="w-5 h-5" />
+          {/* Subtle background glow on hover */}
+          <div className={cn(
+            "absolute -inset-1 opacity-0 group-hover:opacity-10 transition-opacity duration-500 blur-2xl",
+            color.replace("text-", "bg-")
+          )} />
+
+          <CardContent className="p-5 flex flex-col items-center text-center gap-2 relative z-10">
+            <div className={cn(
+                "p-3 rounded-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-3",
+                "bg-white/5 border border-white/10",
+                color
+            )}>
+              <Icon className="w-6 h-6 filter drop-shadow-[0_0_8px_currentColor]" />
             </div>
-            <div className="flex items-baseline gap-1.5 justify-center w-full">
-                <span className="text-2xl font-bold tracking-tight text-foreground">{value}</span>
-                {trend && trend.value !== 0 && (
-                    <div className={cn(
-                        "text-[10px] font-bold flex items-center h-4 px-1 rounded-sm gap-0.5",
-                        (trend.value > 0 === trend.isGood) ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"
-                    )}>
-                        {trend.value > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                        {Math.abs(trend.value)}
-                    </div>
-                )}
+            
+            <div className="flex flex-col items-center gap-0.5 mt-1">
+                <div className="flex items-center gap-2">
+                    <span className="text-3xl font-black tracking-tighter text-foreground group-hover:scale-105 transition-transform duration-500">{value}</span>
+                    {trend && trend.value !== 0 && (
+                        <div className={cn(
+                            "text-[10px] font-bold flex items-center h-4 px-1.5 rounded-full gap-0.5",
+                            (trend.value > 0 === trend.isGood) ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
+                        )}>
+                            {trend.value > 0 ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
+                            {Math.abs(trend.value)}
+                        </div>
+                    )}
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/80">{title}</span>
             </div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</span>
-            <span className="text-[10px] text-muted-foreground/70 truncate w-full">{subtitle}</span>
+            
+            <span className="text-[10px] text-muted-foreground/50 font-medium italic truncate w-full">{subtitle}</span>
           </CardContent>
         </Card>
       </PopoverTrigger>
-      <PopoverContent className="w-[calc(100vw-2rem)] sm:w-96 p-0 overflow-hidden shadow-2xl border-primary/20" align="start" side="bottom" sideOffset={8}>
-        <div className="bg-primary/5 p-3 border-b border-primary/10 flex items-center gap-2">
-            <Icon className={cn("w-4 h-4", color)} />
-            <h4 className="font-bold text-sm tracking-tight">{title} Details</h4>
+      <PopoverContent className="w-[calc(100vw-2rem)] sm:w-96 p-0 overflow-hidden shadow-2xl border-white/10 glass-morphism bg-popover/95 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-300" align="center" side="bottom" sideOffset={12} collisionPadding={16}>
+        <div className="bg-white/5 p-4 border-b border-white/5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+                <div className={cn("p-2 rounded-lg bg-white/5", color)}>
+                    <Icon className="w-4 h-4" />
+                </div>
+                <h4 className="font-black text-xs uppercase tracking-widest">{title} Analysis</h4>
+            </div>
+            <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
         </div>
-        <div className="max-h-[60vh] overflow-y-auto custom-scrollbar">
+        <div className="max-h-[60vh] overflow-y-auto custom-scrollbar p-1">
           {children}
         </div>
       </PopoverContent>

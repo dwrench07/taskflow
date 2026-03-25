@@ -29,6 +29,7 @@ import { Task, FocusSession } from "@/lib/types";
 import { LayoutDashboard, BarChart3, Clock, Flame, Brain, ListTodo, AlertTriangle, ChevronRight, CheckCircle2, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { isSameDay, parseISO } from "date-fns";
+import { cn } from "@/lib/utils";
 
 export default function DashboardPage() {
   const [allTasks, setAllTasks] = useState<Task[]>([]);
@@ -112,37 +113,49 @@ export default function DashboardPage() {
   }, [allTasks, focusSessions]);
 
   return (
-    <div className="flex flex-col gap-6 w-full max-w-[1600px] mx-auto px-4 sm:px-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent italic">Dash</h1>
-          <p className="text-muted-foreground text-sm">Focus on what matters, ignore the rest.</p>
+    <div className="flex flex-col gap-8 w-full max-w-[1600px] mx-auto px-4 sm:px-8 py-4">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+        <div className="space-y-1">
+          <div className="flex items-center gap-3">
+             <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.3)] rotate-3 hover:rotate-0 transition-transform duration-500">
+                <Flame className="w-6 h-6 text-white" />
+             </div>
+             <h1 className="text-5xl font-black italic tracking-tighter bg-gradient-to-br from-white via-white to-white/20 bg-clip-text text-transparent">Dash</h1>
+          </div>
+          <p className="text-muted-foreground/60 text-xs font-black uppercase tracking-[0.3em] pl-1.5">Focus on that matters. Ignore the rest.</p>
         </div>
-        <div className="bg-muted/50 p-1 rounded-lg self-start sm:self-center flex items-center">
+        
+        <div className="glass-morphism p-1 rounded-xl flex items-center shadow-inner">
             <Button 
                 variant={viewMode === 'quick' ? 'secondary' : 'ghost'} 
                 size="sm" 
                 onClick={() => setViewMode('quick')}
-                className="h-8 px-3 text-xs font-bold"
+                className={cn(
+                    "h-9 px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-500",
+                    viewMode === 'quick' ? "bg-white/10 text-white shadow-lg" : "text-muted-foreground hover:text-white"
+                )}
             >
-                <LayoutDashboard className="w-3.5 h-3.5 mr-1.5" />
+                <LayoutDashboard className="w-3.5 h-3.5 mr-2" />
                 Quick View
             </Button>
             <Button 
                 variant={viewMode === 'detailed' ? 'secondary' : 'ghost'} 
                 size="sm" 
                 onClick={() => setViewMode('detailed')}
-                className="h-8 px-3 text-xs font-bold"
+                className={cn(
+                    "h-9 px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-500",
+                    viewMode === 'detailed' ? "bg-white/10 text-white shadow-lg" : "text-muted-foreground hover:text-white"
+                )}
             >
-                <BarChart3 className="w-3.5 h-3.5 mr-1.5" />
+                <BarChart3 className="w-3.5 h-3.5 mr-2" />
                 Deep Dive
             </Button>
         </div>
       </div>
 
       {viewMode === 'quick' ? (
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-3 mb-8">
+        <div className="animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200 fill-mode-both">
+          <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-3 mb-10">
             <SummaryCard
                 icon={AlertTriangle}
                 title="Urgent"
@@ -157,7 +170,7 @@ export default function DashboardPage() {
                 title="Tasks"
                 value={`${stats.topTasksDoneToday}/${stats.topTasksTotalToday}`}
                 subtitle="Main objectives today"
-                color="text-blue-600"
+                color="text-blue-500"
             >
                 <TaskDetail tasks={allTasks} />
             </SummaryCard>
@@ -166,7 +179,7 @@ export default function DashboardPage() {
                 title="Subtasks"
                 value={`${stats.subTasksDoneToday}/${stats.subTasksTotalToday}`}
                 subtitle="Granular progress"
-                color="text-indigo-500"
+                color="text-indigo-400"
             >
                 <SubtaskDetail tasks={allTasks} />
             </SummaryCard>
@@ -175,7 +188,7 @@ export default function DashboardPage() {
                 title="PNR"
                 value={stats.pnrCount}
                 subtitle="Must start immediately"
-                color="text-orange-500"
+                color="text-orange-400"
             >
                 <PNRDetail tasks={allTasks} />
             </SummaryCard>
@@ -184,7 +197,7 @@ export default function DashboardPage() {
                 title="Habits"
                 value={`${stats.habitsDoneToday}/${stats.habitsTotal}`}
                 subtitle="Consistency is key"
-                color="text-green-500"
+                color="text-green-400"
                 trend={{ value: stats.habitDelta, isGood: true }}
             >
                 <HabitDetail tasks={allTasks} />
@@ -194,12 +207,12 @@ export default function DashboardPage() {
                 title="Focus"
                 value={`${Math.round(stats.focusMinutes / 60 * 10) / 10}h`}
                 subtitle="Total deep work today"
-                color="text-blue-500"
+                color="text-cyan-400"
             >
                 <FocusDetail sessions={focusSessions} />
             </SummaryCard>
           </div>
-                  </div>
+        </div>
       ) : (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {/* The Overview metrics remain visible at the top */}

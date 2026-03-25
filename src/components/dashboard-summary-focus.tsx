@@ -4,6 +4,7 @@ import { FocusSession } from "@/lib/types";
 import { format, parseISO, differenceInMinutes } from "date-fns";
 import { Brain, Zap, Clock, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 export function FocusDetail({ sessions }: { sessions: FocusSession[] }) {
   const todaySessions = sessions.filter(s => {
@@ -24,26 +25,35 @@ export function FocusDetail({ sessions }: { sessions: FocusSession[] }) {
   }
 
   return (
-    <div className="divide-y divide-border/50">
-      <div className="p-4 grid grid-cols-2 gap-4 bg-muted/20">
-        <div className="flex flex-col">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase">Total Time</span>
-            <span className="text-lg font-bold">{totalMinutes}m</span>
+    <div className="divide-y divide-white/5">
+      <div className="p-4 grid grid-cols-2 gap-4 bg-white/5">
+        <div className="flex flex-col bg-background/40 p-3 rounded-xl border border-white/5">
+            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1">Total Time</span>
+            <div className="flex items-end gap-1">
+                <span className="text-2xl font-black italic tracking-tighter text-primary">{totalMinutes}</span>
+                <span className="text-[10px] text-muted-foreground font-bold pb-1 underline decoration-primary/30">MINS</span>
+            </div>
         </div>
-        <div className="flex flex-col">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase">Distractions</span>
-            <span className="text-lg font-bold">{totalDistractions}</span>
+        <div className="flex flex-col bg-background/40 p-3 rounded-xl border border-white/5">
+            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1">Distractions</span>
+            <div className="flex items-end gap-1">
+                <span className="text-2xl font-black italic tracking-tighter text-cyan-400">{totalDistractions}</span>
+                <span className="text-[10px] text-muted-foreground font-bold pb-1 underline decoration-cyan-500/30">INCIDENTS</span>
+            </div>
         </div>
       </div>
       {todaySessions.map(session => (
-        <div key={session.id} className="p-4 flex items-center justify-between">
-          <div className="flex flex-col">
-            <span className="text-sm font-bold">{session.taskTitle || "General Focus"}</span>
-            <span className="text-[11px] text-muted-foreground">
-                {format(parseISO(session.startTime), "h:mm a")} • {session.duration}m
-            </span>
+        <div key={session.id} className="p-4 flex items-center justify-between group/session hover:bg-white/5 transition-colors">
+          <div className="flex flex-col min-w-0 flex-1 mr-4">
+            <span className="text-sm font-bold truncate group-hover/session:text-primary transition-colors">{session.taskTitle || "General Focus"}</span>
+            <div className="flex items-center gap-2 mt-0.5">
+                <Clock className="w-3 h-3 text-muted-foreground/50" />
+                <span className="text-[10px] text-muted-foreground/70 font-bold uppercase">
+                    {format(parseISO(session.startTime), "h:mm a")} • {session.duration}m
+                </span>
+            </div>
           </div>
-          <Badge variant="secondary" className="text-[10px] px-2 py-0 h-5">
+          <Badge variant="secondary" className="text-[9px] px-2 py-0 h-4 font-black uppercase tracking-tighter bg-primary/10 text-primary border-primary/20">
             {session.status}
           </Badge>
         </div>
@@ -58,4 +68,3 @@ function isSameDay(d1: Date, d2: Date) {
            d1.getDate() === d2.getDate();
 }
 
-import { Badge } from "./ui/badge";
