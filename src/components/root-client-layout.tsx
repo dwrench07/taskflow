@@ -4,6 +4,7 @@ import { AppLayout } from '@/components/app-layout';
 import { Toaster } from '@/components/ui/toaster';
 import React, { useEffect, useState } from 'react';
 import { AuthProvider } from "@/context/AuthContext";
+import { ReminderManager } from '@/components/reminder-manager';
 
 export function RootClientLayout({
   children,
@@ -27,6 +28,7 @@ export function RootClientLayout({
               {children}
             </React.Suspense>
           </AppLayout>
+          <ReminderManager />
         </AuthProvider>
       ) : null}
       <Toaster />

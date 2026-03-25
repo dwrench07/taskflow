@@ -4,7 +4,7 @@
 
 import { MongoClient, Db, Collection, ObjectId } from 'mongodb';
 import type { DatabaseAdapter, DatabaseConfig, DatabaseLogger, DatabaseError, DailyPlan } from './types';
-import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection } from '../types';
+import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry } from '../types';
 
 export class MongoDBAdapter implements DatabaseAdapter {
     private client: MongoClient | null = null;
@@ -22,6 +22,8 @@ export class MongoDBAdapter implements DatabaseAdapter {
     private choresCollection: Collection<any> | null = null;
     private interestsCollection: Collection<any> | null = null;
     private interestConnectionsCollection: Collection<any> | null = null;
+    private backOfMindCollection: Collection<any> | null = null;
+    private mistakeLogCollection: Collection<any> | null = null;
 
     constructor(
         private config: DatabaseConfig,
@@ -60,6 +62,8 @@ export class MongoDBAdapter implements DatabaseAdapter {
             this.choresCollection = this.db.collection(this.config.collections?.chores || 'chores');
             this.interestsCollection = this.db.collection(this.config.collections?.interests || 'interests');
             this.interestConnectionsCollection = this.db.collection(this.config.collections?.interestConnections || 'interest_connections');
+            this.backOfMindCollection = this.db.collection(this.config.collections?.backOfMind || 'back_of_mind');
+            this.mistakeLogCollection = this.db.collection(this.config.collections?.mistakeLog || 'mistake_log');
 
             // Create indexes for better performance
             await this.createIndexes();
@@ -770,6 +774,138 @@ export class MongoDBAdapter implements DatabaseAdapter {
         }
     }
 
+    // BackOfMind operations
+    async getBackOfMindItems(userId?: string | null): Promise<BackOfMindItem[]> {
+        this.ensureConnected();
+        try {
+            const query = userId ? { userId } : {};
+            const items = await this.backOfMindCollection!.find(query).sort({ relevanceScore: -1 }).toArray();
+            return items.map(i => this.convertFromMongo<BackOfMindItem>(i));
+        } catch (error) {
+            this.logger.error('Failed to get back of mind items', error);
+            throw new Error(`Failed to get back of mind items: ${error}`);
+        }
+    }
+
+    async getBackOfMindItem(id: string, userId?: string | null): Promise<BackOfMindItem | null> {
+        this.ensureConnected();
+        try {
+            const query: any = { _id: id };
+            if (userId) query.userId = userId;
+            const item = await this.backOfMindCollection!.findOne(query);
+            return item ? this.convertFromMongo<BackOfMindItem>(item) : null;
+        } catch (error) {
+            this.logger.error('Failed to get back of mind item', { id, error });
+            throw new Error(`Failed to get back of mind item: ${error}`);
+        }
+    }
+
+    async addBackOfMindItem(item: BackOfMindItem, userId?: string | null): Promise<BackOfMindItem> {
+        this.ensureConnected();
+        try {
+            const toInsert = this.convertToMongo({ ...item, userId });
+            const result = await this.backOfMindCollection!.insertOne(toInsert);
+            return { ...item, id: result.insertedId.toString(), userId: userId || item.userId };
+        } catch (error) {
+            this.logger.error('Failed to add back of mind item', { item, error });
+            throw new Error(`Failed to add back of mind item: ${error}`);
+        }
+    }
+
+    async updateBackOfMindItem(item: BackOfMindItem, userId?: string | null): Promise<BackOfMindItem> {
+        this.ensureConnected();
+        try {
+            const toUpdate = this.convertToMongo({ ...item, userId });
+            const { _id, ...updateData } = toUpdate;
+            const query: any = { _id: item.id };
+            if (userId) query.userId = userId;
+            await this.backOfMindCollection!.updateOne(query, { $set: { ...updateData, updatedAt: new Date().toISOString() } });
+            return { ...item, userId: userId || item.userId };
+        } catch (error) {
+            this.logger.error('Failed to update back of mind item', { item, error });
+            throw new Error(`Failed to update back of mind item: ${error}`);
+        }
+    }
+
+    async deleteBackOfMindItem(id: string, userId?: string | null): Promise<boolean> {
+        this.ensureConnected();
+        try {
+            const query: any = { _id: id };
+            if (userId) query.userId = userId;
+            const result = await this.backOfMindCollection!.deleteOne(query);
+            return result.deletedCount > 0;
+        } catch (error) {
+            this.logger.error('Failed to delete back of mind item', { id, error });
+            throw new Error(`Failed to delete back of mind item: ${error}`);
+        }
+    }
+
+    // MistakeLog operations
+    async getMistakeLogEntries(userId?: string | null): Promise<MistakeLogEntry[]> {
+        this.ensureConnected();
+        try {
+            const query = userId ? { userId } : {};
+            const items = await this.mistakeLogCollection!.find(query).sort({ createdAt: -1 }).toArray();
+            return items.map(i => this.convertFromMongo<MistakeLogEntry>(i));
+        } catch (error) {
+            this.logger.error('Failed to get mistake log entries', error);
+            throw new Error(`Failed to get mistake log entries: ${error}`);
+        }
+    }
+
+    async getMistakeLogEntry(id: string, userId?: string | null): Promise<MistakeLogEntry | null> {
+        this.ensureConnected();
+        try {
+            const query: any = { _id: id };
+            if (userId) query.userId = userId;
+            const item = await this.mistakeLogCollection!.findOne(query);
+            return item ? this.convertFromMongo<MistakeLogEntry>(item) : null;
+        } catch (error) {
+            this.logger.error('Failed to get mistake log entry', { id, error });
+            throw new Error(`Failed to get mistake log entry: ${error}`);
+        }
+    }
+
+    async addMistakeLogEntry(entry: MistakeLogEntry, userId?: string | null): Promise<MistakeLogEntry> {
+        this.ensureConnected();
+        try {
+            const toInsert = this.convertToMongo({ ...entry, userId });
+            const result = await this.mistakeLogCollection!.insertOne(toInsert);
+            return { ...entry, id: result.insertedId.toString(), userId: userId || entry.userId };
+        } catch (error) {
+            this.logger.error('Failed to add mistake log entry', { entry, error });
+            throw new Error(`Failed to add mistake log entry: ${error}`);
+        }
+    }
+
+    async updateMistakeLogEntry(entry: MistakeLogEntry, userId?: string | null): Promise<MistakeLogEntry> {
+        this.ensureConnected();
+        try {
+            const toUpdate = this.convertToMongo({ ...entry, userId });
+            const { _id, ...updateData } = toUpdate;
+            const query: any = { _id: entry.id };
+            if (userId) query.userId = userId;
+            await this.mistakeLogCollection!.updateOne(query, { $set: { ...updateData, updatedAt: new Date().toISOString() } });
+            return { ...entry, userId: userId || entry.userId };
+        } catch (error) {
+            this.logger.error('Failed to update mistake log entry', { entry, error });
+            throw new Error(`Failed to update mistake log entry: ${error}`);
+        }
+    }
+
+    async deleteMistakeLogEntry(id: string, userId?: string | null): Promise<boolean> {
+        this.ensureConnected();
+        try {
+            const query: any = { _id: id };
+            if (userId) query.userId = userId;
+            const result = await this.mistakeLogCollection!.deleteOne(query);
+            return result.deletedCount > 0;
+        } catch (error) {
+            this.logger.error('Failed to delete mistake log entry', { id, error });
+            throw new Error(`Failed to delete mistake log entry: ${error}`);
+        }
+    }
+
     // User operations
     async getUser(id: string): Promise<User | null> {
         this.ensureConnected();
@@ -896,6 +1032,12 @@ export class MongoDBAdapter implements DatabaseAdapter {
             await this.interestConnectionsCollection!.createIndex({ userId: 1 });
             await this.interestConnectionsCollection!.createIndex({ sourceId: 1 });
             await this.interestConnectionsCollection!.createIndex({ targetId: 1 });
+
+            // Utility logs
+            await this.backOfMindCollection!.createIndex({ userId: 1 });
+            await this.backOfMindCollection!.createIndex({ relevanceScore: -1 });
+            await this.mistakeLogCollection!.createIndex({ userId: 1 });
+            await this.mistakeLogCollection!.createIndex({ status: 1 });
 
             this.logger.info('Database indexes created successfully');
         } catch (error) {

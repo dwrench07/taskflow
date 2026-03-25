@@ -3,15 +3,15 @@
 
 import React from "react";
 import { useState, useMemo, useEffect } from "react";
-import { getAllTemplates, getAllTasks, addTask, updateTask as updateTaskInData, deleteTask as deleteTaskInData } from "@/lib/data";
-import { type Task, type Priority, type Subtask, type TaskTemplate, type Status } from "@/lib/types";
+import { getAllTemplates, getAllTasks, addTask, updateTask as updateTaskInData, deleteTask as deleteTaskInData, getAllGoals } from "@/lib/data";
+import { type Task, type Priority, type Subtask, type TaskTemplate, type Status, type Goal } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { ListTodo, FileText, Calendar as CalendarIcon, Clock, PlusCircle, Edit, Trash2, Tag, ChevronDown, ClipboardList, ArrowUpDown, ArrowLeft, Search, XCircle, Save, Loader2, Timer, Check, ArrowUp, ArrowDown, Lock } from "lucide-react";
+import { ListTodo, FileText, Calendar as CalendarIcon, Clock, PlusCircle, Edit, Trash2, Tag, ChevronDown, ClipboardList, ArrowUpDown, ArrowLeft, Search, XCircle, Save, Loader2, Timer, Check, ArrowUp, ArrowDown, Lock, Target } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -23,6 +23,8 @@ import { TaskForm } from "@/components/task-form";
 import { TagInput } from "@/components/tag-input";
 import { DateTimePicker } from "@/components/date-time-picker";
 import { Textarea } from "@/components/ui/textarea";
+import { EisenhowerMatrix } from "@/components/eisenhower-matrix";
+import { LayoutGrid, LayoutList } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -64,11 +66,19 @@ const statusStyles: Record<Status, string> = {
   todo: "border-blue-500/30 bg-blue-500/10 text-blue-400",
   "in-progress": "border-amber-500/30 bg-amber-500/10 text-amber-400",
   done: "border-green-500/30 bg-green-500/10 text-green-400",
+  abandoned: "border-red-500/30 bg-red-500/10 text-red-400",
 };
 
 type SortOption = "priority" | "title" | "startDate" | "status";
 
-function TaskListItem({ task, allTasks, onSelect, isSelected }: { task: Task; allTasks: Task[]; onSelect: () => void; isSelected: boolean }) {
+function calculateGoalProgress(goalId: string, allTasks: Task[]) {
+  const goalTasks = allTasks.filter(t => t.goalId === goalId);
+  if (goalTasks.length === 0) return 0;
+  const completedTasks = goalTasks.filter(t => t.status === 'done').length;
+  return Math.round((completedTasks / goalTasks.length) * 100);
+}
+
+function TaskListItem({ task, allTasks, goals, onSelect, isSelected }: { task: Task; allTasks: Task[]; goals: Goal[]; onSelect: () => void; isSelected: boolean }) {
   const isBlocked = task.status !== "done" && task.blockedBy && task.blockedBy.some(blockerId => {
     const blocker = allTasks.find(t => t.id === blockerId);
     return blocker && blocker.status !== "done";
@@ -98,6 +108,23 @@ function TaskListItem({ task, allTasks, onSelect, isSelected }: { task: Task; al
         </Badge>
       </div>
       <p className="text-sm text-muted-foreground mt-1 truncate w-full text-left min-w-0">{task.description}</p>
+      
+      {(() => {
+        const linkedGoal = goals?.find(g => g.id === task.goalId);
+        if (!linkedGoal) return null;
+        const progress = calculateGoalProgress(linkedGoal.id, allTasks);
+        return (
+          <div className="mt-2.5 flex items-center gap-2 text-[10px] text-muted-foreground w-full">
+            <Target className="w-3 h-3 text-primary/70" />
+            <span className="truncate flex-1 font-medium">{linkedGoal.title}</span>
+            <span className="flex-shrink-0 font-medium tabular-nums">{progress}%</span>
+            <div className="w-12 bg-muted rounded-full h-1 overflow-hidden">
+              <div className="bg-primary/70 h-1 flex-shrink-0 transition-all duration-500" style={{ width: `${progress}%` }}></div>
+            </div>
+          </div>
+        );
+      })()}
+
       <div className="flex items-center gap-2 text-xs text-muted-foreground mt-3 w-full min-w-0">
         <ListTodo className="w-3 h-3 flex-shrink-0" />
         <span className="flex-shrink-0">{task?.subtasks?.filter(st => st.completed)?.length}/{task?.subtasks?.length}</span>
@@ -231,6 +258,7 @@ function NotesSection({ task, onUpdateTask }: { task: Task, onUpdateTask: (task:
 
 function TasksPageContent() {
   const [allTasks, setAllTasks] = useState<Task[]>([]);
+  const [goals, setGoals] = useState<Goal[]>([]);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isEditingFormOpen, setIsEditingFormOpen] = useState(false);
@@ -244,6 +272,7 @@ function TasksPageContent() {
   const [statusFilter, setStatusFilter] = useState<Status[]>([]);
   const [priorityFilter, setPriorityFilter] = useState<Priority[]>([]);
   const [energyFilter, setEnergyFilter] = useState<string[]>([]);
+  const [viewMode, setViewMode] = useState<"list" | "eisenhower">("list");
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -251,8 +280,9 @@ function TasksPageContent() {
 
   const refreshTasks = async (showLoader = false) => {
     if (showLoader) setLoading(true);
-    const tasks = await getAllTasks();
-    setAllTasks(tasks);
+    const [tasks, fetchedGoals] = await Promise.all([getAllTasks(), getAllGoals()]);
+    setAllTasks(tasks || []);
+    setGoals(fetchedGoals || []);
     if (showLoader) setLoading(false);
     return tasks;
   };
@@ -299,7 +329,7 @@ function TasksPageContent() {
     console.log("^^^^^^^^^^||||||^^^^^^^", typeof allTasks)
     let sorted = typeof allTasks === 'object' ? allTasks?.filter(t => !t.isHabit) : [];
     const priorityOrder = { urgent: 0, high: 1, medium: 2, low: 3 };
-    const statusOrder = { todo: 1, "in-progress": 2, done: 3 };
+    const statusOrder: Record<Status, number> = { todo: 1, "in-progress": 2, done: 3, abandoned: 4 };
 
     let filtered = sorted;
     if (searchQuery) {
@@ -574,6 +604,7 @@ function TasksPageContent() {
     todo: 'To-Do',
     'in-progress': 'In Progress',
     done: 'Done',
+    abandoned: 'Dropped',
   };
 
   return (
@@ -639,6 +670,7 @@ function TasksPageContent() {
                         doDate: data.doDate || undefined,
                         blocks: data.blocks || [],
                         blockedBy: data.blockedBy || [],
+                        tShirtSize: data.tShirtSize === null ? undefined : data.tShirtSize,
                       };
                       handleAddTask(sanitizedData);
                       setIsFormOpen(false);
@@ -646,6 +678,24 @@ function TasksPageContent() {
                   />
                 </DialogContent>
               </Dialog>
+              <div className="flex bg-muted/50 p-1 rounded-lg border border-border/50">
+                <Button 
+                  variant={viewMode === 'list' ? 'secondary' : 'ghost'} 
+                  size="icon" 
+                  className="h-8 w-8 rounded-md"
+                  onClick={() => setViewMode('list')}
+                >
+                  <LayoutList className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant={viewMode === 'eisenhower' ? 'secondary' : 'ghost'} 
+                  size="icon" 
+                  className="h-8 w-8 rounded-md"
+                  onClick={() => setViewMode('eisenhower')}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -722,22 +772,33 @@ function TasksPageContent() {
               </DropdownMenu>
             </div>
           </CardHeader>
-          <div className="flex-1 p-3 overflow-y-auto overflow-x-hidden">
-            <div className="grid gap-6 pb-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {loading ? (
-                <div className="col-span-full flex justify-center items-center h-full">
-                  <Loader2 className="h-6 w-6 animate-spin" />
-                </div>
-              ) : sortedAndFilteredTasks.map(task => (
-                <TaskListItem
-                  key={task.id}
-                  task={task}
-                  allTasks={allTasks}
-                  isSelected={selectedTask?.id === task.id}
-                  onSelect={() => handleSelectTask(task)}
+          <div className="flex-1 p-3 overflow-y-auto overflow-x-hidden min-h-0">
+            {viewMode === 'list' ? (
+              <div className="grid gap-6 pb-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {loading ? (
+                  <div className="col-span-full flex justify-center items-center h-full">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  </div>
+                ) : sortedAndFilteredTasks.map(task => (
+                  <TaskListItem
+                    key={task.id}
+                    task={task}
+                    allTasks={allTasks}
+                    goals={goals}
+                    isSelected={selectedTask?.id === task.id}
+                    onSelect={() => handleSelectTask(task)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="h-full pb-8">
+                <EisenhowerMatrix 
+                  tasks={sortedAndFilteredTasks} 
+                  goals={goals}
+                  onSelectTask={handleSelectTask} 
                 />
-              ))}
-            </div>
+              </div>
+            )}
           </div>
         </Card>
 
@@ -813,6 +874,7 @@ function TasksPageContent() {
                                       doDate: data.doDate || undefined,
                                       blockedBy: data.blockedBy || [],
                                       blocks: data.blocks || [],
+                                      tShirtSize: data.tShirtSize === null ? undefined : data.tShirtSize,
                                     };
                                     await handleUpdateTask(updatedData);
                                     setIsEditingFormOpen(false);

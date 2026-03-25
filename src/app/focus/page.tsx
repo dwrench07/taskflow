@@ -17,10 +17,10 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Play, Square, Pause, Flame, Medal, CheckCircle2 } from "lucide-react";
+import { Play, Square, Pause, Flame, Medal, CheckCircle2, Sparkles } from "lucide-react";
 import { FocusAnalyticsChart } from "@/components/focus-analytics-chart";
 
 export default function FocusPage() {
@@ -52,6 +52,10 @@ export default function FocusPage() {
     const [productivity, setProductivity] = useState<ProductivityScore>("medium");
     const [energy, setEnergy] = useState<EnergyLevel>("medium");
     const [isSaving, setIsSaving] = useState(false);
+    
+    // Strategy Step State
+    const [isStrategyModalOpen, setIsStrategyModalOpen] = useState(false);
+    const [strategyInput, setStrategyInput] = useState("");
 
     // Audio Cues
     const beepsPlayedRef = useRef(new Set<number>());
@@ -197,14 +201,32 @@ export default function FocusPage() {
 
     const handleStart = async () => {
         if (!sessionStartTime) {
-            setSessionStartTime(new Date());
-            const expectedDuration = mode === 'pomodoro' ? 25 : (mode === 'countdown' ? customMinutes : 120);
-            const newSession = await startFocusSession({ mode, expectedDuration, taskId: targetTaskId });
-            setActiveSessionId(newSession.id);
+            // Check if strategy step is needed (for M, L, XL tasks)
+            if (selectedTask && (selectedTask.tShirtSize === 'M' || selectedTask.tShirtSize === 'L' || selectedTask.tShirtSize === 'XL')) {
+                setIsStrategyModalOpen(true);
+                return;
+            }
+            await performStart();
         } else {
             await updateActiveFocusSession('resume');
+            setIsActive(true);
         }
+    };
+
+    const performStart = async (strategy?: string) => {
+        setSessionStartTime(new Date());
+        const expectedDuration = mode === 'pomodoro' ? 25 : (mode === 'countdown' ? customMinutes : 120);
+        const newSession = await startFocusSession({ 
+            mode, 
+            expectedDuration, 
+            taskId: targetTaskId,
+            strategy 
+        });
+        setActiveSessionId(newSession.id);
         setIsActive(true);
+        if (strategy) {
+            toast({ title: "Strategy set!", description: "Focus on your first step." });
+        }
     };
 
     const handlePause = async () => {
@@ -510,6 +532,50 @@ export default function FocusPage() {
                             disabled={isSaving}
                         >
                             {isSaving ? "Saving..." : "Save Session"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Strategy Step Modal */}
+            <Dialog open={isStrategyModalOpen} onOpenChange={setIsStrategyModalOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-primary">
+                            <Sparkles className="h-6 w-6" />
+                            Strategy Step
+                        </DialogTitle>
+                        <DialogDescription>
+                            This is a {selectedTask?.tShirtSize} task. Thinking before acting increases success. 
+                            What is your one-sentence strategy for this session?
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <Input 
+                            placeholder="e.g., Skeleton out the main API route first."
+                            value={strategyInput}
+                            onChange={(e) => setStrategyInput(e.target.value)}
+                            className="h-12 text-lg"
+                            autoFocus
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && strategyInput.trim()) {
+                                    setIsStrategyModalOpen(false);
+                                    performStart(strategyInput);
+                                }
+                            }}
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="default"
+                            className="w-full h-12 text-lg font-bold"
+                            disabled={!strategyInput.trim()}
+                            onClick={() => {
+                                setIsStrategyModalOpen(false);
+                                performStart(strategyInput);
+                            }}
+                        >
+                            Start with Strategy
                         </Button>
                     </DialogFooter>
                 </DialogContent>

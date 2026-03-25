@@ -46,6 +46,7 @@ const formSchema = z.object({
   startDate: z.string().optional().nullable(),
   endDate: z.string().optional().nullable(),
   doDate: z.string().optional().nullable(),
+  tShirtSize: z.enum(["S", "M", "L", "XL"]).optional().nullable(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -89,6 +90,7 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
       startDate: task?.startDate || null,
       endDate: task?.endDate || null,
       doDate: task?.doDate || null,
+      tShirtSize: task?.tShirtSize || null,
     },
   });
 
@@ -142,6 +144,30 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
                     <SelectItem value="medium">Medium</SelectItem>
                     <SelectItem value="high">High</SelectItem>
                     <SelectItem value="urgent">Urgent</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="tShirtSize"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Size (Effort)</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value || "none"}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="T-Shirt Size" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="none">Not specified</SelectItem>
+                    <SelectItem value="S">S - Quick (15-30m)</SelectItem>
+                    <SelectItem value="M">M - Medium (1-2h)</SelectItem>
+                    <SelectItem value="L">L - Large (Half day)</SelectItem>
+                    <SelectItem value="XL">XL - Extra Large (Full day+)</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

@@ -31,6 +31,8 @@ import { Button } from "@/components/ui/button";
 import { isSameDay, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 
+import { DailyReviewModal } from "@/components/daily-review-modal";
+
 export default function DashboardPage() {
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [focusSessions, setFocusSessions] = useState<FocusSession[]>([]);
@@ -114,6 +116,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-8 w-full max-w-[1600px] mx-auto px-4 sm:px-8 py-4">
+      <DailyReviewModal />
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
         <div className="space-y-1">
           <div className="flex items-center gap-3">

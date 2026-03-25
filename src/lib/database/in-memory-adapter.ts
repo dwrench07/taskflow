@@ -1,6 +1,6 @@
 
 import type { DatabaseAdapter, DatabaseLogger } from './types';
-import type { User, Pillar, Milestone, Chore, Interest, InterestConnection } from '../types';
+import type { User, Pillar, Milestone, Chore, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry } from '../types';
 
 // Initial mock data for development
 const initialTasks = [
@@ -97,6 +97,8 @@ export class MemoryAdapter implements DatabaseAdapter {
     private chores: Map<string, any> = new Map();
     private interests: Map<string, any> = new Map();
     private interestConnections: Map<string, any> = new Map();
+    private backOfMind: Map<string, any> = new Map();
+    private mistakeLog: Map<string, any> = new Map();
     private connected = false;
 
     constructor(private logger: DatabaseLogger) { }
@@ -126,6 +128,8 @@ export class MemoryAdapter implements DatabaseAdapter {
         this.chores.clear();
         this.interests.clear();
         this.interestConnections.clear();
+        this.backOfMind.clear();
+        this.mistakeLog.clear();
         this.logger.info('Disconnected from in-memory database');
     }
 
@@ -398,5 +402,53 @@ export class MemoryAdapter implements DatabaseAdapter {
     }
     async deleteInterestConnection(id: string, userId?: string | null): Promise<boolean> {
         return this.interestConnections.delete(id);
+    }
+
+    // BackOfMind operations
+    async getBackOfMindItems(userId?: string | null): Promise<any[]> {
+        const items = Array.from(this.backOfMind.values()).filter(i => !userId || i.userId === userId);
+        return items.sort((a, b) => b.relevanceScore - a.relevanceScore);
+    }
+    async getBackOfMindItem(id: string, userId?: string | null): Promise<any | null> {
+        const item = this.backOfMind.get(id);
+        if (item && (!userId || item.userId === userId)) return item;
+        return null;
+    }
+    async addBackOfMindItem(item: any, userId?: string | null): Promise<any> {
+        const iWithId = { ...item, userId: userId || item.userId, id: item.id || Date.now().toString(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+        this.backOfMind.set(iWithId.id, iWithId);
+        return iWithId;
+    }
+    async updateBackOfMindItem(item: any, userId?: string | null): Promise<any> {
+        const iWithId = { ...item, userId: userId || item.userId, updatedAt: new Date().toISOString() };
+        this.backOfMind.set(iWithId.id, iWithId);
+        return iWithId;
+    }
+    async deleteBackOfMindItem(id: string, userId?: string | null): Promise<boolean> {
+        return this.backOfMind.delete(id);
+    }
+
+    // MistakeLog operations
+    async getMistakeLogEntries(userId?: string | null): Promise<any[]> {
+        const items = Array.from(this.mistakeLog.values()).filter(i => !userId || i.userId === userId);
+        return items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
+    async getMistakeLogEntry(id: string, userId?: string | null): Promise<any | null> {
+        const item = this.mistakeLog.get(id);
+        if (item && (!userId || item.userId === userId)) return item;
+        return null;
+    }
+    async addMistakeLogEntry(entry: any, userId?: string | null): Promise<any> {
+        const eWithId = { ...entry, userId: userId || entry.userId, id: entry.id || Date.now().toString(), createdAt: new Date().toISOString() };
+        this.mistakeLog.set(eWithId.id, eWithId);
+        return eWithId;
+    }
+    async updateMistakeLogEntry(entry: any, userId?: string | null): Promise<any> {
+        const eWithId = { ...entry, userId: userId || entry.userId };
+        this.mistakeLog.set(eWithId.id, eWithId);
+        return eWithId;
+    }
+    async deleteMistakeLogEntry(id: string, userId?: string | null): Promise<boolean> {
+        return this.mistakeLog.delete(id);
     }
 }

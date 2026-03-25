@@ -1,4 +1,4 @@
-import type { Task, TaskTemplate, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection } from './types';
+import type { Task, TaskTemplate, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry } from './types';
 
 // === API FUNCTIONS FOR CLIENT-SIDE USAGE ===
 // These functions make direct API calls and are used by React components
@@ -214,7 +214,7 @@ export async function getActiveFocusSession(): Promise<FocusSession | null> {
   }
 }
 
-export async function startFocusSession(payload: { mode: string, expectedDuration?: number, taskId?: string }): Promise<FocusSession> {
+export async function startFocusSession(payload: { mode: string, expectedDuration?: number, taskId?: string, strategy?: string }): Promise<FocusSession> {
   const response = await fetch('/api/focus-sessions/active', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -462,4 +462,76 @@ export async function addInterestConnection(connection: Omit<InterestConnection,
 
 export async function deleteInterestConnection(id: string): Promise<void> {
   await fetch(`/api/interest-connections/${id}`, { method: 'DELETE' });
+}
+
+// === BACK OF MIND ===
+
+export async function getAllBackOfMindItems(): Promise<BackOfMindItem[]> {
+  try {
+    const response = await fetch('/api/back-of-mind');
+    if (response.ok) return await response.json();
+    return [];
+  } catch (error) {
+    console.error('Failed to fetch back of mind items:', error);
+    return [];
+  }
+}
+
+export async function addBackOfMindItem(item: Omit<BackOfMindItem, 'id' | 'createdAt' | 'updatedAt'>): Promise<BackOfMindItem> {
+  const response = await fetch('/api/back-of-mind', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(item),
+  });
+  if (response.ok) return await response.json();
+  throw new Error(`Failed to add back of mind item: ${response.statusText}`);
+}
+
+export async function updateBackOfMindItem(item: BackOfMindItem): Promise<void> {
+  const response = await fetch(`/api/back-of-mind/${item.id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(item),
+  });
+  if (!response.ok) throw new Error(`Failed to update back of mind item: ${response.statusText}`);
+}
+
+export async function deleteBackOfMindItem(id: string): Promise<void> {
+  await fetch(`/api/back-of-mind/${id}`, { method: 'DELETE' });
+}
+
+// === MISTAKE LOG ===
+
+export async function getAllMistakeLogEntries(): Promise<MistakeLogEntry[]> {
+  try {
+    const response = await fetch('/api/mistake-log');
+    if (response.ok) return await response.json();
+    return [];
+  } catch (error) {
+    console.error('Failed to fetch mistake log entries:', error);
+    return [];
+  }
+}
+
+export async function addMistakeLogEntry(entry: Omit<MistakeLogEntry, 'id' | 'createdAt'>): Promise<MistakeLogEntry> {
+  const response = await fetch('/api/mistake-log', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(entry),
+  });
+  if (response.ok) return await response.json();
+  throw new Error(`Failed to add mistake log entry: ${response.statusText}`);
+}
+
+export async function updateMistakeLogEntry(entry: MistakeLogEntry): Promise<void> {
+  const response = await fetch(`/api/mistake-log/${entry.id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(entry),
+  });
+  if (!response.ok) throw new Error(`Failed to update mistake log entry: ${response.statusText}`);
+}
+
+export async function deleteMistakeLogEntry(id: string): Promise<void> {
+  await fetch(`/api/mistake-log/${id}`, { method: 'DELETE' });
 }

@@ -16,8 +16,10 @@ export function DashboardOverview({ allTasks }: { allTasks: Task[] }) {
   const habitGoalsMet = habits.filter(h => h.streakGoal && calculateStreak(h) >= h.streakGoal).length;
   const activeStreaksCount = habits.filter(h => calculateStreak(h) > 2).length;
 
+  const avoidedCount = nonHabitTasks.filter(t => (t.pushCount && t.pushCount > 0)).length;
+
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+    <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
       <Card className="glass-morphism border-primary/10 transition-all duration-300 animate-fade-in hover:shadow-[0_0_20px_rgba(139,92,246,0.1)] hover:border-primary/30">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">To-Do</CardTitle>
@@ -66,6 +68,16 @@ export function DashboardOverview({ allTasks }: { allTasks: Task[] }) {
         <CardContent>
           <div className="text-2xl font-black tracking-tighter">{activeStreaksCount}</div>
           <p className="text-[10px] text-muted-foreground/60 font-medium italic">Habits &gt; 3 days streak</p>
+        </CardContent>
+      </Card>
+      <Card className="glass-morphism border-red-500/10 transition-all duration-300 animate-fade-in hover:shadow-[0_0_20px_rgba(239,68,68,0.1)] hover:border-red-500/30" style={{ animationDelay: '250ms' }}>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Avoided</CardTitle>
+          <TrendingUp className="h-4 w-4 text-red-500 rotate-180" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-black tracking-tighter">{avoidedCount}</div>
+          <p className="text-[10px] text-muted-foreground/60 font-medium italic">Tasks pushed &gt; 1x</p>
         </CardContent>
       </Card>
     </div>

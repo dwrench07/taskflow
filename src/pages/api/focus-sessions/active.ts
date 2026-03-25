@@ -74,6 +74,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         distractions: [],
                         status: 'active',
                         expectedEndTime,
+                        strategy: payload?.strategy,
                         events: [{ type: 'start', timestamp }]
                     };
                     const created = await addFocusSessionAsync(newSession, userId);

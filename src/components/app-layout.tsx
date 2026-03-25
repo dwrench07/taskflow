@@ -14,7 +14,8 @@ import {
   StickyNote,
   Map,
   CheckSquare,
-  Sparkles
+  Sparkles,
+  BookOpen
 } from "lucide-react";
 
 import {
@@ -46,6 +47,7 @@ const menuItems = [
   { href: "/alignment", label: "Alignment", icon: Map },
   { href: "/chores", label: "Chores", icon: CheckSquare },
   { href: "/interests", label: "Interests", icon: Sparkles },
+  { href: "/logs", label: "Logs", icon: BookOpen },
   { href: "/profile", label: "Profile", icon: User },
 ];
 

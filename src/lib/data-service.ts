@@ -2,7 +2,7 @@
  * Data service layer that uses the database abstraction
  */
 
-import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection } from './types';
+import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry } from './types';
 import type { DatabaseAdapter, DailyPlan } from './database/types';
 import { DatabaseFactory } from './database/factory';
 import { config, isServer } from './config';
@@ -127,6 +127,8 @@ const mockMilestones: Milestone[] = [];
 const mockChores: Chore[] = [];
 const mockInterests: Interest[] = [];
 const mockInterestConnections: InterestConnection[] = [];
+const mockBackOfMindItems: BackOfMindItem[] = [];
+const mockMistakeLogEntries: MistakeLogEntry[] = [];
 
 /**
  * Get all tasks
@@ -902,6 +904,163 @@ export async function deleteInterestConnectionAsync(id: string, userId?: string 
         return await db.deleteInterestConnection(id, userId);
     } catch (error) {
         defaultLogger.warn('Failed to delete interest connection', error);
+        return false;
+    }
+}
+
+// === BACK OF MIND ===
+
+export async function getBackOfMindItemsAsync(userId?: string | null): Promise<BackOfMindItem[]> {
+    if (!isServer) return mockBackOfMindItems;
+    try {
+        const db = await getDatabase();
+        return await db.getBackOfMindItems(userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to get back of mind items', error);
+        return mockBackOfMindItems;
+    }
+}
+
+export async function getBackOfMindItemAsync(id: string, userId?: string | null): Promise<BackOfMindItem | null> {
+    if (!isServer) return mockBackOfMindItems.find(i => i.id === id) || null;
+    try {
+        const db = await getDatabase();
+        return await db.getBackOfMindItem(id, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to get back of mind item', { id, error });
+        return mockBackOfMindItems.find(i => i.id === id) || null;
+    }
+}
+
+export async function addBackOfMindItemAsync(item: Omit<BackOfMindItem, 'id' | 'createdAt' | 'updatedAt'>, userId?: string | null): Promise<BackOfMindItem> {
+    const withId: BackOfMindItem = {
+        ...item,
+        id: `bom-${Date.now()}`,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+    if (userId) withId.userId = userId;
+    
+    if (!isServer) { mockBackOfMindItems.push(withId); return withId; }
+    try {
+        const db = await getDatabase();
+        return await db.addBackOfMindItem(withId, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to add back of mind item', error);
+        mockBackOfMindItems.push(withId);
+        return withId;
+    }
+}
+
+export async function updateBackOfMindItemAsync(item: BackOfMindItem, userId?: string | null): Promise<BackOfMindItem> {
+    const withId: BackOfMindItem = { ...item, updatedAt: new Date().toISOString() };
+    if (userId) withId.userId = userId;
+
+    if (!isServer) {
+        const idx = mockBackOfMindItems.findIndex(i => i.id === item.id);
+        if (idx !== -1) mockBackOfMindItems[idx] = withId;
+        return withId;
+    }
+    try {
+        const db = await getDatabase();
+        return await db.updateBackOfMindItem(withId, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to update back of mind item', error);
+        const idx = mockBackOfMindItems.findIndex(i => i.id === item.id);
+        if (idx !== -1) mockBackOfMindItems[idx] = withId;
+        return withId;
+    }
+}
+
+export async function deleteBackOfMindItemAsync(id: string, userId?: string | null): Promise<boolean> {
+    if (!isServer) {
+        const idx = mockBackOfMindItems.findIndex(i => i.id === id);
+        if (idx !== -1) { mockBackOfMindItems.splice(idx, 1); return true; }
+        return false;
+    }
+    try {
+        const db = await getDatabase();
+        return await db.deleteBackOfMindItem(id, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to delete back of mind item', error);
+        return false;
+    }
+}
+
+// === MISTAKE LOG ===
+
+export async function getMistakeLogEntriesAsync(userId?: string | null): Promise<MistakeLogEntry[]> {
+    if (!isServer) return mockMistakeLogEntries;
+    try {
+        const db = await getDatabase();
+        return await db.getMistakeLogEntries(userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to get mistake log entries', error);
+        return mockMistakeLogEntries;
+    }
+}
+
+export async function getMistakeLogEntryAsync(id: string, userId?: string | null): Promise<MistakeLogEntry | null> {
+    if (!isServer) return mockMistakeLogEntries.find(i => i.id === id) || null;
+    try {
+        const db = await getDatabase();
+        return await db.getMistakeLogEntry(id, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to get mistake log entry', { id, error });
+        return mockMistakeLogEntries.find(i => i.id === id) || null;
+    }
+}
+
+export async function addMistakeLogEntryAsync(entry: Omit<MistakeLogEntry, 'id' | 'createdAt'>, userId?: string | null): Promise<MistakeLogEntry> {
+    const withId: MistakeLogEntry = {
+        ...entry,
+        id: `mlog-${Date.now()}`,
+        createdAt: new Date().toISOString()
+    };
+    if (userId) withId.userId = userId;
+
+    if (!isServer) { mockMistakeLogEntries.push(withId); return withId; }
+    try {
+        const db = await getDatabase();
+        return await db.addMistakeLogEntry(withId, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to add mistake log entry', error);
+        mockMistakeLogEntries.push(withId);
+        return withId;
+    }
+}
+
+export async function updateMistakeLogEntryAsync(entry: MistakeLogEntry, userId?: string | null): Promise<MistakeLogEntry> {
+    const withId = { ...entry };
+    if (userId) withId.userId = userId;
+
+    if (!isServer) {
+        const idx = mockMistakeLogEntries.findIndex(i => i.id === entry.id);
+        if (idx !== -1) mockMistakeLogEntries[idx] = withId;
+        return withId;
+    }
+    try {
+        const db = await getDatabase();
+        return await db.updateMistakeLogEntry(withId, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to update mistake log entry', error);
+        const idx = mockMistakeLogEntries.findIndex(i => i.id === entry.id);
+        if (idx !== -1) mockMistakeLogEntries[idx] = withId;
+        return withId;
+    }
+}
+
+export async function deleteMistakeLogEntryAsync(id: string, userId?: string | null): Promise<boolean> {
+    if (!isServer) {
+        const idx = mockMistakeLogEntries.findIndex(i => i.id === id);
+        if (idx !== -1) { mockMistakeLogEntries.splice(idx, 1); return true; }
+        return false;
+    }
+    try {
+        const db = await getDatabase();
+        return await db.deleteMistakeLogEntry(id, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to delete mistake log entry', error);
         return false;
     }
 }

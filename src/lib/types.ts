@@ -1,6 +1,6 @@
 export type Priority = "low" | "medium" | "high" | "urgent";
 export type EnergyLevel = 'high' | 'medium' | 'low';
-export type Status = "todo" | "in-progress" | "done";
+export type Status = "todo" | "in-progress" | "done" | "abandoned";
 export type HabitFrequency = "daily" | "weekly" | "monthly";
 
 export type DailyHabitStatus = 'changes observed' | 'no changes' | 'negative' | 'not recorded';
@@ -20,6 +20,8 @@ export interface Subtask {
   energyLevel?: EnergyLevel;
   order?: number;
   doDate?: string;
+  tShirtSize?: 'S' | 'M' | 'L' | 'XL';
+  pushCount?: number;
 }
 
 export interface Task {
@@ -47,6 +49,8 @@ export interface Task {
   blockedBy?: string[]; // IDs of tasks that this task is blocked by
   doDate?: string;
   streak?: number;
+  tShirtSize?: 'S' | 'M' | 'L' | 'XL';
+  pushCount?: number;
 }
 
 // New Template Types
@@ -56,6 +60,7 @@ export interface TemplateSubtask {
   tags?: string[];
   priority?: Priority;
   energyLevel?: EnergyLevel;
+  tShirtSize?: 'S' | 'M' | 'L' | 'XL';
 }
 
 export interface TaskTemplate {
@@ -68,6 +73,7 @@ export interface TaskTemplate {
   goalId?: string; // Optional link to a long-term goal
   milestoneId?: string;
   energyLevel?: EnergyLevel; // Optional energy requirement
+  tShirtSize?: 'S' | 'M' | 'L' | 'XL';
 }
 
 export interface User {
@@ -106,6 +112,7 @@ export interface FocusSession {
   events?: TimerEvent[];
   expectedEndTime?: string;    // ISO date string if a timer was started with a known duration
   status?: 'active' | 'completed' | 'abandoned';
+  strategy?: string;
 }
 
 export interface Goal {
@@ -165,5 +172,27 @@ export interface InterestConnection {
   targetId: string;
   label?: string;
   strength?: number;
+  userId?: string;
+}
+
+// === UTILITY LOGS ===
+
+export interface BackOfMindItem {
+  id: string;
+  content: string;
+  category?: string;
+  relevanceScore: number; // 1-10
+  createdAt: string;
+  updatedAt: string;
+  userId?: string;
+}
+
+export interface MistakeLogEntry {
+  id: string;
+  description: string;
+  lessonsLearned: string;
+  actionTaken?: string;
+  status: 'open' | 'resolved';
+  createdAt: string;
   userId?: string;
 }

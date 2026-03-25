@@ -3,7 +3,7 @@
  * Provides a unified interface for different database implementations
  */
 
-import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection } from '../types';
+import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry } from '../types';
 
 export interface DailyPlan {
     id: string;
@@ -93,6 +93,20 @@ export interface DatabaseAdapter {
     addInterestConnection(connection: InterestConnection, userId?: string | null): Promise<InterestConnection>;
     deleteInterestConnection(id: string, userId?: string | null): Promise<boolean>;
 
+    // BackOfMind operations
+    getBackOfMindItems(userId?: string | null): Promise<BackOfMindItem[]>;
+    getBackOfMindItem(id: string, userId?: string | null): Promise<BackOfMindItem | null>;
+    addBackOfMindItem(item: BackOfMindItem, userId?: string | null): Promise<BackOfMindItem>;
+    updateBackOfMindItem(item: BackOfMindItem, userId?: string | null): Promise<BackOfMindItem>;
+    deleteBackOfMindItem(id: string, userId?: string | null): Promise<boolean>;
+
+    // MistakeLog operations
+    getMistakeLogEntries(userId?: string | null): Promise<MistakeLogEntry[]>;
+    getMistakeLogEntry(id: string, userId?: string | null): Promise<MistakeLogEntry | null>;
+    addMistakeLogEntry(entry: MistakeLogEntry, userId?: string | null): Promise<MistakeLogEntry>;
+    updateMistakeLogEntry(entry: MistakeLogEntry, userId?: string | null): Promise<MistakeLogEntry>;
+    deleteMistakeLogEntry(id: string, userId?: string | null): Promise<boolean>;
+
     // Health check
     healthCheck(): Promise<boolean>;
 }
@@ -120,6 +134,8 @@ export interface DatabaseConfig {
         chores: string;
         interests: string;
         interestConnections: string;
+        backOfMind: string;
+        mistakeLog: string;
     };
 }
 
