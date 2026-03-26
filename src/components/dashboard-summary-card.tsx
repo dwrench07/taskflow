@@ -55,18 +55,18 @@ export function SummaryCard({
             color.replace("text-", "bg-")
           )} />
 
-          <CardContent className="p-5 flex flex-col items-center text-center gap-2 relative z-10">
+          <CardContent className="p-3 flex flex-col items-center text-center gap-2 relative z-10">
             <div className={cn(
-                "p-3 rounded-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-3",
+                "p-2 rounded-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-3",
                 "bg-white/5 border border-white/10",
                 color
             )}>
-              <Icon className="w-6 h-6 filter drop-shadow-[0_0_8px_currentColor]" />
+              <Icon className="w-5 h-5 filter drop-shadow-[0_0_8px_currentColor]" />
             </div>
             
             <div className="flex flex-col items-center gap-0.5 mt-1">
                 <div className="flex items-center gap-2">
-                    <span className="text-3xl font-black tracking-tighter text-foreground group-hover:scale-105 transition-transform duration-500">{value}</span>
+                    <span className="text-2xl font-black tracking-tighter text-foreground group-hover:scale-105 transition-transform duration-500">{value}</span>
                     {trend && trend.value !== 0 && (
                         <div className={cn(
                             "text-[10px] font-bold flex items-center h-4 px-1.5 rounded-full gap-0.5",

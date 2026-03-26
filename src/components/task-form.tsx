@@ -47,6 +47,8 @@ const formSchema = z.object({
   endDate: z.string().optional().nullable(),
   doDate: z.string().optional().nullable(),
   tShirtSize: z.enum(["S", "M", "L", "XL"]).optional().nullable(),
+  timeLimit: z.coerce.number().optional().nullable(),
+  isFrog: z.boolean().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -91,6 +93,8 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
       endDate: task?.endDate || null,
       doDate: task?.doDate || null,
       tShirtSize: task?.tShirtSize || null,
+      timeLimit: task?.timeLimit || null,
+      isFrog: task?.isFrog || false,
     },
   });
 
@@ -242,6 +246,49 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
                   </SelectContent>
                 </Select>
                 <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="timeLimit"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Timebox (Minutes)</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="e.g. 25" 
+                    {...field} 
+                    value={field.value || ""} 
+                    onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="isFrog"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                <div className="space-y-0.5">
+                  <FormLabel>Eat the Frog 🐸</FormLabel>
+                  <p className="text-[0.7rem] text-muted-foreground">
+                    Mark as a high-resistance task to tackle first.
+                  </p>
+                </div>
+                <FormControl>
+                  <input
+                    type="checkbox"
+                    checked={field.value}
+                    onChange={field.onChange}
+                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                  />
+                </FormControl>
               </FormItem>
             )}
           />

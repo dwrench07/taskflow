@@ -415,7 +415,7 @@ function HabitsPageContent() {
 
     return (
         <div className="h-full">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Habit Tracker</h1>
                     <p className="text-muted-foreground">Stay consistent and build powerful habits.</p>
@@ -445,7 +445,7 @@ function HabitsPageContent() {
 
             <div className="w-full min-w-0 h-[calc(100vh-theme(spacing.36))]">
                 <ScrollArea className="h-full pr-4">
-                    <div className="grid gap-3 sm:gap-6 pb-8 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    <div className="grid gap-4 sm:gap-4 pb-8 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                         {sortedHabits.map(habit => {
                             const streak = calculateStreak(habit);
                             const completedToday = hasCompletedToday(habit);
@@ -464,7 +464,7 @@ function HabitsPageContent() {
                                     )}
                                     onClick={() => handleSelectHabit(habit)}
                                 >
-                                    <CardHeader className="p-3 pb-0 sm:p-6 sm:pb-0">
+                                    <CardHeader className="p-3 pb-0 sm:p-4 sm:pb-0">
                                         <div className="flex justify-between items-start gap-1 sm:gap-3 w-full min-w-0">
                                             <TooltipProvider delayDuration={300}>
                                                 <Tooltip>
@@ -504,7 +504,7 @@ function HabitsPageContent() {
                                         </div>
                                         <CardDescription className="pt-1 sm:pt-2 line-clamp-1 sm:line-clamp-2 text-[11px] sm:text-sm text-left min-w-0">{habit.description}</CardDescription>
                                     </CardHeader>
-                                    <CardContent className="p-3 sm:p-6 pt-2 sm:pt-4 flex-grow flex flex-col justify-end">
+                                    <CardContent className="p-3 sm:p-4 pt-2 sm:pt-4 flex-grow flex flex-col justify-end">
                                         <div className="flex justify-between items-center mb-2 sm:mb-4">
                                             <Badge variant="outline" className="capitalize text-[10px] sm:text-xs py-0 sm:py-0.5 h-5 sm:h-auto px-1.5 sm:px-2.5 opacity-70 sm:opacity-100">
                                                 {habit.habitFrequency}

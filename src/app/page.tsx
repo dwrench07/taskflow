@@ -115,7 +115,7 @@ export default function DashboardPage() {
   }, [allTasks, focusSessions]);
 
   return (
-    <div className="flex flex-col gap-8 w-full max-w-[1600px] mx-auto px-4 sm:px-8 py-4">
+    <div className="flex flex-col gap-4 w-full max-w-[1600px] mx-auto px-4 sm:px-8 py-2">
       <DailyReviewModal />
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
         <div className="space-y-1">
@@ -123,7 +123,7 @@ export default function DashboardPage() {
              <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.3)] rotate-3 hover:rotate-0 transition-transform duration-500">
                 <Flame className="w-6 h-6 text-white" />
              </div>
-             <h1 className="text-5xl font-black italic tracking-tighter bg-gradient-to-br from-white via-white to-white/20 bg-clip-text text-transparent">Dash</h1>
+             <h1 className="text-3xl font-black italic tracking-tighter bg-gradient-to-br from-white via-white to-white/20 bg-clip-text text-transparent">Dash</h1>
           </div>
           <p className="text-muted-foreground/60 text-xs font-black uppercase tracking-[0.3em] pl-1.5">Focus on that matters. Ignore the rest.</p>
         </div>
@@ -158,7 +158,7 @@ export default function DashboardPage() {
 
       {viewMode === 'quick' ? (
         <div className="animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200 fill-mode-both">
-          <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-3 mb-10">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-3 mb-10">
             <SummaryCard
                 icon={AlertTriangle}
                 title="Urgent"

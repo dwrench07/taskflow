@@ -609,7 +609,7 @@ function TasksPageContent() {
 
   return (
     <div className="h-full">
-      <div className="flex justify-between items-center mb-4 md:mb-8">
+      <div className="flex justify-between items-center mb-2 md:mb-4">
         <div className="flex-1">
           <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
           <p className="text-muted-foreground">Your central hub for all tasks.</p>
@@ -697,24 +697,25 @@ function TasksPageContent() {
                 </Button>
               </div>
             </div>
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search tasks..."
-                className="pl-8 w-full"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              {searchQuery && <XCircle onClick={() => setSearchQuery("")} className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground cursor-pointer hover:text-foreground" />}
-            </div>
-            <div className="flex items-center gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="flex-1">
-                    <ArrowUpDown className="mr-2 h-4 w-4" />
-                    Sort
-                  </Button>
-                </DropdownMenuTrigger>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search tasks..."
+                  className="pl-8 w-full h-9"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                {searchQuery && <XCircle onClick={() => setSearchQuery("")} className="absolute right-2.5 top-2.5 h-4 w-4 text-muted-foreground cursor-pointer hover:text-foreground" />}
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="h-9">
+                      <ArrowUpDown className="mr-2 h-4 w-4" />
+                      Sort
+                    </Button>
+                  </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
                   <DropdownMenuLabel>Sort by</DropdownMenuLabel>
                   <DropdownMenuSeparator />
@@ -728,7 +729,7 @@ function TasksPageContent() {
               </DropdownMenu>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="flex-1">
+                  <Button variant="outline" className="h-9">
                     Filter
                     {(statusFilter.length > 0 || priorityFilter.length > 0 || energyFilter.length > 0) && <span className="ml-2 h-2 w-2 rounded-full bg-primary" />}
                   </Button>
@@ -770,6 +771,7 @@ function TasksPageContent() {
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
+              </div>
             </div>
           </CardHeader>
           <div className="flex-1 p-3 overflow-y-auto overflow-x-hidden min-h-0">

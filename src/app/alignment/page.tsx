@@ -3,23 +3,25 @@
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ListTree, Network, Plus } from "lucide-react";
+import { ListTree, Network, Plus, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import type { Pillar, Milestone, Task } from "@/lib/types";
-import { getAllPillars, getAllMilestones, getAllTasks, addPillar, addMilestone } from "@/lib/data";
+import type { Pillar, Milestone, Task, Goal } from "@/lib/types";
+import { getAllPillars, getAllMilestones, getAllTasks, addPillar, addMilestone, getAllGoals } from "@/lib/data";
 
 // Placeholder components that we will create next
 import { AlignmentTreeView } from "@/components/alignment/alignment-tree-view";
 import { AlignmentGraphView } from "@/components/alignment/alignment-graph-view";
+import { GoalStanding } from "@/components/alignment/goal-standing";
 
 export default function AlignmentPage() {
   const [pillars, setPillars] = useState<Pillar[]>([]);
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [goals, setGoals] = useState<Goal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   const [isPillarDialogOpen, setIsPillarDialogOpen] = useState(false);
@@ -37,14 +39,16 @@ export default function AlignmentPage() {
   const fetchAlignmentData = async () => {
     setIsLoading(true);
     try {
-      const [pData, mData, tData] = await Promise.all([
+      const [pData, mData, tData, gData] = await Promise.all([
         getAllPillars(),
         getAllMilestones(),
-        getAllTasks()
+        getAllTasks(),
+        getAllGoals()
       ]);
       setPillars(pData || []);
       setMilestones(mData || []);
       setTasks(tData || []);
+      setGoals(gData || []);
     } catch (error) {
       console.error("Failed to fetch alignment data:", error);
     } finally {
@@ -155,12 +159,15 @@ export default function AlignmentPage() {
 
       <Tabs defaultValue="list" className="w-full">
         <div className="flex justify-between items-center mb-6">
-          <TabsList className="grid w-[200px] grid-cols-2">
+          <TabsList className="grid w-[300px] grid-cols-3">
             <TabsTrigger value="list" className="gap-2">
               <ListTree className="h-4 w-4" /> Tree
             </TabsTrigger>
             <TabsTrigger value="graph" className="gap-2">
               <Network className="h-4 w-4" /> Graph
+            </TabsTrigger>
+            <TabsTrigger value="standing" className="gap-2">
+              <ShieldCheck className="h-4 w-4" /> Standing
             </TabsTrigger>
           </TabsList>
         </div>
@@ -208,6 +215,16 @@ export default function AlignmentPage() {
                   />
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="standing" className="mt-0 outline-none">
+              <div className="space-y-6">
+                <div className="bg-muted/10 border-border/50 border rounded-3xl p-6 text-center max-w-4xl mx-auto">
+                    <h2 className="text-2xl font-black mb-1">Strategic Standing</h2>
+                    <p className="text-muted-foreground">The real-time integrity and progress of your life pillars.</p>
+                </div>
+                <GoalStanding pillars={pillars} goals={goals} tasks={tasks} />
+              </div>
             </TabsContent>
           </>
         )}

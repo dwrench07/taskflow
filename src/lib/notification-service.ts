@@ -14,11 +14,29 @@ export const requestNotificationPermission = async () => {
   return false;
 };
 
-export const sendNotification = (title: string, options?: NotificationOptions) => {
+export const sendNotification = async (title: string, options?: NotificationOptions) => {
   if (typeof window === 'undefined') return;
   if (!('Notification' in window)) return;
+  
   if (Notification.permission === 'granted') {
     try {
+      // Prefer Service Worker notifications for better PWA/Mobile support
+      if ('serviceWorker' in navigator) {
+        const registration = await navigator.serviceWorker.ready;
+        if (registration) {
+          console.log(`[Notification] Sending via ServiceWorker: ${title}`, options);
+          await registration.showNotification(title, {
+            icon: '/icon.png',
+            badge: '/icon.png',
+            vibrate: [200, 100, 200],
+            ...options,
+          } as any);
+          return;
+        }
+      }
+
+      // Fallback to standard Notification
+      console.log(`[Notification] Sending via Legacy API: ${title}`, options);
       new Notification(title, {
         icon: '/icon.png',
         ...options,

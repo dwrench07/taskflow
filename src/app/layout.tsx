@@ -11,6 +11,7 @@ const fontSans = Inter({
 export const metadata: Metadata = {
   title: 'Dash',
   description: 'A premium task and habit tracking application.',
+  manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',

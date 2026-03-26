@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import React, { useEffect, useState } from 'react';
 import { AuthProvider } from "@/context/AuthContext";
 import { ReminderManager } from '@/components/reminder-manager';
+import { PwaInstallPrompt } from '@/components/pwa-install-prompt';
 
 export function RootClientLayout({
   children,
@@ -29,6 +30,7 @@ export function RootClientLayout({
             </React.Suspense>
           </AppLayout>
           <ReminderManager />
+          <PwaInstallPrompt />
         </AuthProvider>
       ) : null}
       <Toaster />

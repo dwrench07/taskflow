@@ -20,7 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Play, Square, Pause, Flame, Medal, CheckCircle2, Sparkles } from "lucide-react";
+import { Play, Square, Pause, Flame, Medal, CheckCircle2, Sparkles, AlertCircle } from "lucide-react";
 import { FocusAnalyticsChart } from "@/components/focus-analytics-chart";
 
 export default function FocusPage() {
@@ -137,7 +137,10 @@ export default function FocusPage() {
                 setTargetTaskId(activeSession.taskId);
                 setDistractions(activeSession.distractions || []);
 
-                if (activeSession.expectedEndTime && activeSession.mode !== 'stopwatch') {
+                const task = fetchedTasks.find(t => t.id === activeSession.taskId);
+                const limit = task?.timeLimit || (activeSession.mode === 'pomodoro' ? 25 : (activeSession.mode === 'countdown' ? customMinutes : null));
+
+                if (limit && activeSession.expectedEndTime) {
                     const remainingMs = new Date(activeSession.expectedEndTime).getTime() - Date.now();
                     setTimeRemaining(Math.max(0, Math.floor(remainingMs / 1000)));
                     const elapsedMs = Date.now() - new Date(activeSession.startTime).getTime();
@@ -172,10 +175,10 @@ export default function FocusPage() {
                         return newElapsed;
                     });
 
-                    if (mode !== 'stopwatch') {
+                    if (mode !== 'stopwatch' || selectedTask?.timeLimit) {
                         setTimeRemaining(prev => {
                             const newRemaining = prev - secondsPassed;
-                            if (newRemaining <= 0) {
+                            if (newRemaining <= 0 && mode !== 'stopwatch') {
                                 clearInterval(interval);
                                 setTimeout(() => handleStop(newElapsed), 0);
                                 return 0;
@@ -215,7 +218,15 @@ export default function FocusPage() {
 
     const performStart = async (strategy?: string) => {
         setSessionStartTime(new Date());
-        const expectedDuration = mode === 'pomodoro' ? 25 : (mode === 'countdown' ? customMinutes : 120);
+        
+        // Parkinson's Law: Use task time limit if available
+        const limit = selectedTask?.timeLimit;
+        const expectedDuration = limit || (mode === 'pomodoro' ? 25 : (mode === 'countdown' ? customMinutes : 120));
+        
+        if (limit) {
+            setTimeRemaining(limit * 60);
+        }
+
         const newSession = await startFocusSession({ 
             mode, 
             expectedDuration, 
@@ -293,10 +304,10 @@ export default function FocusPage() {
     const selectedTask = tasks.find(t => t.id === targetTaskId);
 
     return (
-        <div className="h-full flex flex-col max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in pb-20 mt-4 md:mt-0">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div className="h-full flex flex-col max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 animate-fade-in pb-20 mt-4 md:mt-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <div>
-                    <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">Focus Mode</h1>
+                    <h1 className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">Focus Mode</h1>
                     <p className="text-muted-foreground mt-2 text-lg">Deep work sessions tracking and analytics.</p>
                 </div>
             </div>
@@ -309,7 +320,7 @@ export default function FocusPage() {
                     </div>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
                     {/* Left Column: Analytics */}
                     <div className="lg:col-span-12 xl:col-span-5 flex flex-col gap-6">
                         <Card className="bg-muted/10 border-border/50 shadow-sm rounded-3xl overflow-hidden relative">
@@ -328,13 +339,24 @@ export default function FocusPage() {
                     </div>
 
                     {/* Right Column: Timer & Notes */}
-                    <div className="lg:col-span-12 xl:col-span-7 flex flex-col gap-8">
+                    <div className="lg:col-span-12 xl:col-span-7 flex flex-col gap-4">
                         {/* Timer Card */}
-                        <Card className="flex flex-col items-center justify-center p-6 sm:p-8 border-primary/20 bg-background/60 backdrop-blur-md shadow-lg rounded-[2.5rem] relative overflow-hidden transition-all duration-500">
+                        <Card className={cn(
+                            "flex flex-col items-center justify-center p-4 sm:p-6 border-primary/20 bg-background/60 backdrop-blur-md shadow-lg rounded-[2.5rem] relative overflow-hidden transition-all duration-500",
+                            isActive && timeRemaining < 300 && timeRemaining > 0 && "shadow-[0_0_50px_rgba(239,68,68,0.2)] border-red-500/30",
+                            isActive && timeRemaining <= 0 && "shadow-[0_0_80px_rgba(239,68,68,0.4)] border-red-500 bg-red-500/5"
+                        )}>
                             <div className={cn(
                                 "absolute inset-0 bg-gradient-to-br transition-opacity duration-1000 -z-10",
-                                isActive ? "from-primary/10 via-background to-background opacity-100" : "from-transparent to-transparent opacity-0"
+                                isActive ? "from-primary/10 via-background to-background opacity-100" : "from-transparent to-transparent opacity-0",
+                                isActive && timeRemaining < 300 && "from-red-500/10 via-background to-background"
                             )} />
+
+                            {selectedTask?.timeLimit && (
+                                <Badge variant="outline" className="absolute top-6 right-8 animate-pulse border-red-500/50 text-red-500 gap-1">
+                                    <AlertCircle className="h-3 w-3" /> Parkinson's Limit: {selectedTask.timeLimit}m
+                                </Badge>
+                            )}
 
                             <Tabs value={mode} onValueChange={(v) => handleModeChange(v as FocusMode)} className="w-full max-w-md mb-12 relative z-10">
                                 <TabsList className="grid w-full grid-cols-3 h-12 rounded-full bg-muted/30 p-1 border shadow-inner">
@@ -347,14 +369,22 @@ export default function FocusPage() {
                             <div className="relative mb-10 group">
                                 <div className={cn(
                                     "absolute inset-0 bg-primary/20 blur-3xl rounded-full transition-opacity duration-1000",
-                                    isActive ? "opacity-100" : "opacity-0"
+                                    isActive ? "opacity-100" : "opacity-0",
+                                    isActive && timeRemaining < 300 && "opacity-40 bg-red-500/40"
                                 )} />
                                 <div className={cn(
                                     "text-[4rem] sm:text-[5rem] md:text-[6rem] font-black tracking-tighter tabular-nums text-primary leading-none transition-transform duration-300 relative z-10",
-                                    isActive && "scale-105"
+                                    isActive && "scale-105",
+                                    isActive && timeRemaining < 60 && "text-red-500 animate-pulse",
+                                    isActive && timeRemaining <= 0 && "text-red-600 scale-110"
                                 )}>
-                                    {mode === 'stopwatch' ? formatTime(elapsedTime) : formatTime(timeRemaining)}
+                                    {mode === 'stopwatch' && !selectedTask?.timeLimit ? formatTime(elapsedTime) : formatTime(timeRemaining)}
                                 </div>
+                                {isActive && timeRemaining <= 0 && (
+                                    <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs font-bold text-red-500 uppercase tracking-widest animate-bounce">
+                                        Time is Expanding!
+                                    </div>
+                                )}
                             </div>
 
                             {mode === 'countdown' && !isActive && elapsedTime === 0 && (
@@ -363,11 +393,11 @@ export default function FocusPage() {
                                     <Input
                                         id="custom-mins"
                                         type="number"
-                                        min={1}
+                                        min={0}
                                         max={120}
                                         value={customMinutes}
                                         onChange={(e) => {
-                                            const val = parseInt(e.target.value) || 1;
+                                            const val = e.target.value === '' ? 0 : parseInt(e.target.value);
                                             setCustomMinutes(val);
                                             setTimeRemaining(val * 60);
                                         }}

@@ -15,7 +15,8 @@ import {
   Map,
   CheckSquare,
   Sparkles,
-  BookOpen
+  BookOpen,
+  Zap
 } from "lucide-react";
 
 import {
@@ -40,6 +41,7 @@ const menuItems = [
   { href: "/tasks", label: "Tasks", icon: ListTodo },
   { href: "/habits", label: "Habits", icon: Repeat },
   { href: "/focus", label: "Focus", icon: Timer },
+  { href: "/frogs", label: "Eat the Frog", icon: Zap },
   { href: "/templates", label: "Templates", icon: ClipboardList },
   { href: "/plan", label: "Plan", icon: FilePenLine },
   { href: "/calendar", label: "Calendar", icon: Calendar },
@@ -58,7 +60,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <Sidebar className="border-r border-white/5 bg-background/50 backdrop-blur-xl">
-        <SidebarHeader className="p-6">
+        <SidebarHeader className="p-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#e11d48] shadow-lg shadow-red-500/20 overflow-hidden">
               <img src="/icon.png" alt="Dash Logo" className="h-full w-full object-cover" />
@@ -67,7 +69,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </SidebarHeader>
         <SidebarContent className="px-3">
-          <SidebarMenu className="gap-2">
+          <SidebarMenu className="gap-1">
             {menuItems.map((item) => (
               <SidebarMenuItem key={item.label}>
                 <SidebarMenuButton
@@ -76,7 +78,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   tooltip={item.label}
                   className="rounded-lg transition-all hover:bg-white/5 hover:scale-[1.02] active:scale-[0.98] data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
                 >
-                  <Link href={item.href} className="flex items-center gap-3 px-3 py-2">
+                  <Link href={item.href} className="flex items-center gap-3 px-3 py-1">
                     <item.icon className="h-4 w-4" />
                     <span className="font-medium">{item.label}</span>
                   </Link>

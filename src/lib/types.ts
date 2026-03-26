@@ -22,6 +22,8 @@ export interface Subtask {
   doDate?: string;
   tShirtSize?: 'S' | 'M' | 'L' | 'XL';
   pushCount?: number;
+  timeLimit?: number; // Parkinson's Law timebox in minutes
+  isFrog?: boolean;
 }
 
 export interface Task {
@@ -51,6 +53,8 @@ export interface Task {
   streak?: number;
   tShirtSize?: 'S' | 'M' | 'L' | 'XL';
   pushCount?: number;
+  timeLimit?: number; // Parkinson's Law timebox in minutes
+  isFrog?: boolean;
 }
 
 // New Template Types
