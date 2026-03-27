@@ -23,6 +23,15 @@ import { DashboardFrogCompletion } from "@/components/dashboard-frog-completion"
 import { DashboardEnergyMatrix } from "@/components/dashboard-energy-matrix";
 import { DashboardTShirtAccuracy } from "@/components/dashboard-tshirt-accuracy";
 import { DashboardBlockerInsights } from "@/components/dashboard-blocker-insights";
+import { DashboardPushFunnel } from "@/components/dashboard-push-funnel";
+import { DashboardTagHeatmap } from "@/components/dashboard-tag-heatmap";
+import { DashboardEmotionProductivity } from "@/components/dashboard-emotion-productivity";
+import { DashboardGoalCoverage } from "@/components/dashboard-goal-coverage";
+import { DashboardHabitResilience } from "@/components/dashboard-habit-resilience";
+import { DashboardTimeLimitAdherence } from "@/components/dashboard-timelimit-adherence";
+import { DashboardWeeklyReport } from "@/components/dashboard-weekly-report";
+import { DashboardPillarBalance } from "@/components/dashboard-pillar-balance";
+import { DashboardOverdueRisk } from "@/components/dashboard-overdue-risk";
 import { SummaryCard } from "@/components/dashboard-summary-card";
 import { PNRDetail } from "@/components/dashboard-summary-pnr";
 import { calculateStreak } from "@/lib/habits";
@@ -307,14 +316,17 @@ export default function DashboardPage() {
                     </div>
                     </div>
                     <div className="col-span-full xl:col-span-3 space-y-6">
+                     <DashboardWeeklyReport allTasks={allTasks} focusSessions={focusSessions} />
                      <DashboardDailyWins />
                      <DashboardPointOfNoReturn allTasks={allTasks} />
+                    <DashboardOverdueRisk allTasks={allTasks} />
                     <DashboardAlmostDone allTasks={allTasks} />
                     <DashboardPushAnalytics allTasks={allTasks} />
                     <DashboardApproachScore allTasks={allTasks} focusSessions={focusSessions} />
                     <DashboardFrogCompletion allTasks={allTasks} />
                     <DashboardBlockerInsights allTasks={allTasks} />
                     <DashboardTShirtAccuracy allTasks={allTasks} />
+                    <DashboardPushFunnel allTasks={allTasks} />
                     <DashboardHabitHeatmap allTasks={allTasks} />
                     <DashboardStats allTasks={allTasks} />
                     </div>
@@ -331,22 +343,32 @@ export default function DashboardPage() {
                     <DashboardEnergyMatrix focusSessions={focusSessions} />
                     <DashboardWorryTracker focusSessions={focusSessions} allTasks={allTasks} />
                 </div>
+                <div className="grid gap-6 md:grid-cols-2">
+                    <DashboardEmotionProductivity focusSessions={focusSessions} />
+                    <DashboardTimeLimitAdherence allTasks={allTasks} focusSessions={focusSessions} />
+                </div>
                 </TabsContent>
 
                 <TabsContent value="strategic" className="space-y-6 animate-fade-in">
                 <div className="grid gap-6 lg:grid-cols-7">
                     <div className="col-span-full xl:col-span-4 space-y-6">
                     <DashboardGoalVelocity />
+                    <DashboardPillarBalance allTasks={allTasks} focusSessions={focusSessions} />
                     </div>
                     <div className="col-span-full xl:col-span-3 space-y-6">
                     <DashboardGoals />
+                    <DashboardGoalCoverage allTasks={allTasks} />
                     </div>
                 </div>
                 </TabsContent>
 
                 <TabsContent value="velocity" className="space-y-6 animate-fade-in">
-                <div className="grid gap-6">
+                <div className="grid gap-6 md:grid-cols-2">
                     <DashboardTaskVelocity allTasks={allTasks} />
+                    <DashboardTagHeatmap allTasks={allTasks} />
+                </div>
+                <div className="grid gap-6 md:grid-cols-2">
+                    <DashboardHabitResilience allTasks={allTasks} />
                 </div>
                 </TabsContent>
             </Tabs>
