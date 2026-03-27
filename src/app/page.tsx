@@ -17,6 +17,12 @@ import { DashboardPushAnalytics } from "@/components/dashboard-push-analytics";
 import { DashboardApproachScore } from "@/components/dashboard-approach-score";
 import { DashboardAlmostDone } from "@/components/dashboard-almost-done";
 import { DashboardDailyWins } from "@/components/dashboard-daily-wins";
+import { DashboardPeakHours } from "@/components/dashboard-peak-hours";
+import { DashboardWorryTracker } from "@/components/dashboard-worry-tracker";
+import { DashboardFrogCompletion } from "@/components/dashboard-frog-completion";
+import { DashboardEnergyMatrix } from "@/components/dashboard-energy-matrix";
+import { DashboardTShirtAccuracy } from "@/components/dashboard-tshirt-accuracy";
+import { DashboardBlockerInsights } from "@/components/dashboard-blocker-insights";
 import { SummaryCard } from "@/components/dashboard-summary-card";
 import { PNRDetail } from "@/components/dashboard-summary-pnr";
 import { calculateStreak } from "@/lib/habits";
@@ -306,6 +312,9 @@ export default function DashboardPage() {
                     <DashboardAlmostDone allTasks={allTasks} />
                     <DashboardPushAnalytics allTasks={allTasks} />
                     <DashboardApproachScore allTasks={allTasks} focusSessions={focusSessions} />
+                    <DashboardFrogCompletion allTasks={allTasks} />
+                    <DashboardBlockerInsights allTasks={allTasks} />
+                    <DashboardTShirtAccuracy allTasks={allTasks} />
                     <DashboardHabitHeatmap allTasks={allTasks} />
                     <DashboardStats allTasks={allTasks} />
                     </div>
@@ -316,6 +325,11 @@ export default function DashboardPage() {
                 <div className="grid gap-6 md:grid-cols-2">
                     <DashboardFocusDistribution allTasks={allTasks} focusSessions={focusSessions} />
                     <DashboardDistractionScore focusSessions={focusSessions} />
+                </div>
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    <DashboardPeakHours focusSessions={focusSessions} />
+                    <DashboardEnergyMatrix focusSessions={focusSessions} />
+                    <DashboardWorryTracker focusSessions={focusSessions} allTasks={allTasks} />
                 </div>
                 </TabsContent>
 
