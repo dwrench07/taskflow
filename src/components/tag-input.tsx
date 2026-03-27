@@ -25,9 +25,11 @@ interface TagInputProps {
   allTags: string[];
   onUpdateTags: (tags: string[]) => void | Promise<void>;
   placeholder?: string;
+  className?: string;
+  hideTags?: boolean;
 }
 
-export function TagInput({ tags, allTags, onUpdateTags, placeholder }: TagInputProps) {
+export function TagInput({ tags, allTags, onUpdateTags, placeholder, className, hideTags }: TagInputProps) {
   const [open, setOpen] = React.useState(false)
   const [inputValue, setInputValue] = React.useState("")
 
@@ -55,9 +57,10 @@ export function TagInput({ tags, allTags, onUpdateTags, placeholder }: TagInputP
 
   return (
     <div className="w-full">
-      <div className="flex flex-wrap gap-1 mb-2">
-        {tags.map(tag => (
-          <Badge key={tag} variant="secondary" className="flex items-center gap-1">
+      {!hideTags && (
+        <div className="flex flex-wrap gap-1 mb-2">
+          {tags.map(tag => (
+            <Badge key={tag} variant="secondary" className="flex items-center gap-1">
             {tag}
             <button onClick={() => handleRemoveTag(tag)} className="rounded-full hover:bg-muted-foreground/20">
               <XIcon className="h-3 w-3" />
@@ -65,13 +68,14 @@ export function TagInput({ tags, allTags, onUpdateTags, placeholder }: TagInputP
           </Badge>
         ))}
       </div>
+      )}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className="w-full justify-between font-normal text-muted-foreground"
+            className={cn("w-full justify-between font-normal text-muted-foreground", className)}
           >
             {placeholder || "Select tags..."}
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />

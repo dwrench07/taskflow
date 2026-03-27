@@ -455,6 +455,7 @@ export default function FocusPage() {
                                 <FocusAnalyticsChart sessions={sessions} />
                             </CardContent>
                         </Card>
+                        <DashboardEmotionTrends focusSessions={sessions} />
                     </div>
 
                     {/* Right Column: Timer & Notes */}
@@ -836,6 +837,12 @@ export default function FocusPage() {
                                     <SelectItem value="low">Low - Need a break</SelectItem>
                                 </SelectContent>
                             </Select>
+                        </div>
+
+                        {/* Post-session emotion check-in */}
+                        <div className="space-y-3">
+                            <Label>How do you feel now?</Label>
+                            <EmotionCheckInInline onComplete={(checkIn) => setPostEmotion(checkIn)} />
                         </div>
                     </div>
                     <DialogFooter>

@@ -13,9 +13,10 @@ interface DateTimePickerProps {
   date?: string;
   setDate: (date: Date) => void;
   label?: string;
+  triggerClassName?: string;
 }
 
-export function DateTimePicker({ date, setDate, label }: DateTimePickerProps) {
+export function DateTimePicker({ date, setDate, label, triggerClassName }: DateTimePickerProps) {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -41,7 +42,8 @@ export function DateTimePicker({ date, setDate, label }: DateTimePickerProps) {
           variant={"outline"}
           className={cn(
             "w-full justify-start text-left font-normal overflow-hidden",
-            !date && "text-muted-foreground"
+            !date && "text-muted-foreground",
+            triggerClassName
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />

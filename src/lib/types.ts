@@ -163,6 +163,8 @@ export interface Goal {
   tags?: string[];
   userId?: string; // Attached to the tenant
   pillarId?: string; // Link to a life pillar
+  stretchGoal?: string; // Ambitious version of this goal
+  completedAt?: string; // ISO date when marked completed
 }
 
 export interface Pillar {

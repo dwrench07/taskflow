@@ -260,16 +260,16 @@ Dash is a premium, multi-tenant productivity application designed to help users 
 
 The single highest-leverage feature. Emotional labeling alone reduces amygdala activation by ~30% (Lieberman, UCLA). This integrates into the existing task flow.
 
-- [ ] **Pre-Task Emotion Check-In**
+- [x] **Pre-Task Emotion Check-In**
   - Before starting a focus session or task, prompt: "What are you feeling right now?"
   - Dropdown options: dread, anxiety, resistance, overwhelm, calm, neutral, excited
   - Body tension rating: 1-10 slider
   - Data is stored per task per session
-- [ ] **Post-Task Emotion Check-In**
+- [x] **Post-Task Emotion Check-In**
   - After completing a focus session: "How do you feel now?"
   - Same emotion dropdown + tension slider
   - Over time, builds a dataset proving: feelings BEFORE are always worse than DURING
-- [ ] **Emotion Trends Dashboard**
+- [x] **Emotion Trends Dashboard**
   - Chart: pre-task anxiety vs post-task relief over time
   - Pattern detection: "You feel dread before Large tasks but calm after 80% of them"
   - Correlation: which task types, times of day, or energy levels trigger the most resistance?
@@ -278,13 +278,13 @@ The single highest-leverage feature. Emotional labeling alone reduces amygdala a
 
 Tools to break the freeze response and anxiety spirals in real time. Accessible from anywhere in the app.
 
-- [ ] **Start Assist Flow** (for #2 — freeze response)
+- [x] **Start Assist Flow** (for #2 — freeze response)
   - Triggers when body tension is rated 7+ in the emotion check-in
   - Step 1: 60-second guided box breathing (4-4-4-4) with visual animation
   - Step 2: "2-Minute Commit" — timer auto-starts for just 2 minutes. No pressure to continue
   - Step 3: After 2 min, gentle prompt: "Keep going?" (most people do)
   - The point: shift the nervous system BEFORE asking the brain to work
-- [ ] **Grounding Mode / Panic Button** (for #6 — anxiety spirals)
+- [x] **Grounding Mode / Panic Button** (for #6 — anxiety spirals)
   - Floating button accessible from any page
   - Option 1: Guided 5-4-3-2-1 grounding (name 5 things you see, 4 hear, 3 feel, 2 smell, 1 taste)
   - Option 2: Quick thought dump — textbox to park the intrusive thought (saves to Jots with "anxiety" tag)
@@ -324,22 +324,22 @@ For the bigger fears — job loss, visa, career uncertainty — that loop endles
 
 Long-term rewiring of avoidance patterns. These features work over weeks/months.
 
-- [ ] **Avoidance Pattern Tracker** (for #5)
+- [x] **Avoidance Pattern Tracker** (for #5)
   - Integrates with existing push count and daily review
   - When a task is pushed, ask: "Why?" with options: too hard, too boring, too scary, too vague, genuinely deprioritized
   - Monthly report: "You avoided 12 tasks tagged 'too scary' — 8 of them were actually easy once started"
   - Connects avoidance reasons to emotion check-in data
-- [ ] **Approach vs Avoidance Score**
+- [x] **Approach vs Avoidance Score**
   - Daily metric: how many times did you approach discomfort vs avoid it?
   - Every completed focus session with pre-task anxiety > 5 = approach point
   - Every pushed task with reason "too scary" = avoidance point
   - Streak: "7-day approach streak" — more meaningful than task completion streaks
-- [ ] **Stretch Goal Nudges** (for #8 — aiming for minimum)
+- [x] **Stretch Goal Nudges** (for #8 — aiming for minimum)
   - When creating a goal, prompt: "What would the ambitious version of this look like?"
   - Store both the "safe" goal and the "stretch" goal
   - After hitting the safe goal, surface the stretch: "You hit your target. The stretch was [X]. Want to keep going?"
   - No shame if you stop — the stretch is always optional
-- [ ] **Private Milestone Celebrations + Optional Share** (for #7)
+- [x] **Private Milestone Celebrations + Optional Share** (for #7)
   - When a goal/milestone is completed, trigger a private celebration screen
   - Show: what you achieved, how long it took, emotional journey (from check-in data)
   - Optional "Share Win" button — only appears AFTER completion, never before
@@ -365,6 +365,23 @@ The deepest layer. These address background unhappiness, childhood emotional neg
   - Track: ate 3 meals, dressed well, basic hygiene, 10 min outside, one kind thing for yourself
   - Different framing: not "productive habits" but "you are worth taking care of"
   - Celebration: "You took care of yourself 5 days in a row"
+
+### Micro-UX: Workflow Friction Fixes
+
+Small improvements to the daily workflow that compound over time. These shape whether the app *pulls* you into action or makes you think about what to do.
+
+- [ ] **Task Selector on Focus Page** — Currently if you land on `/focus` without a task pre-selected, you can only type a free-text goal. Add a task picker/dropdown so you can browse and select from your tasks without leaving the page.
+- [ ] **"What's Next?" Post-Session Suggestion** — When a focus session ends, suggest the next task to work on (based on energy, priority, today's plan). Right now the session just ends and you navigate yourself.
+- [ ] **Global Quick-Add (Ctrl+K)** — A command palette or floating button accessible from any page for instant task capture. The Command UI component already exists but is unused.
+- [ ] **Clickable Tasks on Dashboard** — Summary cards (frogs, urgent, tasks today) show task names but you can't click them to jump into a focus session. One-click start from the dashboard.
+
+### Root Cause Trackers
+
+These directly attack the problems (#21, #22, #23, #9) that cascade into everything else — brain fog, low energy, procrastination, and mood.
+
+- [ ] **Sleep Tracker** (for #23) — Bedtime/wake logging, nap tracking, sleep debt visualization. Broken sleep causes morning grogginess (#12, #13), brain fog (#24), and worsens focus (#14) and procrastination (#1).
+- [ ] **Meal & Weight Tracker** (for #21, #22) — Daily weight log + simple did-you-eat tracking. Being underweight causes brain fog (#24), low energy, and worsens everything. Can tie into existing chores/habits infrastructure.
+- [ ] **Mood Tracker** (for #9) — Quick daily check-in: mood (1-10), energy (1-10), one word for the day. Optional: what contributed? (sleep, food, exercise, social, work). Weekly trend chart with correlations. The connective tissue — once you have sleep + food + mood data, you can see what actually helps.
 
 ---
 

@@ -28,6 +28,7 @@ import { TagInput } from "./tag-input";
 import { getAllGoals, getAllMilestones, getAllTasks } from "@/lib/data";
 import { type Milestone } from "@/lib/types";
 import { DateTimePicker } from "./date-time-picker";
+import { Separator } from "@/components/ui/separator";
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -100,335 +101,334 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <FormField
-          control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Title</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g. Design new homepage" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="e.g. Create mockups and prototype..."
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="priority"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Priority</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Main Content Column */}
+          <div className="md:col-span-2 space-y-4">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title</FormLabel>
                   <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a priority" />
-                    </SelectTrigger>
+                    <Input placeholder="e.g. Design new homepage" {...field} />
                   </FormControl>
-                  <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                    <SelectItem value="urgent">Urgent</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="tShirtSize"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Size (Effort)</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value || "none"}>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="T-Shirt Size" />
-                    </SelectTrigger>
+                    <Textarea
+                      placeholder="e.g. Create mockups and prototype..."
+                      className="min-h-[120px] resize-none"
+                      {...field}
+                    />
                   </FormControl>
-                  <SelectContent>
-                    <SelectItem value="none">Not specified</SelectItem>
-                    <SelectItem value="S">S - Quick (15-30m)</SelectItem>
-                    <SelectItem value="M">M - Medium (1-2h)</SelectItem>
-                    <SelectItem value="L">L - Large (Half day)</SelectItem>
-                    <SelectItem value="XL">XL - Extra Large (Full day+)</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="goalId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Linked Goal (Optional)</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value || "none"}>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="tags"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tags</FormLabel>
                   <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="No goal linked" />
-                    </SelectTrigger>
+                    <TagInput
+                      tags={field.value || []}
+                      allTags={allTags}
+                      onUpdateTags={async (tags) => form.setValue('tags', tags)}
+                      placeholder="Add or select tags..."
+                    />
                   </FormControl>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    {goals.map((g) => (
-                      <SelectItem key={g.id} value={g.id}>{g.title}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="milestoneId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Linked Milestone (Optional)</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value || "none"}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="No milestone linked" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    {milestones.map((m) => (
-                      <SelectItem key={m.id} value={m.id}>{m.title}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="energyLevel"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Energy Required (Optional)</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value || "none"}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Energy Level" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="none">Not specified</SelectItem>
-                    <SelectItem value="high">High (Deep Work)</SelectItem>
-                    <SelectItem value="medium">Medium (Standard)</SelectItem>
-                    <SelectItem value="low">Low (Brain-dead)</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="timeLimit"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Timebox (Minutes)</FormLabel>
-                <FormControl>
-                  <Input 
-                    type="number" 
-                    placeholder="e.g. 25" 
-                    {...field} 
-                    value={field.value || ""} 
-                    onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="isFrog"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                <div className="space-y-0.5">
-                  <FormLabel>Eat the Frog 🐸</FormLabel>
-                  <p className="text-[0.7rem] text-muted-foreground">
-                    Mark as a high-resistance task to tackle first.
-                  </p>
-                </div>
-                <FormControl>
-                  <input
-                    type="checkbox"
-                    checked={field.value}
-                    onChange={field.onChange}
-                    className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
-          <FormField
-            control={form.control}
-            name="startDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Start Date</FormLabel>
-                <FormControl>
-                  <DateTimePicker 
-                    date={field.value || undefined} 
-                    setDate={(date) => field.onChange(date.toISOString())} 
-                    label="Earliest start date"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="doDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-primary font-bold">Drop Dead Date</FormLabel>
-                <FormControl>
-                  <DateTimePicker 
-                    date={field.value || undefined} 
-                    setDate={(date) => field.onChange(date.toISOString())} 
-                    label="Must do by..."
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="endDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Final Due Date</FormLabel>
-                <FormControl>
-                  <DateTimePicker 
-                    date={field.value || undefined} 
-                    setDate={(date) => field.onChange(date.toISOString())} 
-                    label="Hard deadline"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <FormField
-          control={form.control}
-          name="tags"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Tags</FormLabel>
-              <FormControl>
-                <TagInput
-                  tags={field.value || []}
-                  allTags={allTags}
-                  onUpdateTags={async (tags) => form.setValue('tags', tags)}
-                  placeholder="Add or select tags..."
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-          <FormField
-            control={form.control}
-            name="blockedBy"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Blocked By (Dependencies)</FormLabel>
-                <FormControl>
-                  <div className="border rounded-md p-2 max-h-48 overflow-y-auto space-y-2">
-                    {allExistingTasks.length === 0 && <p className="text-sm text-muted-foreground p-2">No other tasks available.</p>}
-                    {allExistingTasks.map(t => (
-                      <label key={`blockedBy-${t.id}`} className="flex items-center space-x-2 text-sm">
-                        <input 
-                          type="checkbox" 
-                          checked={field.value?.includes(t.id)}
-                          onChange={(e) => {
-                            const checked = e.target.checked;
-                            const current = field.value || [];
-                            field.onChange(checked ? [...current, t.id] : current.filter(id => id !== t.id));
-                          }}
-                          className="rounded border-gray-300 text-primary focus:ring-primary"
-                        />
-                        <span className="truncate">{t.title}</span>
-                      </label>
-                    ))}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="blockedBy"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs uppercase tracking-wider text-muted-foreground">Blocked By</FormLabel>
+                    <FormControl>
+                      <div className="border rounded-md p-2 max-h-32 overflow-y-auto space-y-1 bg-muted/20">
+                        {allExistingTasks.length === 0 && <p className="text-[10px] text-muted-foreground p-1">No tasks.</p>}
+                        {allExistingTasks.map(t => (
+                          <label key={`blockedBy-${t.id}`} className="flex items-center space-x-2 text-xs">
+                            <input 
+                              type="checkbox" 
+                              checked={field.value?.includes(t.id)}
+                              onChange={(e) => {
+                                const checked = e.target.checked;
+                                const current = field.value || [];
+                                field.onChange(checked ? [...current, t.id] : current.filter(id => id !== t.id));
+                              }}
+                              className="h-3 w-3 rounded border-gray-300 text-primary focus:ring-primary"
+                            />
+                            <span className="truncate">{t.title}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="blocks"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs uppercase tracking-wider text-muted-foreground">Blocks</FormLabel>
+                    <FormControl>
+                      <div className="border rounded-md p-2 max-h-32 overflow-y-auto space-y-1 bg-muted/20">
+                        {allExistingTasks.length === 0 && <p className="text-[10px] text-muted-foreground p-1">No tasks.</p>}
+                        {allExistingTasks.map(t => (
+                          <label key={`blocks-${t.id}`} className="flex items-center space-x-2 text-xs">
+                            <input 
+                              type="checkbox" 
+                              checked={field.value?.includes(t.id)}
+                              onChange={(e) => {
+                                const checked = e.target.checked;
+                                const current = field.value || [];
+                                field.onChange(checked ? [...current, t.id] : current.filter(id => id !== t.id));
+                              }}
+                              className="h-3 w-3 rounded border-gray-300 text-primary focus:ring-primary"
+                            />
+                            <span className="truncate">{t.title}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+
+          {/* Sidebar Meta Column */}
+          <div className="space-y-4 bg-muted/30 p-4 rounded-xl border border-white/5">
+            <div className="grid grid-cols-2 gap-3">
+              <FormField
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs">Priority</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder="Priority" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="low">Low</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                        <SelectItem value="urgent">Urgent</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="tShirtSize"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs">Estimate</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || "none"}>
+                      <FormControl>
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder="Size" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="none">n/a</SelectItem>
+                        <SelectItem value="S">S - 30m</SelectItem>
+                        <SelectItem value="M">M - 2h</SelectItem>
+                        <SelectItem value="L">L - 4h</SelectItem>
+                        <SelectItem value="XL">XL - 1d+</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="isFrog"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border bg-background/50 p-2 shadow-sm">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-xs flex items-center gap-1">Eat the Frog 🐸</FormLabel>
                   </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="blocks"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Blocks (Dependents)</FormLabel>
-                <FormControl>
-                  <div className="border rounded-md p-2 max-h-48 overflow-y-auto space-y-2">
-                    {allExistingTasks.length === 0 && <p className="text-sm text-muted-foreground p-2">No other tasks available.</p>}
-                    {allExistingTasks.map(t => (
-                      <label key={`blocks-${t.id}`} className="flex items-center space-x-2 text-sm">
-                        <input 
-                          type="checkbox" 
-                          checked={field.value?.includes(t.id)}
-                          onChange={(e) => {
-                            const checked = e.target.checked;
-                            const current = field.value || [];
-                            field.onChange(checked ? [...current, t.id] : current.filter(id => id !== t.id));
-                          }}
-                          className="rounded border-gray-300 text-primary focus:ring-primary"
-                        />
-                        <span className="truncate">{t.title}</span>
-                      </label>
-                    ))}
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  <FormControl>
+                    <input
+                      type="checkbox"
+                      checked={field.value}
+                      onChange={field.onChange}
+                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <div className="space-y-3">
+              <FormField
+                control={form.control}
+                name="energyLevel"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs">Energy</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || "none"}>
+                      <FormControl>
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder="Energy" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="none">n/a</SelectItem>
+                        <SelectItem value="high">Deep Work</SelectItem>
+                        <SelectItem value="medium">Standard</SelectItem>
+                        <SelectItem value="low">Low Brain</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="timeLimit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs">Timebox (m)</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="25" 
+                        className="h-8 text-xs"
+                        {...field} 
+                        value={field.value || ""} 
+                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <Separator className="bg-white/5" />
+
+            <div className="space-y-3">
+              <FormField
+                control={form.control}
+                name="goalId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs text-muted-foreground">Goal</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || "none"}>
+                      <FormControl>
+                        <SelectTrigger className="h-8 text-xs italic bg-transparent">
+                          <SelectValue placeholder="No goal" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        {goals.map((g) => (
+                          <SelectItem key={g.id} value={g.id}>{g.title}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="milestoneId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs text-muted-foreground">Milestone</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || "none"}>
+                      <FormControl>
+                        <SelectTrigger className="h-8 text-xs italic bg-transparent">
+                          <SelectValue placeholder="No milestone" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        {milestones.map((m) => (
+                          <SelectItem key={m.id} value={m.id}>{m.title}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <Separator className="bg-white/5" />
+
+            <div className="space-y-3">
+              <FormField
+                control={form.control}
+                name="doDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[10px] uppercase font-bold text-primary">Drop Dead Date</FormLabel>
+                    <FormControl>
+                      <DateTimePicker 
+                        date={field.value || undefined} 
+                        setDate={(date) => field.onChange(date.toISOString())} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="endDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-[10px] uppercase text-muted-foreground">Final Deadline</FormLabel>
+                    <FormControl>
+                      <DateTimePicker 
+                        date={field.value || undefined} 
+                        setDate={(date) => field.onChange(date.toISOString())} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <Button type="submit" className="w-full shadow-lg shadow-primary/20 mt-4">
+              {task ? 'Update Task' : 'Create Task'}
+            </Button>
+          </div>
         </div>
-        <Button type="submit">
-          {task ? 'Save Changes' : 'Create Task'}
-        </Button>
       </form>
     </Form>
   );

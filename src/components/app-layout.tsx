@@ -27,6 +27,10 @@ import {
   SidebarHeader,
   SidebarContent,
   SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
+  SidebarSeparator,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
@@ -37,25 +41,6 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { LogOut } from "lucide-react";
-
-const menuItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/tasks", label: "Tasks", icon: ListTodo },
-  { href: "/habits", label: "Habits", icon: Repeat },
-  { href: "/focus", label: "Focus", icon: Timer },
-  { href: "/frogs", label: "Eat the Frog", icon: Zap },
-  { href: "/templates", label: "Templates", icon: ClipboardList },
-  { href: "/plan", label: "Plan", icon: FilePenLine },
-  { href: "/calendar", label: "Calendar", icon: Calendar },
-  { href: "/jots", label: "Jots", icon: StickyNote },
-  { href: "/alignment", label: "Alignment", icon: Map },
-  { href: "/chores", label: "Chores", icon: CheckSquare },
-  { href: "/interests", label: "Interests", icon: Sparkles },
-  { href: "/achievements", label: "Achievements", icon: Trophy },
-  { href: "/back-of-mind", label: "Back of Mind", icon: Brain },
-  { href: "/logs", label: "Logs", icon: BookOpen },
-  { href: "/profile", label: "Profile", icon: User },
-];
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -72,24 +57,97 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">Dash</h1>
           </div>
         </SidebarHeader>
-        <SidebarContent className="px-3">
-          <SidebarMenu className="gap-1">
-            {menuItems.map((item) => (
-              <SidebarMenuItem key={item.label}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathname === item.href}
-                  tooltip={item.label}
-                  className="rounded-lg transition-all hover:bg-white/5 hover:scale-[1.02] active:scale-[0.98] data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
-                >
-                  <Link href={item.href} className="flex items-center gap-3 px-3 py-1">
-                    <item.icon className="h-4 w-4" />
-                    <span className="font-medium">{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
+        <SidebarContent className="px-2 pb-4">
+          <SidebarGroup className="py-1">
+            <SidebarGroupLabel className="text-[10px] uppercase tracking-wider h-6 px-2">Core</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="gap-0.5">
+                {[
+                  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+                  { href: "/tasks", label: "Tasks", icon: ListTodo },
+                  { href: "/focus", label: "Focus", icon: Timer },
+                  { href: "/frogs", label: "Frogs", icon: Zap },
+                  { href: "/habits", label: "Habits", icon: Repeat },
+                ].map((item) => (
+                  <SidebarMenuItem key={item.label}>
+                    <SidebarMenuButton
+                      asChild
+                      size="sm"
+                      isActive={pathname === item.href}
+                      tooltip={item.label}
+                      className="rounded-md transition-all hover:bg-white/5 data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
+                    >
+                      <Link href={item.href} className="flex items-center gap-2 px-2 py-0">
+                        <item.icon className="h-3.5 w-3.5" />
+                        <span className="font-medium text-xs">{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          <SidebarGroup className="py-1">
+            <SidebarGroupLabel className="text-[10px] uppercase tracking-wider h-6 px-2">Plan</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="gap-0.5">
+                {[
+                  { href: "/plan", label: "Daily", icon: FilePenLine },
+                  { href: "/calendar", label: "Calendar", icon: Calendar },
+                  { href: "/chores", label: "Chores", icon: CheckSquare },
+                  { href: "/templates", label: "Templates", icon: ClipboardList },
+                ].map((item) => (
+                  <SidebarMenuItem key={item.label}>
+                    <SidebarMenuButton
+                      asChild
+                      size="sm"
+                      isActive={pathname === item.href}
+                      tooltip={item.label}
+                      className="rounded-md transition-all hover:bg-white/5 data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
+                    >
+                      <Link href={item.href} className="flex items-center gap-2 px-2 py-0">
+                        <item.icon className="h-3.5 w-3.5" />
+                        <span className="font-medium text-xs">{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          <SidebarGroup className="py-1">
+            <SidebarGroupLabel className="text-[10px] uppercase tracking-wider h-6 px-2">Brain</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="gap-0.5">
+                {[
+                  { href: "/alignment", label: "Vision", icon: Map },
+                  { href: "/jots", label: "Jots", icon: StickyNote },
+                  { href: "/back-of-mind", label: "Deep Store", icon: Brain },
+                  { href: "/interests", label: "Interests", icon: Sparkles },
+                  { href: "/achievements", label: "Wins", icon: Trophy },
+                  { href: "/logs", label: "Logs", icon: BookOpen },
+                  { href: "/profile", label: "Profile", icon: User },
+                ].map((item) => (
+                  <SidebarMenuItem key={item.label}>
+                    <SidebarMenuButton
+                      asChild
+                      size="sm"
+                      isActive={pathname === item.href}
+                      tooltip={item.label}
+                      className="rounded-md transition-all hover:bg-white/5 data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
+                    >
+                      <Link href={item.href} className="flex items-center gap-2 px-2 py-0">
+                        <item.icon className="h-3.5 w-3.5" />
+                        <span className="font-medium text-xs">{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
         </SidebarContent>
         {user && (
           <SidebarFooter className="p-4 border-t border-sidebar-border">

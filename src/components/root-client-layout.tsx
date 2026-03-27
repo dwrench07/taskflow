@@ -7,6 +7,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { ReminderManager } from '@/components/reminder-manager';
 import { PwaInstallPrompt } from '@/components/pwa-install-prompt';
 import { GamificationProvider } from '@/context/GamificationContext';
+import { GroundingButton } from '@/components/grounding-button';
 
 export function RootClientLayout({
   children,
@@ -33,6 +34,7 @@ export function RootClientLayout({
             </AppLayout>
             <ReminderManager />
             <PwaInstallPrompt />
+            <GroundingButton />
           </GamificationProvider>
         </AuthProvider>
       ) : null}

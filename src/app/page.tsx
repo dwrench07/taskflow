@@ -14,6 +14,7 @@ import { DashboardGoalVelocity } from "@/components/dashboard-goal-velocity";
 import { DashboardTaskVelocity } from "@/components/dashboard-task-velocity";
 import { DashboardPointOfNoReturn } from "@/components/dashboard-point-of-no-return";
 import { DashboardPushAnalytics } from "@/components/dashboard-push-analytics";
+import { DashboardApproachScore } from "@/components/dashboard-approach-score";
 import { DashboardAlmostDone } from "@/components/dashboard-almost-done";
 import { DashboardDailyWins } from "@/components/dashboard-daily-wins";
 import { SummaryCard } from "@/components/dashboard-summary-card";
@@ -29,7 +30,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getAllTasks, getFocusSessions } from "@/lib/data";
 import { useEffect, useState, useMemo } from "react";
 import { Task, FocusSession } from "@/lib/types";
-import { LayoutDashboard, BarChart3, Clock, Flame, Brain, ListTodo, AlertTriangle, ChevronRight, CheckCircle2, Layers } from "lucide-react";
+import { LayoutDashboard, BarChart3, Clock, Flame, Brain, ListTodo, Timer, 
+  PlusCircle, 
+  FileText, 
+  ClipboardList,
+  Zap,
+  AlertTriangle, ChevronRight, CheckCircle2, Layers
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { isSameDay, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -117,7 +124,11 @@ export default function DashboardPage() {
     });
 
     const todaySessions = focusSessions.filter(s => isSameDay(parseISO(s.startTime), today));
-    const focusMinutes = todaySessions.reduce((acc, s) => acc + s.duration, 0);
+    const focusMinutes = todaySessions.reduce((acc: number, s: any) => acc + s.duration, 0);
+
+    const frogs = allTasks.filter(t => t.isFrog && t.status !== 'done');
+    const frogsDoneToday = allTasks.filter(t => t.isFrog && t.status === 'done' && t.doDate && isSameDay(parseISO(t.doDate), today)).length;
+    const frogsTotal = allTasks.filter(t => t.isFrog).length;
 
     return {
         criticalTasks,
@@ -130,7 +141,10 @@ export default function DashboardPage() {
         topTasksDoneToday,
         topTasksTotalToday,
         subTasksDoneToday,
-        subTasksTotalToday
+        subTasksTotalToday,
+        frogsRemaining: frogs.length,
+        frogsDoneToday,
+        frogsTotal
     };
   }, [allTasks, focusSessions]);
 
@@ -194,7 +208,24 @@ export default function DashboardPage() {
 
       {viewMode === 'quick' ? (
         <div className="animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200 fill-mode-both">
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-3 mb-10">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 mb-10">
+            <SummaryCard
+                icon={Zap}
+                title="Frogs"
+                value={stats.frogsRemaining}
+                subtitle={`${stats.frogsDoneToday}/${stats.frogsTotal} Eaten`}
+                color="text-emerald-500"
+            >
+                <div className="space-y-2">
+                    {allTasks.filter(t => t.isFrog && t.status !== 'done').slice(0, 3).map(t => (
+                        <div key={t.id} className="text-[10px] flex items-center gap-2">
+                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                             <span className="truncate opacity-80">{t.title}</span>
+                        </div>
+                    ))}
+                    {stats.frogsRemaining === 0 && <p className="text-[10px] text-emerald-500 font-bold">All frogs eaten! 🐸🏆</p>}
+                </div>
+            </SummaryCard>
             <SummaryCard
                 icon={AlertTriangle}
                 title="Urgent"
@@ -212,15 +243,6 @@ export default function DashboardPage() {
                 color="text-blue-500"
             >
                 <TaskDetail tasks={allTasks} />
-            </SummaryCard>
-            <SummaryCard
-                icon={Layers}
-                title="Subtasks"
-                value={`${stats.subTasksDoneToday}/${stats.subTasksTotalToday}`}
-                subtitle="Granular progress"
-                color="text-indigo-400"
-            >
-                <SubtaskDetail tasks={allTasks} />
             </SummaryCard>
             <SummaryCard
                 icon={Clock}
@@ -283,6 +305,7 @@ export default function DashboardPage() {
                      <DashboardPointOfNoReturn allTasks={allTasks} />
                     <DashboardAlmostDone allTasks={allTasks} />
                     <DashboardPushAnalytics allTasks={allTasks} />
+                    <DashboardApproachScore allTasks={allTasks} focusSessions={focusSessions} />
                     <DashboardHabitHeatmap allTasks={allTasks} />
                     <DashboardStats allTasks={allTasks} />
                     </div>

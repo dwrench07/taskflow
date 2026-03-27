@@ -103,7 +103,10 @@ function TaskListItem({ task, allTasks, goals, onSelect, isSelected }: { task: T
         </div>
       )}
       <div className="flex justify-between items-start gap-2 w-full">
-        <p className="font-semibold truncate flex-1 text-left min-w-0 break-words">{task.title}</p>
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          {task.isFrog && <span className="text-lg animate-bounce duration-1000" title="Eat this Frog!">🐸</span>}
+          <p className="font-semibold truncate text-left break-words">{task.title}</p>
+        </div>
         <Badge variant="outline" className={cn("capitalize flex-shrink-0 mt-0.5", priorityStyles[task.priority])}>
           {task.priority}
         </Badge>
@@ -686,6 +689,7 @@ function TasksPageContent() {
                         blocks: data.blocks || [],
                         blockedBy: data.blockedBy || [],
                         tShirtSize: data.tShirtSize === null ? undefined : data.tShirtSize,
+                        timeLimit: data.timeLimit || undefined,
                       };
                       handleAddTask(sanitizedData);
                       setIsFormOpen(false);
@@ -892,6 +896,7 @@ function TasksPageContent() {
                                       blockedBy: data.blockedBy || [],
                                       blocks: data.blocks || [],
                                       tShirtSize: data.tShirtSize === null ? undefined : data.tShirtSize,
+                                      timeLimit: data.timeLimit || undefined,
                                     };
                                     await handleUpdateTask(updatedData);
                                     setIsEditingFormOpen(false);
@@ -980,12 +985,12 @@ function TasksPageContent() {
                           <div className="space-y-4">
                             {selectedTask?.subtasks?.map((subtask, index) => (
                               <div key={subtask.id} className={cn(
-                                "flex flex-col sm:flex-row sm:items-start gap-4 group p-4 rounded-2xl border transition-all duration-300 shadow-sm",
-                                subtask.completed ? "bg-muted/30 border-border/40" : "bg-background hover:border-primary/40 hover:shadow-md"
+                                "flex flex-col gap-3 group p-3 rounded-xl border transition-all duration-300",
+                                subtask.completed ? "bg-muted/30 border-border/40" : "bg-card hover:border-primary/40 hover:shadow-sm"
                               )}>
-                                <div className="flex items-center gap-4 w-full sm:w-auto mt-0.5">
+                                <div className="flex items-start gap-3 w-full">
                                   <div className={cn(
-                                    "relative flex items-center justify-center w-6 h-6 rounded-md border-2 transition-colors",
+                                    "relative flex items-center justify-center w-5 h-5 rounded border-2 transition-colors mt-0.5 shrink-0",
                                     subtask.completed ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground/30 bg-background group-hover:border-primary/50"
                                   )}>
                                     <Checkbox
@@ -996,126 +1001,134 @@ function TasksPageContent() {
                                     />
                                     {subtask.completed && <Check className="w-3.5 h-3.5" />}
                                   </div>
-                                </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      {editingSubtask?.id === subtask.id ? (
+                                        <Input
+                                          type="text"
+                                          defaultValue={subtask.title}
+                                          autoFocus
+                                          onBlur={() => setEditingSubtask(null)}
+                                          onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                                              handleUpdateSubtask({ ...subtask, title: e.currentTarget.value.trim() });
+                                            } else if (e.key === 'Escape') {
+                                              setEditingSubtask(null)
+                                            }
+                                          }}
+                                          className="h-8 text-sm font-medium shadow-sm"
+                                          placeholder="Subtask title..."
+                                        />
+                                      ) : (
+                                        <>
+                                          <label
+                                            htmlFor={subtask.id}
+                                            className={cn(
+                                              "text-sm font-bold flex-1 cursor-text truncate select-none transition-colors",
+                                              subtask.completed ? "line-through text-muted-foreground" : "text-foreground/90 group-hover:text-primary"
+                                            )}
+                                            onDoubleClick={() => setEditingSubtask(subtask)}
+                                          >
+                                            {subtask.title}
+                                          </label>
+                                          <div className="flex items-center gap-1.5 shrink-0">
+                                            <DropdownMenu>
+                                              <DropdownMenuTrigger asChild>
+                                                <Badge variant="outline" className={cn("text-[10px] h-5 px-1.5 py-0 capitalize font-bold cursor-pointer", subtask.priority && priorityStyles[subtask.priority])}>
+                                                  {subtask.priority ? subtask.priority[0].toUpperCase() : "P"}
+                                                </Badge>
+                                              </DropdownMenuTrigger>
+                                              <DropdownMenuContent>
+                                                <DropdownMenuRadioGroup value={subtask.priority || ""} onValueChange={(val) => handleUpdateSubtask({ ...subtask, priority: val as Priority })}>
+                                                  <DropdownMenuRadioItem value="urgent">Urgent</DropdownMenuRadioItem>
+                                                  <DropdownMenuRadioItem value="high">High</DropdownMenuRadioItem>
+                                                  <DropdownMenuRadioItem value="medium">Medium</DropdownMenuRadioItem>
+                                                  <DropdownMenuRadioItem value="low">Low</DropdownMenuRadioItem>
+                                                </DropdownMenuRadioGroup>
+                                              </DropdownMenuContent>
+                                            </DropdownMenu>
 
-                                <div className="flex-1 space-y-3 min-w-0">
-                                  {editingSubtask?.id === subtask.id ? (
-                                    <Input
-                                      type="text"
-                                      defaultValue={subtask.title}
-                                      autoFocus
-                                      onBlur={() => setEditingSubtask(null)}
-                                      onKeyDown={(e) => {
-                                        if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                                          handleUpdateSubtask({ ...subtask, title: e.currentTarget.value.trim() });
-                                        } else if (e.key === 'Escape') {
-                                          setEditingSubtask(null)
-                                        }
-                                      }}
-                                      className="h-9 text-base font-medium shadow-sm"
-                                      placeholder="Subtask title..."
-                                    />
-                                  ) : (
-                                    <label
-                                      htmlFor={subtask.id}
-                                      className={cn(
-                                        "text-base font-medium flex-1 cursor-text block truncate select-none transition-colors",
-                                        subtask.completed ? "line-through text-muted-foreground" : "text-foreground/90 group-hover:text-primary"
+                                            <DropdownMenu>
+                                              <DropdownMenuTrigger asChild>
+                                                <Badge variant="secondary" className="text-[10px] h-5 px-1.5 py-0 font-normal border cursor-pointer opacity-70 hover:opacity-100">
+                                                  {subtask.energyLevel ? subtask.energyLevel[0].toUpperCase() : "E"}
+                                                </Badge>
+                                              </DropdownMenuTrigger>
+                                              <DropdownMenuContent>
+                                                <DropdownMenuRadioGroup value={subtask.energyLevel || "none"} onValueChange={(val) => handleUpdateSubtask({ ...subtask, energyLevel: val === "none" ? undefined : val as any })}>
+                                                  <DropdownMenuRadioItem value="none">Not specified</DropdownMenuRadioItem>
+                                                  <DropdownMenuRadioItem value="high">High (Deep Work)</DropdownMenuRadioItem>
+                                                  <DropdownMenuRadioItem value="medium">Medium (Standard)</DropdownMenuRadioItem>
+                                                  <DropdownMenuRadioItem value="low">Low (Brain-dead)</DropdownMenuRadioItem>
+                                                </DropdownMenuRadioGroup>
+                                              </DropdownMenuContent>
+                                            </DropdownMenu>
+                                          </div>
+                                        </>
                                       )}
-                                      onDoubleClick={() => setEditingSubtask(subtask)}
-                                    >
-                                      {subtask.title}
-                                    </label>
-                                  )}
-
-                                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-1">
-                                    <div className="flex items-center gap-2">
-                                      <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                          <Badge variant="outline" className={cn("cursor-pointer shrink-0 truncate capitalize", subtask.priority && priorityStyles[subtask.priority])}>
-                                            {subtask.priority || "Priority"} <ChevronDown className="ml-1 h-3 w-3 inline" />
-                                          </Badge>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent>
-                                          <DropdownMenuRadioGroup value={subtask.priority || ""} onValueChange={(val) => handleUpdateSubtask({ ...subtask, priority: val as Priority })}>
-                                            <DropdownMenuRadioItem value="urgent">Urgent</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="high">High</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="medium">Medium</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="low">Low</DropdownMenuRadioItem>
-                                          </DropdownMenuRadioGroup>
-                                        </DropdownMenuContent>
-                                      </DropdownMenu>
-
-                                      <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                          <Badge variant="secondary" className="cursor-pointer shrink-0 truncate capitalize font-normal border shadow-sm">
-                                            {subtask.energyLevel ? `Energy: ${subtask.energyLevel}` : "Energy"} <ChevronDown className="ml-1 h-3 w-3 inline" />
-                                          </Badge>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent>
-                                          <DropdownMenuRadioGroup value={subtask.energyLevel || "none"} onValueChange={(val) => handleUpdateSubtask({ ...subtask, energyLevel: val === "none" ? undefined : val as any })}>
-                                            <DropdownMenuRadioItem value="none">Not specified</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="high">High (Deep Work)</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="medium">Medium (Standard)</DropdownMenuRadioItem>
-                                            <DropdownMenuRadioItem value="low">Low (Brain-dead)</DropdownMenuRadioItem>
-                                          </DropdownMenuRadioGroup>
-                                        </DropdownMenuContent>
-                                      </DropdownMenu>
                                     </div>
-
-                                    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-1 py-1 px-2 bg-muted/20 rounded-lg border border-border/30">
+                                      <div className="flex items-center gap-2">
+                                        <CalendarIcon className="w-3 h-3 text-muted-foreground/50" />
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-1">
+                                          <DateTimePicker
+                                            date={subtask.startDate}
+                                            setDate={(date) => handleSubtaskDateChange(subtask.id, 'startDate', date)}
+                                            triggerClassName="h-7 text-[10px] px-2 bg-transparent border-0 hover:bg-white/5 shadow-none"
+                                            label="Start..."
+                                          />
+                                          <span className="hidden sm:inline text-muted-foreground/30">→</span>
+                                          <DateTimePicker
+                                            date={subtask.doDate}
+                                            setDate={(date) => handleSubtaskDateChange(subtask.id, 'doDate', date)}
+                                            label="Do..."
+                                            triggerClassName="h-7 text-[10px] px-2 text-primary font-bold bg-transparent border-0 hover:bg-white/5 shadow-none"
+                                          />
+                                          <span className="hidden sm:inline text-muted-foreground/30">→</span>
+                                          <DateTimePicker
+                                            date={subtask.endDate}
+                                            setDate={(date) => handleSubtaskDateChange(subtask.id, 'endDate', date)}
+                                            label="Done..."
+                                            triggerClassName="h-7 text-[10px] px-2 bg-transparent border-0 hover:bg-white/5 shadow-none"
+                                          />
+                                        </div>
+                                      </div>
+                                      <div className="hidden sm:block h-4 w-[1px] bg-border/40" />
                                       <TagInput
                                         tags={subtask.tags || []}
                                         allTags={allTags}
                                         onUpdateTags={(tags) => handleUpdateSubtaskTags(subtask.id, tags)}
-                                        placeholder="Add sub-tags..."
+                                        placeholder="Tags..."
+                                        className="h-7 text-[10px]"
+                                        hideTags
                                       />
                                     </div>
-                                    <div className="flex flex-wrap items-center gap-2 pt-2 sm:ml-auto shrink-0 w-full sm:w-auto max-w-2xl">
-                                      <div className="flex flex-col gap-1 min-w-[140px]">
-                                        <span className="text-[10px] font-bold text-muted-foreground uppercase px-1">Start</span>
-                                        <DateTimePicker date={subtask.startDate} setDate={(date) => handleSubtaskDateChange(subtask.id, 'startDate', date)} />
-                                      </div>
-                                      <div className="flex flex-col gap-1 min-w-[140px] px-2 bg-primary/5 rounded-lg border border-primary/10">
-                                        <span className="text-[10px] font-bold text-primary uppercase px-1">Drop Dead</span>
-                                        <DateTimePicker date={subtask.doDate} setDate={(date) => handleSubtaskDateChange(subtask.id, 'doDate', date)} label="Must do..." />
-                                      </div>
-                                      <div className="flex flex-col gap-1 min-w-[140px]">
-                                        <span className="text-[10px] font-bold text-muted-foreground uppercase px-1">Deadline</span>
-                                        <DateTimePicker date={subtask.endDate} setDate={(date) => handleSubtaskDateChange(subtask.id, 'endDate', date)} label="Hard deadline" />
-                                      </div>
-                                    </div>
                                   </div>
-                                </div>
 
-                                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center flex-col sm:flex-row gap-1 sm:self-start self-end -mt-2 sm:-mt-1 -mr-2">
-                                  <div className="flex flex-col sm:flex-row sm:mr-2">
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10" disabled={index === 0} onClick={() => handleMoveSubtaskUp(index)}>
-                                      <ArrowUp className="h-4 w-4" />
+                                  <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button variant="ghost" size="icon" className="h-7 w-7 rounded-sm text-muted-foreground hover:text-primary hover:bg-primary/10" disabled={index === 0} onClick={() => handleMoveSubtaskUp(index)}>
+                                      <ArrowUp className="h-3.5 w-3.5" />
                                     </Button>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10" disabled={index === selectedTask.subtasks.length - 1} onClick={() => handleMoveSubtaskDown(index)}>
+                                    <Button variant="ghost" size="icon" className="h-7 w-7 rounded-sm text-muted-foreground hover:text-primary hover:bg-primary/10" disabled={index === selectedTask.subtasks.length - 1} onClick={() => handleMoveSubtaskDown(index)}>
                                       <ArrowDown className="h-4 w-4" />
                                     </Button>
+                                    <Button variant="ghost" size="icon" className="h-7 w-7 rounded-sm text-destructive/70 hover:text-destructive hover:bg-destructive/10" onClick={() => handleDeleteSubtask(subtask.id)}>
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                    </Button>
                                   </div>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10" onClick={() => setEditingSubtask(subtask)}>
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-destructive/70 hover:text-destructive hover:bg-destructive/10" onClick={() => handleDeleteSubtask(subtask.id)}>
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
                                 </div>
                               </div>
                             ))}
 
                             <div className="mt-6">
-                              <div className="flex items-center gap-3 bg-background border px-4 py-2 rounded-2xl shadow-sm focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary/50 transition-all">
-                                <PlusCircle className="w-5 h-5 text-muted-foreground/50 shrink-0" />
+                              <div className="flex items-center gap-3 bg-background border px-4 py-1 rounded-xl shadow-sm focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary/50 transition-all">
+                                <PlusCircle className="w-4 h-4 text-muted-foreground/50 shrink-0" />
                                 <Input
-                                  placeholder="Add a new actionable subtask and press Enter..."
+                                  placeholder="Add an actionable step..."
                                   value={newSubtaskTitle}
                                   onChange={(e) => setNewSubtaskTitle(e.target.value)}
                                   onKeyDown={handleAddSubtask}
-                                  className="h-10 border-0 focus-visible:ring-0 px-0 shadow-none text-base bg-transparent min-w-0"
+                                  className="h-8 border-0 focus-visible:ring-0 px-0 shadow-none text-sm bg-transparent min-w-0"
                                 />
                               </div>
                             </div>

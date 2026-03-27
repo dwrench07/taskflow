@@ -1,15 +1,17 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { type Goal } from "@/lib/types";
-import { getAllGoals, addGoal, updateGoal, deleteGoal, getAllTasks } from "@/lib/data";
+import { type Goal, type FocusSession } from "@/lib/types";
+import { getAllGoals, addGoal, updateGoal, deleteGoal, getAllTasks, getFocusSessions } from "@/lib/data";
+import { GoalCelebration } from "@/components/goal-celebration";
+import { useGamification } from "@/context/GamificationContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Target, PlusCircle, MoreVertical, Edit, Trash2, Calendar, Target as TargetIcon, CheckCircle2, Circle } from "lucide-react";
+import { Target, PlusCircle, MoreVertical, Edit, Trash2, Calendar, Target as TargetIcon, CheckCircle2, Circle, Rocket } from "lucide-react";
 import { GoalForm } from "@/components/goal-form";
 import { useToast } from "@/hooks/use-toast";
 
@@ -18,17 +20,22 @@ export default function GoalsPage() {
     const [tasks, setTasks] = useState<any[]>([]); // To calculate completion progress
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
+    const [focusSessions, setFocusSessions] = useState<FocusSession[]>([]);
     const [loading, setLoading] = useState(true);
+    const [celebratingGoal, setCelebratingGoal] = useState<Goal | null>(null);
     const { toast } = useToast();
+    const { celebrate } = useGamification();
 
     const loadData = async () => {
         setLoading(true);
-        const [fetchedGoals, fetchedTasks] = await Promise.all([
+        const [fetchedGoals, fetchedTasks, fetchedSessions] = await Promise.all([
             getAllGoals(),
-            getAllTasks()
+            getAllTasks(),
+            getFocusSessions()
         ]);
         setGoals(fetchedGoals);
         setTasks(fetchedTasks || []);
+        setFocusSessions(fetchedSessions || []);
         setLoading(false);
     };
 
@@ -50,9 +57,25 @@ export default function GoalsPage() {
     const handleUpdateGoal = async (data: any) => {
         if (!editingGoal) return;
         try {
-            await updateGoal({ ...editingGoal, ...data });
+            const wasActive = editingGoal.status !== 'completed';
+            const isNowCompleted = data.status === 'completed';
+
+            const updatedGoal = {
+                ...editingGoal,
+                ...data,
+                ...(wasActive && isNowCompleted ? { completedAt: new Date().toISOString() } : {}),
+            };
+
+            await updateGoal(updatedGoal);
             toast({ title: "Goal Updated", description: "Successfully updated goal." });
             setEditingGoal(null);
+
+            // Trigger celebration if newly completed
+            if (wasActive && isNowCompleted) {
+                celebrate({ reason: 'goal-complete', title: `Goal achieved: ${updatedGoal.title}`, intensity: 'big' });
+                setCelebratingGoal(updatedGoal);
+            }
+
             loadData();
         } catch (error) {
             toast({ variant: "destructive", title: "Error", description: "Failed to update goal." });
@@ -222,6 +245,11 @@ export default function GoalsPage() {
                                             <Badge variant={goal.status === 'completed' ? 'default' : goal.status === 'abandoned' ? 'destructive' : 'secondary'} className="capitalize">
                                                 {goal.status}
                                             </Badge>
+                                            {goal.stretchGoal && (
+                                                <Badge variant="outline" className="text-xs text-amber-400 border-amber-500/30 gap-1">
+                                                    <Rocket className="h-3 w-3" /> Stretch set
+                                                </Badge>
+                                            )}
                                             {goal.tags?.slice(0, 2).map((tag, i) => (
                                                 <Badge key={i} variant="outline" className="text-xs">{tag}</Badge>
                                             ))}
@@ -235,6 +263,29 @@ export default function GoalsPage() {
                         );
                     })}
                 </div>
+            )}
+            {/* Goal Celebration Modal */}
+            {celebratingGoal && (
+                <GoalCelebration
+                    goal={celebratingGoal}
+                    focusSessions={focusSessions}
+                    open={!!celebratingGoal}
+                    onClose={() => setCelebratingGoal(null)}
+                    onContinueToStretch={celebratingGoal.stretchGoal ? () => {
+                        // Update goal title to stretch version and reactivate
+                        const stretchTitle = `${celebratingGoal.title} (Stretch: ${celebratingGoal.stretchGoal})`;
+                        updateGoal({
+                            ...celebratingGoal,
+                            title: celebratingGoal.title,
+                            description: `Stretch goal: ${celebratingGoal.stretchGoal}\n\nOriginal: ${celebratingGoal.description || ''}`.trim(),
+                            status: 'active',
+                            stretchGoal: undefined,
+                        });
+                        setCelebratingGoal(null);
+                        loadData();
+                        toast({ title: "Stretch goal activated!", description: "Keep pushing — you've got this." });
+                    } : undefined}
+                />
             )}
         </div>
     );

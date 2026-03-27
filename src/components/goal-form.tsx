@@ -22,6 +22,7 @@ export function GoalForm({ goal, allTags = [], onSubmit }: GoalFormProps) {
     const [status, setStatus] = useState<Goal['status']>(goal?.status || 'active');
     const [deadline, setDeadline] = useState(goal?.deadline ? new Date(goal.deadline).toISOString().split('T')[0] : "");
     const [tags, setTags] = useState<string[]>(goal?.tags || []);
+    const [stretchGoal, setStretchGoal] = useState(goal?.stretchGoal || "");
 
     const handleUpdateTags = async (newTags: string[]) => {
         setTags(newTags);
@@ -37,6 +38,7 @@ export function GoalForm({ goal, allTags = [], onSubmit }: GoalFormProps) {
             status,
             deadline: deadline ? new Date(deadline).toISOString() : undefined,
             tags,
+            stretchGoal: stretchGoal.trim() || undefined,
         });
     };
 
@@ -87,6 +89,17 @@ export function GoalForm({ goal, allTags = [], onSubmit }: GoalFormProps) {
                         onChange={(e) => setDeadline(e.target.value)}
                     />
                 </div>
+            </div>
+
+            <div className="space-y-2">
+                <Label htmlFor="stretch">Stretch Goal <span className="text-muted-foreground text-xs font-normal">(optional)</span></Label>
+                <Input
+                    id="stretch"
+                    placeholder="What would the ambitious version look like?"
+                    value={stretchGoal}
+                    onChange={(e) => setStretchGoal(e.target.value)}
+                />
+                <p className="text-[10px] text-muted-foreground">After hitting your goal, we&apos;ll surface this as an optional next level.</p>
             </div>
 
             <div className="space-y-2">
