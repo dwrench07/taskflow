@@ -824,7 +824,7 @@ function TasksPageContent() {
         </Card>
 
         <Sheet open={!!selectedTask} onOpenChange={handleCloseSheet}>
-          <SheetContent side="right" className="w-full sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-3xl 2xl:max-w-4xl overflow-y-auto p-4 sm:p-6 lg:p-8">
+          <SheetContent side="right" className="w-full sm:max-w-[75vw] overflow-y-auto p-4 sm:p-6 lg:p-8">
             {selectedTask && (
               <div className="flex-1 flex flex-col overflow-hidden min-w-0">
                 <div className="flex-1 pr-4 overflow-y-auto overflow-x-hidden">
@@ -1067,15 +1067,15 @@ function TasksPageContent() {
                                         </>
                                       )}
                                     </div>
-                                    <div className="flex flex-wrap items-center gap-x-2 gap-y-2 mt-1 py-1 px-2 bg-muted/20 rounded-lg border border-border/30 overflow-hidden min-w-0">
-                                      <div className="flex items-center gap-1 min-w-0 flex-1">
-                                        <CalendarIcon className="w-3 h-3 text-muted-foreground/50 shrink-0" />
+                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-2 py-1.5 px-3 bg-muted/10 rounded-lg border border-border/30 overflow-hidden">
+                                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
                                         <div className="flex flex-wrap items-center gap-1 min-w-0 flex-1">
                                           <DateTimePicker
                                             date={subtask.startDate}
                                             setDate={(date) => handleSubtaskDateChange(subtask.id, 'startDate', date)}
                                             triggerClassName="h-7 text-[10px] px-2 w-auto bg-transparent border-0 hover:bg-white/5 shadow-none"
                                             label="Start..."
+                                            hideIcon={true}
                                           />
                                           <span className="text-muted-foreground/30 text-[10px]">→</span>
                                           <DateTimePicker
@@ -1083,6 +1083,7 @@ function TasksPageContent() {
                                             setDate={(date) => handleSubtaskDateChange(subtask.id, 'doDate', date)}
                                             label="Do..."
                                             triggerClassName="h-7 text-[10px] px-2 w-auto text-primary font-bold bg-transparent border-0 hover:bg-white/5 shadow-none"
+                                            hideIcon={true}
                                           />
                                           <span className="text-muted-foreground/30 text-[10px]">→</span>
                                           <DateTimePicker
@@ -1090,16 +1091,17 @@ function TasksPageContent() {
                                             setDate={(date) => handleSubtaskDateChange(subtask.id, 'endDate', date)}
                                             label="Done..."
                                             triggerClassName="h-7 text-[10px] px-2 w-auto bg-transparent border-0 hover:bg-white/5 shadow-none"
+                                            hideIcon={true}
                                           />
                                         </div>
                                       </div>
-                                      <div className="hidden sm:block h-4 w-[1px] bg-border/40" />
+                                      <div className="hidden sm:block h-4 w-[1px] bg-border/40 mx-1" />
                                       <TagInput
                                         tags={subtask.tags || []}
                                         allTags={allTags}
                                         onUpdateTags={(tags) => handleUpdateSubtaskTags(subtask.id, tags)}
                                         placeholder="Tags..."
-                                        className="h-7 text-[10px]"
+                                        className="h-7 text-[10px] flex-1 max-w-[150px]"
                                         hideTags
                                       />
                                     </div>

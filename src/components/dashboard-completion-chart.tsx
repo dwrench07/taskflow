@@ -1,7 +1,7 @@
 
 "use client";
 
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts";
+import { Line, LineChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { useMemo, useState } from 'react';
 import { subDays, format, parseISO, isSameDay, startOfWeek, endOfWeek, isFuture, addDays } from 'date-fns';
@@ -71,14 +71,15 @@ export function DashboardCompletionChart({ allTasks }: { allTasks: Task[] }) {
             </CardHeader>
             <CardContent>
                 <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={data}>
-                        <CartesianGrid strokeDasharray="3 3" />
+                    <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                         <XAxis
                             dataKey="date"
                             stroke="hsl(var(--muted-foreground))"
                             fontSize={12}
                             tickLine={false}
                             axisLine={false}
+                            dy={10}
                         />
                         <YAxis
                             stroke="hsl(var(--muted-foreground))"
@@ -88,17 +89,34 @@ export function DashboardCompletionChart({ allTasks }: { allTasks: Task[] }) {
                             allowDecimals={false}
                         />
                         <Tooltip
-                            cursor={{ fill: 'hsl(var(--secondary))' }}
+                            cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1 }}
                             contentStyle={{
                                 background: 'hsl(var(--background))',
                                 border: '1px solid hsl(var(--border))',
-                                borderRadius: 'var(--radius)'
+                                borderRadius: 'var(--radius)',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                             }}
                         />
-                        <Legend />
-                        <Bar dataKey="Tasks Completed" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey="Habits Completed" fill="hsl(var(--chart-2))" radius={[4, 4, 0, 0]} />
-                    </BarChart>
+                        <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                        <Line
+                            type="monotone"
+                            dataKey="Tasks Completed"
+                            stroke="hsl(var(--chart-1))"
+                            strokeWidth={3}
+                            dot={{ r: 4, fill: 'hsl(var(--chart-1))', strokeWidth: 2, stroke: 'hsl(var(--background))' }}
+                            activeDot={{ r: 6, strokeWidth: 0 }}
+                            animationDuration={1500}
+                        />
+                        <Line
+                            type="monotone"
+                            dataKey="Habits Completed"
+                            stroke="hsl(var(--chart-2))"
+                            strokeWidth={3}
+                            dot={{ r: 4, fill: 'hsl(var(--chart-2))', strokeWidth: 2, stroke: 'hsl(var(--background))' }}
+                            activeDot={{ r: 6, strokeWidth: 0 }}
+                            animationDuration={1500}
+                        />
+                    </LineChart>
                 </ResponsiveContainer>
             </CardContent>
         </Card>

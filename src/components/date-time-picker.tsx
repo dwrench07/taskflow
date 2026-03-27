@@ -14,9 +14,10 @@ interface DateTimePickerProps {
   setDate: (date: Date) => void;
   label?: string;
   triggerClassName?: string;
+  hideIcon?: boolean;
 }
 
-export function DateTimePicker({ date, setDate, label, triggerClassName }: DateTimePickerProps) {
+export function DateTimePicker({ date, setDate, label, triggerClassName, hideIcon }: DateTimePickerProps) {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -24,7 +25,10 @@ export function DateTimePicker({ date, setDate, label, triggerClassName }: DateT
   }, []);
 
   const selectedDate = date ? new Date(date) : undefined;
-  const formattedDate = isMounted && date ? format(new Date(date), "PP p") : (label || "Pick a date and time");
+  // COMPACT: Use a shorter format if it's a subtask (implies hideIcon) or just generally for space
+  const formattedDate = isMounted && date 
+    ? format(new Date(date), hideIcon ? "MMM d, p" : "PP p") 
+    : (label || "Pick a date and time");
 
   const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const time = e.target.value;
@@ -46,7 +50,7 @@ export function DateTimePicker({ date, setDate, label, triggerClassName }: DateT
             triggerClassName
           )}
         >
-          <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+          {!hideIcon && <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />}
           <span className="truncate">{formattedDate}</span>
         </Button>
       </PopoverTrigger>
