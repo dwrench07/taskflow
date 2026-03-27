@@ -15,7 +15,7 @@ export function DashboardStatusChart({ allTasks }: { allTasks: Task[] }) {
   return (
     <Card>
         <CardHeader>
-            <CardTitle>Task Status Overview</CardTitle>
+            <CardTitle className="text-lg sm:text-xl font-semibold">Task Status Overview</CardTitle>
             <CardDescription>Current breakdown of all non-habit tasks.</CardDescription>
         </CardHeader>
         <CardContent>

@@ -40,7 +40,7 @@ export function DashboardPriorityChart({ allTasks }: { allTasks: Task[] }) {
   return (
     <Card>
         <CardHeader>
-            <CardTitle>Active Task Priority</CardTitle>
+            <CardTitle className="text-lg sm:text-xl font-semibold">Active Task Priority</CardTitle>
             <CardDescription>Distribution of priorities for non-completed tasks.</CardDescription>
         </CardHeader>
         <CardContent>

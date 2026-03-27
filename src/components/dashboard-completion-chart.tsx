@@ -54,7 +54,7 @@ export function DashboardCompletionChart({ allTasks }: { allTasks: Task[] }) {
             <CardHeader>
                 <div className="flex justify-between items-center">
                     <div>
-                        <CardTitle>Weekly Productivity</CardTitle>
+                        <CardTitle className="text-lg sm:text-xl font-semibold">Weekly Productivity</CardTitle>
                         <CardDescription>
                             {format(weekStart, "MMM d")} - {format(weekEnd, "MMM d, yyyy")}
                         </CardDescription>

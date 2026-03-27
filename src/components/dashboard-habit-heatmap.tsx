@@ -48,7 +48,7 @@ export function DashboardHabitHeatmap({ allTasks }: { allTasks: Task[] }) {
     return (
         <Card className="col-span-1 lg:col-span-2 border-border/50 shadow-sm transition-all hover:shadow-md animate-fade-in">
             <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl font-semibold">
                     <Flame className="h-5 w-5 text-orange-500" /> Habit Consistency (Last 30 Days)
                 </CardTitle>
             </CardHeader>
@@ -58,7 +58,7 @@ export function DashboardHabitHeatmap({ allTasks }: { allTasks: Task[] }) {
                         <div
                             key={i}
                             title={`${format(day.date, 'MMM do')}: ${day.completions} habits`}
-                            className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md border ${getIntensityColor(day.completions)} transition-colors duration-300 hover:scale-110 cursor-help`}
+                            className={`w-4 h-4 sm:w-6 sm:h-6 rounded-sm border ${getIntensityColor(day.completions)} transition-colors duration-300 hover:scale-110 cursor-help`}
                         />
                     ))}
                 </div>
