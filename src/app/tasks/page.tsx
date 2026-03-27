@@ -105,13 +105,13 @@ function TaskListItem({ task, allTasks, goals, onSelect, isSelected }: { task: T
       <div className="flex justify-between items-start gap-2 w-full">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {task.isFrog && <span className="text-lg animate-bounce duration-1000" title="Eat this Frog!">🐸</span>}
-          <p className="font-semibold truncate text-left break-words">{task.title}</p>
+          <p className="font-semibold line-clamp-2 text-left break-words leading-snug">{task.title}</p>
         </div>
         <Badge variant="outline" className={cn("capitalize flex-shrink-0 mt-0.5", priorityStyles[task.priority])}>
           {task.priority}
         </Badge>
       </div>
-      <p className="text-sm text-muted-foreground mt-1 truncate w-full text-left min-w-0">{task.description}</p>
+      <p className="text-sm text-muted-foreground mt-1 line-clamp-2 w-full text-left min-w-0 break-words">{task.description}</p>
       
       {(() => {
         const linkedGoal = goals?.find(g => g.id === task.goalId);
@@ -795,7 +795,7 @@ function TasksPageContent() {
           </CardHeader>
           <div className="flex-1 p-3 overflow-y-auto overflow-x-hidden min-h-0">
             {viewMode === 'list' ? (
-              <div className="grid gap-6 pb-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid gap-6 pb-8 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
                 {loading ? (
                   <div className="col-span-full flex justify-center items-center h-full">
                     <Loader2 className="h-6 w-6 animate-spin" />
@@ -1024,7 +1024,7 @@ function TasksPageContent() {
                                           <label
                                             htmlFor={subtask.id}
                                             className={cn(
-                                              "text-sm font-bold flex-1 cursor-text truncate select-none transition-colors",
+                                              "text-sm font-bold flex-1 cursor-text break-words select-none transition-colors",
                                               subtask.completed ? "line-through text-muted-foreground" : "text-foreground/90 group-hover:text-primary"
                                             )}
                                             onDoubleClick={() => setEditingSubtask(subtask)}
@@ -1067,29 +1067,29 @@ function TasksPageContent() {
                                         </>
                                       )}
                                     </div>
-                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-1 py-1 px-2 bg-muted/20 rounded-lg border border-border/30">
-                                      <div className="flex items-center gap-2">
-                                        <CalendarIcon className="w-3 h-3 text-muted-foreground/50" />
-                                        <div className="flex flex-col sm:flex-row sm:items-center gap-1">
+                                    <div className="flex flex-wrap items-center gap-x-2 gap-y-2 mt-1 py-1 px-2 bg-muted/20 rounded-lg border border-border/30 overflow-hidden min-w-0">
+                                      <div className="flex items-center gap-1 min-w-0 flex-1">
+                                        <CalendarIcon className="w-3 h-3 text-muted-foreground/50 shrink-0" />
+                                        <div className="flex flex-wrap items-center gap-1 min-w-0 flex-1">
                                           <DateTimePicker
                                             date={subtask.startDate}
                                             setDate={(date) => handleSubtaskDateChange(subtask.id, 'startDate', date)}
-                                            triggerClassName="h-7 text-[10px] px-2 bg-transparent border-0 hover:bg-white/5 shadow-none"
+                                            triggerClassName="h-7 text-[10px] px-2 w-auto bg-transparent border-0 hover:bg-white/5 shadow-none"
                                             label="Start..."
                                           />
-                                          <span className="hidden sm:inline text-muted-foreground/30">→</span>
+                                          <span className="text-muted-foreground/30 text-[10px]">→</span>
                                           <DateTimePicker
                                             date={subtask.doDate}
                                             setDate={(date) => handleSubtaskDateChange(subtask.id, 'doDate', date)}
                                             label="Do..."
-                                            triggerClassName="h-7 text-[10px] px-2 text-primary font-bold bg-transparent border-0 hover:bg-white/5 shadow-none"
+                                            triggerClassName="h-7 text-[10px] px-2 w-auto text-primary font-bold bg-transparent border-0 hover:bg-white/5 shadow-none"
                                           />
-                                          <span className="hidden sm:inline text-muted-foreground/30">→</span>
+                                          <span className="text-muted-foreground/30 text-[10px]">→</span>
                                           <DateTimePicker
                                             date={subtask.endDate}
                                             setDate={(date) => handleSubtaskDateChange(subtask.id, 'endDate', date)}
                                             label="Done..."
-                                            triggerClassName="h-7 text-[10px] px-2 bg-transparent border-0 hover:bg-white/5 shadow-none"
+                                            triggerClassName="h-7 text-[10px] px-2 w-auto bg-transparent border-0 hover:bg-white/5 shadow-none"
                                           />
                                         </div>
                                       </div>

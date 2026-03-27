@@ -431,7 +431,7 @@ export default function FocusPage() {
         <div className="h-full flex flex-col max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 animate-fade-in pb-20 mt-4 md:mt-0">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <div>
-                    <h1 className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">Focus Mode</h1>
+                    <h1 className="text-2xl font-extrabold tracking-tight text-primary">Focus Mode</h1>
                     <p className="text-muted-foreground mt-2 text-lg">Deep work sessions tracking and analytics.</p>
                 </div>
             </div>

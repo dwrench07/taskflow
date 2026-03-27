@@ -173,9 +173,9 @@ export default function DashboardPage() {
              <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.3)] rotate-3 hover:rotate-0 transition-transform duration-500">
                 <Flame className="w-6 h-6 text-white" />
              </div>
-             <h1 className="text-3xl font-black italic tracking-tighter bg-gradient-to-br from-white via-white to-white/20 bg-clip-text text-transparent">Dash</h1>
+             <h1 className="text-3xl font-bold tracking-tight text-foreground">Dash</h1>
           </div>
-          <p className="text-muted-foreground/60 text-xs font-black uppercase tracking-[0.3em] pl-1.5">Focus on that matters. Ignore the rest.</p>
+          <p className="text-muted-foreground text-sm font-medium pl-1.5">Focus on what matters. Ignore the rest.</p>
         </div>
         
         <div className="glass-morphism p-1 rounded-xl flex items-center shadow-inner">

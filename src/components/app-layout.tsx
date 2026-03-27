@@ -54,7 +54,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#e11d48] shadow-lg shadow-red-500/20 overflow-hidden">
               <img src="/icon.png" alt="Dash Logo" className="h-full w-full object-cover" />
             </div>
-            <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">Dash</h1>
+            <h1 className="text-xl font-bold tracking-tight text-foreground">Dash</h1>
           </div>
         </SidebarHeader>
         <SidebarContent className="px-2 pb-4">
@@ -170,7 +170,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#e11d48] shadow-sm overflow-hidden">
               <img src="/icon.png" alt="Dash Logo" className="h-full w-full object-cover" />
             </div>
-            <h1 className="text-lg font-bold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">Dash</h1>
+            <h1 className="text-lg font-bold tracking-tight text-foreground">Dash</h1>
           </div>
         </header>
         <main className="flex-1 p-4 sm:p-6">{children}</main>

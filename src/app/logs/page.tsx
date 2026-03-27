@@ -144,7 +144,7 @@ export default function LogsPage() {
     <div className="space-y-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">Utility Logs</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Utility Logs</h1>
           <p className="text-muted-foreground mt-1">Capture long-term thoughts and learn from feedback loops.</p>
         </div>
       </div>
