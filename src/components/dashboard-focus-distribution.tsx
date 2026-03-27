@@ -57,7 +57,7 @@ export function DashboardFocusDistribution({ allTasks, focusSessions }: { allTas
     return (
         <Card className="flex flex-col h-full transition-all duration-500 ease-in-out hover:shadow-md">
             <CardHeader className="pb-2">
-                <CardTitle>Focus Distribution</CardTitle>
+                <CardTitle className="text-sm font-bold">Focus Distribution</CardTitle>
                 <CardDescription>
                     Where your deep work time goes (by task category)
                 </CardDescription>

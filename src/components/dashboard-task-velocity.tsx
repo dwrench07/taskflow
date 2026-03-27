@@ -63,7 +63,7 @@ export function DashboardTaskVelocity({ allTasks }: { allTasks: Task[] }) {
     return (
         <Card className="flex flex-col h-full transition-all duration-500 ease-in-out hover:shadow-md">
             <CardHeader className="pb-2">
-                <CardTitle>Task Velocity</CardTitle>
+                <CardTitle className="text-sm font-bold">Task Velocity</CardTitle>
                 <CardDescription>
                     Time taken to complete tasks
                     {Number(averageDays) > 0 && <span className="block mt-1 font-semibold text-primary">Average: {averageDays} days</span>}

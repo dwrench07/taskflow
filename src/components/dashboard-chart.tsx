@@ -38,7 +38,7 @@ export function DashboardCompletionChart() {
   return (
     <Card>
         <CardHeader>
-            <CardTitle>Weekly Productivity</CardTitle>
+            <CardTitle className="text-sm font-bold">Weekly Productivity</CardTitle>
             <CardDescription>Tasks completed in the last 7 days.</CardDescription>
         </CardHeader>
         <CardContent>

@@ -40,7 +40,7 @@ export function DashboardGoals() {
     return (
         <Card className="col-span-1 border-border/50 shadow-sm transition-all hover:shadow-md animate-fade-in">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="text-sm font-bold flex items-center gap-2">
                     <Target className="h-5 w-5 text-primary" /> Active Goals
                 </CardTitle>
             </CardHeader>

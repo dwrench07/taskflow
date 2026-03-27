@@ -40,7 +40,7 @@ export function DashboardDistractionScore({ focusSessions }: { focusSessions: Fo
     return (
         <Card className="flex flex-col h-full transition-all duration-500 ease-in-out hover:shadow-md">
             <CardHeader className="pb-2">
-                <CardTitle>Distractor Score</CardTitle>
+                <CardTitle className="text-sm font-bold">Distractor Score</CardTitle>
                 <CardDescription>
                     Average Jots (distractions) per hour of Focus
                 </CardDescription>

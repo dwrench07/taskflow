@@ -66,7 +66,7 @@ export function DashboardGoalVelocity() {
         return (
             <Card className="flex flex-col h-full border-border/50 shadow-sm transition-all hover:shadow-md">
                 <CardHeader>
-                    <CardTitle>Goal Velocity</CardTitle>
+                    <CardTitle className="text-sm font-bold">Goal Velocity</CardTitle>
                     <CardDescription>Pace vs Deadline</CardDescription>
                 </CardHeader>
                 <CardContent className="flex items-center justify-center min-h-[300px]">
@@ -79,7 +79,7 @@ export function DashboardGoalVelocity() {
     return (
         <Card className="flex flex-col h-full border-border/50 shadow-sm transition-all hover:shadow-md animate-fade-in">
             <CardHeader className="pb-2">
-                <CardTitle>Goal Velocity</CardTitle>
+                <CardTitle className="text-sm font-bold">Goal Velocity</CardTitle>
                 <CardDescription>
                     Compare your task completion pace against the elapsed timeline for active goals.
                 </CardDescription>

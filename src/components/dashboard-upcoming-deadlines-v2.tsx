@@ -40,7 +40,7 @@ export function DashboardUpcomingDeadlines({ allTasks }: { allTasks: Task[] }) {
     return (
         <Card className="transition-all duration-500 ease-in-out animate-fade-in hover:shadow-md border-primary/20 bg-background/50 backdrop-blur-sm" style={{ animationDelay: '250ms', animationFillMode: 'both' }}>
             <CardHeader className="py-4">
-                <CardTitle className="text-primary flex items-center gap-2 text-lg">
+                <CardTitle className="text-primary flex items-center gap-2 text-sm font-bold">
                     <Calendar className="w-5 h-5" />
                     Upcoming Deadlines
                 </CardTitle>
