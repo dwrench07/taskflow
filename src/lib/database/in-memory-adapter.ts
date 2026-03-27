@@ -99,6 +99,7 @@ export class MemoryAdapter implements DatabaseAdapter {
     private interestConnections: Map<string, any> = new Map();
     private backOfMind: Map<string, any> = new Map();
     private mistakeLog: Map<string, any> = new Map();
+    private focusReminders: Map<string, any> = new Map();
     private connected = false;
 
     constructor(private logger: DatabaseLogger) { }
@@ -426,6 +427,18 @@ export class MemoryAdapter implements DatabaseAdapter {
     }
     async deleteBackOfMindItem(id: string, userId?: string | null): Promise<boolean> {
         return this.backOfMind.delete(id);
+    }
+
+    // FocusReminders operations
+    async getFocusReminders(userId?: string | null): Promise<any | null> {
+        const key = userId || 'default';
+        return this.focusReminders.get(key) || null;
+    }
+    async upsertFocusReminders(reminders: any, userId?: string | null): Promise<any> {
+        const key = userId || 'default';
+        const data = { ...reminders, userId: userId || reminders.userId };
+        this.focusReminders.set(key, data);
+        return data;
     }
 
     // MistakeLog operations

@@ -3,7 +3,7 @@
  * Provides a unified interface for different database implementations
  */
 
-import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry } from '../types';
+import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry, FocusReminders } from '../types';
 
 export interface DailyPlan {
     id: string;
@@ -100,6 +100,10 @@ export interface DatabaseAdapter {
     updateBackOfMindItem(item: BackOfMindItem, userId?: string | null): Promise<BackOfMindItem>;
     deleteBackOfMindItem(id: string, userId?: string | null): Promise<boolean>;
 
+    // FocusReminders operations
+    getFocusReminders(userId?: string | null): Promise<FocusReminders | null>;
+    upsertFocusReminders(reminders: FocusReminders, userId?: string | null): Promise<FocusReminders>;
+
     // MistakeLog operations
     getMistakeLogEntries(userId?: string | null): Promise<MistakeLogEntry[]>;
     getMistakeLogEntry(id: string, userId?: string | null): Promise<MistakeLogEntry | null>;
@@ -136,6 +140,7 @@ export interface DatabaseConfig {
         interestConnections: string;
         backOfMind: string;
         mistakeLog: string;
+        focusReminders: string;
     };
 }
 

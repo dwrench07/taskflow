@@ -16,7 +16,9 @@ import {
   CheckSquare,
   Sparkles,
   BookOpen,
-  Zap
+  Zap,
+  Trophy,
+  Brain
 } from "lucide-react";
 
 import {
@@ -49,6 +51,8 @@ const menuItems = [
   { href: "/alignment", label: "Alignment", icon: Map },
   { href: "/chores", label: "Chores", icon: CheckSquare },
   { href: "/interests", label: "Interests", icon: Sparkles },
+  { href: "/achievements", label: "Achievements", icon: Trophy },
+  { href: "/back-of-mind", label: "Back of Mind", icon: Brain },
   { href: "/logs", label: "Logs", icon: BookOpen },
   { href: "/profile", label: "Profile", icon: User },
 ];

@@ -7,26 +7,34 @@ import {
     FocusMode,
     ProductivityScore,
     EnergyLevel,
-    Task
+    Task,
+    EmotionCheckIn as EmotionCheckInType
 } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { getFocusSessions, addFocusSession, getAllTasks, getActiveFocusSession, startFocusSession, updateActiveFocusSession, updateFocusSession } from "@/lib/data";
+import { getFocusSessions, addFocusSession, getAllTasks, getActiveFocusSession, startFocusSession, updateActiveFocusSession, updateFocusSession, getFocusReminders, saveFocusReminders } from "@/lib/data";
+import type { FocusReminders } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { useGamification } from "@/context/GamificationContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Play, Square, Pause, Flame, Medal, CheckCircle2, Sparkles, AlertCircle } from "lucide-react";
+import { Play, Square, Pause, Flame, Medal, CheckCircle2, Sparkles, AlertCircle, Bell, BellOff, Plus, X, Settings2 } from "lucide-react";
 import { FocusAnalyticsChart } from "@/components/focus-analytics-chart";
+import { DashboardEmotionTrends } from "@/components/dashboard-emotion-trends";
+import { EmotionCheckInModal, EmotionCheckInInline } from "@/components/emotion-check-in";
+import { StartAssist } from "@/components/start-assist";
+import { buildJotString } from "@/lib/jots";
 
 export default function FocusPage() {
     const searchParams = useSearchParams();
     const initialTaskId = searchParams?.get('taskId');
     const { toast } = useToast();
+    const { celebrate, refreshGamification } = useGamification();
 
     const [tasks, setTasks] = useState<Task[]>([]);
     const [sessions, setSessions] = useState<FocusSession[]>([]);
@@ -46,6 +54,7 @@ export default function FocusPage() {
     // Distraction Log
     const [distractions, setDistractions] = useState<string[]>([]);
     const [currentDistraction, setCurrentDistraction] = useState("");
+    const [jotCategory, setJotCategory] = useState<'worry' | 'todo' | 'idea' | 'random'>('random');
 
     // Post-Session Modal
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -56,6 +65,21 @@ export default function FocusPage() {
     // Strategy Step State
     const [isStrategyModalOpen, setIsStrategyModalOpen] = useState(false);
     const [strategyInput, setStrategyInput] = useState("");
+
+    // Emotion Check-In
+    const [showPreEmotion, setShowPreEmotion] = useState(false);
+    const [preEmotion, setPreEmotion] = useState<EmotionCheckInType | null>(null);
+    const [postEmotion, setPostEmotion] = useState<EmotionCheckInType | null>(null);
+    const [showStartAssist, setShowStartAssist] = useState(false);
+    const pendingStartRef = useRef<{ strategy?: string } | null>(null);
+
+    // Mindfulness Reminders
+    const [reminderSettings, setReminderSettings] = useState<FocusReminders | null>(null);
+    const [reminderEnabled, setReminderEnabled] = useState(false);
+    const [showReminderSettings, setShowReminderSettings] = useState(false);
+    const [newReminderText, setNewReminderText] = useState("");
+    const [activeReminder, setActiveReminder] = useState<string | null>(null);
+    const lastReminderTime = useRef<number>(0);
 
     // Audio Cues
     const beepsPlayedRef = useRef(new Set<number>());
@@ -152,6 +176,13 @@ export default function FocusPage() {
                 setIsActive(true);
             }
 
+            // Load reminder settings
+            const reminders = await getFocusReminders();
+            if (reminders) {
+                setReminderSettings(reminders);
+                setReminderEnabled(reminders.enabled);
+            }
+
             setLoading(false);
         };
         fetchData();
@@ -192,6 +223,67 @@ export default function FocusPage() {
         return () => clearInterval(interval);
     }, [isActive, mode]);
 
+    // Mindfulness reminder timer
+    useEffect(() => {
+        if (!isActive || !reminderEnabled || !reminderSettings?.reminders?.length) {
+            setActiveReminder(null);
+            return;
+        }
+
+        const intervalMs = (reminderSettings.intervalMinutes || 15) * 60 * 1000;
+
+        const check = setInterval(() => {
+            const now = Date.now();
+            if (now - lastReminderTime.current >= intervalMs) {
+                const reminders = reminderSettings.reminders;
+                const picked = reminders[Math.floor(Math.random() * reminders.length)];
+                setActiveReminder(picked);
+                lastReminderTime.current = now;
+                // Auto-dismiss after 5 seconds
+                setTimeout(() => setActiveReminder(null), 5000);
+            }
+        }, 5000);
+
+        // Set initial time if not set
+        if (lastReminderTime.current === 0) {
+            lastReminderTime.current = Date.now();
+        }
+
+        return () => clearInterval(check);
+    }, [isActive, reminderEnabled, reminderSettings]);
+
+    const handleSaveReminders = async (updated: FocusReminders) => {
+        setReminderSettings(updated);
+        await saveFocusReminders(updated);
+    };
+
+    const addReminder = async () => {
+        if (!newReminderText.trim()) return;
+        const current = reminderSettings || { id: `fr-${Date.now()}`, reminders: [], intervalMinutes: 15, enabled: true };
+        const updated = { ...current, reminders: [...current.reminders, newReminderText.trim()] };
+        await handleSaveReminders(updated);
+        setNewReminderText("");
+    };
+
+    const removeReminder = async (index: number) => {
+        if (!reminderSettings) return;
+        const updated = { ...reminderSettings, reminders: reminderSettings.reminders.filter((_, i) => i !== index) };
+        await handleSaveReminders(updated);
+    };
+
+    const toggleReminders = async (enabled: boolean) => {
+        setReminderEnabled(enabled);
+        const current = reminderSettings || { id: `fr-${Date.now()}`, reminders: [], intervalMinutes: 15, enabled };
+        const updated = { ...current, enabled };
+        await handleSaveReminders(updated);
+        if (!enabled) {
+            setActiveReminder(null);
+            lastReminderTime.current = 0;
+        } else {
+            lastReminderTime.current = Date.now();
+        }
+    };
+
     const handleModeChange = (newMode: FocusMode) => {
         if (isActive) return;
         setMode(newMode);
@@ -202,14 +294,35 @@ export default function FocusPage() {
         setDistractions([]);
     };
 
+    const handlePreEmotionComplete = (checkIn: EmotionCheckInType) => {
+        setPreEmotion(checkIn);
+        setShowPreEmotion(false);
+
+        // If high tension, show Start Assist breathing exercise
+        if (checkIn.bodyTension >= 7) {
+            setShowStartAssist(true);
+            return;
+        }
+
+        // Continue to strategy or start
+        proceedAfterEmotion();
+    };
+
+    const proceedAfterEmotion = (strategyOverride?: string) => {
+        const strategy = strategyOverride || pendingStartRef.current?.strategy;
+        // Check if strategy step is needed (for M, L, XL tasks)
+        if (!strategy && selectedTask && (selectedTask.tShirtSize === 'M' || selectedTask.tShirtSize === 'L' || selectedTask.tShirtSize === 'XL')) {
+            setIsStrategyModalOpen(true);
+            return;
+        }
+        performStart(strategy);
+    };
+
     const handleStart = async () => {
         if (!sessionStartTime) {
-            // Check if strategy step is needed (for M, L, XL tasks)
-            if (selectedTask && (selectedTask.tShirtSize === 'M' || selectedTask.tShirtSize === 'L' || selectedTask.tShirtSize === 'XL')) {
-                setIsStrategyModalOpen(true);
-                return;
-            }
-            await performStart();
+            // Show pre-task emotion check-in first
+            setShowPreEmotion(true);
+            return;
         } else {
             await updateActiveFocusSession('resume');
             setIsActive(true);
@@ -218,20 +331,21 @@ export default function FocusPage() {
 
     const performStart = async (strategy?: string) => {
         setSessionStartTime(new Date());
-        
+
         // Parkinson's Law: Use task time limit if available
         const limit = selectedTask?.timeLimit;
         const expectedDuration = limit || (mode === 'pomodoro' ? 25 : (mode === 'countdown' ? customMinutes : 120));
-        
+
         if (limit) {
             setTimeRemaining(limit * 60);
         }
 
-        const newSession = await startFocusSession({ 
-            mode, 
-            expectedDuration, 
+        const newSession = await startFocusSession({
+            mode,
+            expectedDuration,
             taskId: targetTaskId,
-            strategy 
+            strategy,
+            preEmotion: preEmotion || undefined,
         });
         setActiveSessionId(newSession.id);
         setIsActive(true);
@@ -272,10 +386,13 @@ export default function FocusPage() {
                 productivityScore: productivity,
                 energyLevel: energy,
                 distractions,
-                deepWorkScore
+                deepWorkScore,
+                postEmotion: postEmotion || undefined,
             });
 
             toast({ title: "Session Saved!", description: "Great job focusing!" });
+            celebrate({ reason: 'focus-complete', title: 'Focus session complete!', intensity: elapsedTime >= 30 * 60 ? 'medium' : 'small' });
+            refreshGamification();
 
             // Re-fetch to update charts (later)
             const fetchedSessions = await getFocusSessions();
@@ -287,6 +404,8 @@ export default function FocusPage() {
             setActiveSessionId(null);
             setElapsedTime(0);
             setDistractions([]);
+            setPreEmotion(null);
+            setPostEmotion(null);
             handleModeChange(mode);
         } catch (error) {
             toast({ variant: "destructive", title: "Failed to save session" });
@@ -464,14 +583,33 @@ export default function FocusPage() {
                                 <CardDescription>Jot down passing thoughts or session notes to clear your mind.</CardDescription>
                             </CardHeader>
                             <CardContent className="pt-6">
+                                {/* Category quick-tags */}
+                                <div className="flex gap-1.5 mb-3">
+                                    {([['random', '💭'], ['todo', '✅'], ['idea', '💡'], ['worry', '😟']] as const).map(([cat, icon]) => (
+                                        <button
+                                            key={cat}
+                                            onClick={() => setJotCategory(cat)}
+                                            disabled={!isActive}
+                                            className={cn(
+                                                "px-2.5 py-1 rounded-lg text-xs font-medium transition-all border",
+                                                jotCategory === cat
+                                                    ? "bg-primary/15 border-primary/40 text-primary"
+                                                    : "bg-muted/30 border-border/50 text-muted-foreground hover:bg-muted/50"
+                                            )}
+                                        >
+                                            {icon} {cat}
+                                        </button>
+                                    ))}
+                                </div>
                                 <Input
-                                    placeholder="e.g., Buy groceries later..."
+                                    placeholder={jotCategory === 'worry' ? "What's worrying you?" : jotCategory === 'todo' ? "What needs doing?" : jotCategory === 'idea' ? "What's the idea?" : "What's on your mind?"}
                                     value={currentDistraction}
                                     onChange={e => setCurrentDistraction(e.target.value)}
                                     onKeyDown={e => {
                                         if (e.key === 'Enter' && currentDistraction.trim()) {
                                             const timeStamp = mode === 'stopwatch' ? formatTime(elapsedTime) : formatTime(timeRemaining);
-                                            const newDistractions = [...distractions, `[ ] [${timeStamp}] ${currentDistraction.trim()}`];
+                                            const jotStr = buildJotString(currentDistraction.trim(), jotCategory, timeStamp);
+                                            const newDistractions = [...distractions, jotStr];
                                             setDistractions(newDistractions);
                                             setCurrentDistraction("");
                                             if (activeSessionId) {
@@ -483,9 +621,24 @@ export default function FocusPage() {
                                     className="h-12 bg-background shadow-sm rounded-xl"
                                 />
                                 <div className="mt-6 space-y-2 max-h-40 overflow-y-auto pr-2">
-                                    {distractions.map((d, i) => (
-                                        <div key={i} className="text-sm bg-muted/40 border border-border/50 p-3 rounded-xl shadow-sm animate-fade-in">{d}</div>
-                                    ))}
+                                    {distractions.map((d, i) => {
+                                        // Extract category for color-coding
+                                        const catMatch = d.match(/\{category:(\w+)\}/);
+                                        const cat = catMatch?.[1];
+                                        const catColors: Record<string, string> = {
+                                            worry: 'border-l-red-500/50',
+                                            todo: 'border-l-blue-500/50',
+                                            idea: 'border-l-yellow-500/50',
+                                            random: 'border-l-slate-500/50',
+                                        };
+                                        const catIcons: Record<string, string> = { worry: '😟', todo: '✅', idea: '💡', random: '💭' };
+                                        return (
+                                            <div key={i} className={cn("text-sm bg-muted/40 border border-border/50 border-l-2 p-3 rounded-xl shadow-sm animate-fade-in", cat ? catColors[cat] : '')}>
+                                                {cat && <span className="mr-1.5">{catIcons[cat]}</span>}
+                                                {d.replace(/\{category:\w+\}\s*/, '').replace(/^\[([ x])\]\s*/, '')}
+                                            </div>
+                                        );
+                                    })}
                                     {distractions.length === 0 && isActive && (
                                         <div className="flex flex-col items-center justify-center p-6 text-center bg-muted/20 border border-border/30 rounded-xl border-dashed">
                                             <p className="text-sm text-foreground/80 font-medium flex items-center gap-2 mb-1"><Flame className="h-5 w-5 text-orange-500 animate-pulse" /> Keep the streak zero!</p>
@@ -495,9 +648,140 @@ export default function FocusPage() {
                                 </div>
                             </CardContent>
                         </Card>
+
+                        {/* Mindfulness Reminders */}
+                        <Card className="border-border/50 bg-muted/5 rounded-3xl overflow-hidden shadow-sm">
+                            <CardContent className="p-5">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <Bell className="h-4 w-4 text-violet-400" />
+                                        <div>
+                                            <p className="text-sm font-semibold">Mindfulness Reminders</p>
+                                            <p className="text-[11px] text-muted-foreground">
+                                                Periodic nudges during focus sessions
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => setShowReminderSettings(!showReminderSettings)}
+                                            className="p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors"
+                                        >
+                                            <Settings2 className="h-4 w-4" />
+                                        </button>
+                                        <button
+                                            onClick={() => toggleReminders(!reminderEnabled)}
+                                            className={cn(
+                                                "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out",
+                                                reminderEnabled ? "bg-violet-500" : "bg-muted-foreground/30"
+                                            )}
+                                        >
+                                            <span
+                                                className={cn(
+                                                    "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out",
+                                                    reminderEnabled ? "translate-x-5" : "translate-x-0"
+                                                )}
+                                            />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {showReminderSettings && (
+                                    <div className="mt-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                                        {/* Interval setting */}
+                                        <div className="flex items-center gap-3 text-sm">
+                                            <span className="text-muted-foreground text-xs">Remind every</span>
+                                            <select
+                                                value={reminderSettings?.intervalMinutes || 15}
+                                                onChange={async (e) => {
+                                                    const interval = parseInt(e.target.value);
+                                                    const current = reminderSettings || { id: `fr-${Date.now()}`, reminders: [], intervalMinutes: 15, enabled: reminderEnabled };
+                                                    await handleSaveReminders({ ...current, intervalMinutes: interval });
+                                                }}
+                                                className="bg-background border border-border/50 rounded-lg px-2 py-1 text-xs"
+                                            >
+                                                <option value={10}>10 min</option>
+                                                <option value={15}>15 min</option>
+                                                <option value={20}>20 min</option>
+                                                <option value={30}>30 min</option>
+                                            </select>
+                                        </div>
+
+                                        {/* Saved reminders */}
+                                        <div className="space-y-1.5">
+                                            {reminderSettings?.reminders?.map((r, i) => (
+                                                <div key={i} className="flex items-center gap-2 bg-muted/30 rounded-lg px-3 py-2 text-sm group">
+                                                    <span className="flex-1">{r}</span>
+                                                    <button
+                                                        onClick={() => removeReminder(i)}
+                                                        className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-300 transition-opacity"
+                                                    >
+                                                        <X className="h-3.5 w-3.5" />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                            {(!reminderSettings?.reminders || reminderSettings.reminders.length === 0) && (
+                                                <p className="text-xs text-muted-foreground/60 text-center py-2">No reminders yet. Add one below.</p>
+                                            )}
+                                        </div>
+
+                                        {/* Add new reminder */}
+                                        <div className="flex gap-2">
+                                            <Input
+                                                placeholder="e.g., What are your hands doing?"
+                                                value={newReminderText}
+                                                onChange={(e) => setNewReminderText(e.target.value)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') addReminder();
+                                                }}
+                                                className="h-9 text-sm bg-background"
+                                            />
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={addReminder}
+                                                disabled={!newReminderText.trim()}
+                                                className="h-9 px-3 shrink-0"
+                                            >
+                                                <Plus className="h-3.5 w-3.5" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
                     </div>
                 </div>
             )}
+
+            {/* Mindfulness Reminder Toast */}
+            {activeReminder && (
+                <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-4 duration-300">
+                    <div className="bg-violet-500/15 border border-violet-500/30 backdrop-blur-xl rounded-2xl px-6 py-4 shadow-lg shadow-violet-500/10 flex items-center gap-3 max-w-md">
+                        <Bell className="h-5 w-5 text-violet-400 shrink-0 animate-pulse" />
+                        <p className="text-sm font-medium">{activeReminder}</p>
+                        <button onClick={() => setActiveReminder(null)} className="text-muted-foreground hover:text-foreground ml-2 shrink-0">
+                            <X className="h-4 w-4" />
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Pre-Task Emotion Check-In */}
+            <EmotionCheckInModal
+                open={showPreEmotion}
+                onComplete={handlePreEmotionComplete}
+                onSkip={() => { setShowPreEmotion(false); proceedAfterEmotion(); }}
+                title="How are you feeling right now?"
+                description="Naming your emotion reduces its intensity by ~30%. Be honest — no wrong answers."
+            />
+
+            {/* Start Assist (breathing + 2-min commit) — triggered by high tension */}
+            <StartAssist
+                open={showStartAssist}
+                onComplete={() => { setShowStartAssist(false); proceedAfterEmotion(); }}
+                onSkip={() => { setShowStartAssist(false); proceedAfterEmotion(); }}
+            />
 
             {/* Post-Session Evaluation Modal */}
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>

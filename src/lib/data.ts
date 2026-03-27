@@ -1,4 +1,4 @@
-import type { Task, TaskTemplate, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry } from './types';
+import type { Task, TaskTemplate, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry, FocusReminders } from './types';
 
 // === API FUNCTIONS FOR CLIENT-SIDE USAGE ===
 // These functions make direct API calls and are used by React components
@@ -214,7 +214,7 @@ export async function getActiveFocusSession(): Promise<FocusSession | null> {
   }
 }
 
-export async function startFocusSession(payload: { mode: string, expectedDuration?: number, taskId?: string, strategy?: string }): Promise<FocusSession> {
+export async function startFocusSession(payload: { mode: string, expectedDuration?: number, taskId?: string, strategy?: string, preEmotion?: any }): Promise<FocusSession> {
   const response = await fetch('/api/focus-sessions/active', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -534,4 +534,27 @@ export async function updateMistakeLogEntry(entry: MistakeLogEntry): Promise<voi
 
 export async function deleteMistakeLogEntry(id: string): Promise<void> {
   await fetch(`/api/mistake-log/${id}`, { method: 'DELETE' });
+}
+
+// === FOCUS REMINDERS ===
+
+export async function getFocusReminders(): Promise<FocusReminders | null> {
+  try {
+    const response = await fetch('/api/focus-reminders');
+    if (response.ok) return await response.json();
+    return null;
+  } catch (error) {
+    console.error('Failed to fetch focus reminders:', error);
+    return null;
+  }
+}
+
+export async function saveFocusReminders(reminders: FocusReminders): Promise<FocusReminders> {
+  const response = await fetch('/api/focus-reminders', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(reminders),
+  });
+  if (response.ok) return await response.json();
+  throw new Error(`Failed to save focus reminders: ${response.statusText}`);
 }

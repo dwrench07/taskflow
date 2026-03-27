@@ -2,7 +2,7 @@
  * Data service layer that uses the database abstraction
  */
 
-import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry } from './types';
+import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry, FocusReminders } from './types';
 import type { DatabaseAdapter, DailyPlan } from './database/types';
 import { DatabaseFactory } from './database/factory';
 import { config, isServer } from './config';
@@ -129,6 +129,7 @@ const mockInterests: Interest[] = [];
 const mockInterestConnections: InterestConnection[] = [];
 const mockBackOfMindItems: BackOfMindItem[] = [];
 const mockMistakeLogEntries: MistakeLogEntry[] = [];
+let mockFocusReminders: FocusReminders | null = null;
 
 /**
  * Get all tasks
@@ -1062,5 +1063,31 @@ export async function deleteMistakeLogEntryAsync(id: string, userId?: string | n
     } catch (error) {
         defaultLogger.warn('Failed to delete mistake log entry', error);
         return false;
+    }
+}
+
+// === FOCUS REMINDERS ===
+
+export async function getFocusRemindersAsync(userId?: string | null): Promise<FocusReminders | null> {
+    if (!isServer) return mockFocusReminders;
+    try {
+        const db = await getDatabase();
+        return await db.getFocusReminders(userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to get focus reminders', error);
+        return mockFocusReminders;
+    }
+}
+
+export async function upsertFocusRemindersAsync(reminders: FocusReminders, userId?: string | null): Promise<FocusReminders> {
+    if (userId) reminders.userId = userId;
+    if (!isServer) { mockFocusReminders = reminders; return reminders; }
+    try {
+        const db = await getDatabase();
+        return await db.upsertFocusReminders(reminders, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to upsert focus reminders', error);
+        mockFocusReminders = reminders;
+        return reminders;
     }
 }

@@ -2,6 +2,19 @@ export type Priority = "low" | "medium" | "high" | "urgent";
 export type EnergyLevel = 'high' | 'medium' | 'low';
 export type Status = "todo" | "in-progress" | "done" | "abandoned";
 export type HabitFrequency = "daily" | "weekly" | "monthly";
+export type PushReason = 'too-scary' | 'too-vague' | 'too-big' | 'too-boring' | 'ran-out-of-time' | 'deprioritized';
+export type EmotionLabel = 'dread' | 'anxiety' | 'resistance' | 'overwhelm' | 'calm' | 'neutral' | 'excited';
+
+export interface EmotionCheckIn {
+  emotion: EmotionLabel;
+  bodyTension: number; // 1-10
+  timestamp: string;
+}
+
+export interface PushHistoryEntry {
+  date: string; // ISO date string
+  reason: PushReason;
+}
 
 export type DailyHabitStatus = 'changes observed' | 'no changes' | 'negative' | 'not recorded';
 export interface DailyStatus {
@@ -22,6 +35,7 @@ export interface Subtask {
   doDate?: string;
   tShirtSize?: 'S' | 'M' | 'L' | 'XL';
   pushCount?: number;
+  pushHistory?: PushHistoryEntry[];
   timeLimit?: number; // Parkinson's Law timebox in minutes
   isFrog?: boolean;
 }
@@ -53,6 +67,7 @@ export interface Task {
   streak?: number;
   tShirtSize?: 'S' | 'M' | 'L' | 'XL';
   pushCount?: number;
+  pushHistory?: PushHistoryEntry[];
   timeLimit?: number; // Parkinson's Law timebox in minutes
   isFrog?: boolean;
 }
@@ -89,6 +104,21 @@ export interface User {
   [key: string]: any;
 }
 
+// Jot Types
+export type JotCategory = 'worry' | 'todo' | 'idea' | 'random' | 'untagged';
+
+export interface ParsedJot {
+  text: string;
+  category: JotCategory;
+  timestamp?: string;         // HH:MM from the focus session
+  isDone?: boolean;           // for todo-style checkboxes
+  sessionId: string;
+  sessionDate: string;        // ISO date string
+  taskTitle?: string;
+  followUpDate?: string;      // ISO date string — for worry jots
+  followUpResult?: 'happened' | 'didnt-happen' | 'partially';
+}
+
 // Focus Timer Types
 export type FocusMode = 'pomodoro' | 'stopwatch' | 'countdown';
 export type ProductivityScore = 'high' | 'medium' | 'low';
@@ -117,6 +147,10 @@ export interface FocusSession {
   expectedEndTime?: string;    // ISO date string if a timer was started with a known duration
   status?: 'active' | 'completed' | 'abandoned';
   strategy?: string;
+
+  // Emotion tracking
+  preEmotion?: EmotionCheckIn;
+  postEmotion?: EmotionCheckIn;
 }
 
 export interface Goal {
@@ -188,6 +222,14 @@ export interface BackOfMindItem {
   relevanceScore: number; // 1-10
   createdAt: string;
   updatedAt: string;
+  userId?: string;
+}
+
+export interface FocusReminders {
+  id: string;
+  reminders: string[];
+  intervalMinutes: number; // how often to show during focus
+  enabled: boolean;
   userId?: string;
 }
 

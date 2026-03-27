@@ -4,7 +4,7 @@
 
 import { MongoClient, Db, Collection, ObjectId } from 'mongodb';
 import type { DatabaseAdapter, DatabaseConfig, DatabaseLogger, DatabaseError, DailyPlan } from './types';
-import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry } from '../types';
+import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry, FocusReminders } from '../types';
 
 export class MongoDBAdapter implements DatabaseAdapter {
     private client: MongoClient | null = null;
@@ -24,6 +24,7 @@ export class MongoDBAdapter implements DatabaseAdapter {
     private interestConnectionsCollection: Collection<any> | null = null;
     private backOfMindCollection: Collection<any> | null = null;
     private mistakeLogCollection: Collection<any> | null = null;
+    private focusRemindersCollection: Collection<any> | null = null;
 
     constructor(
         private config: DatabaseConfig,
@@ -64,6 +65,7 @@ export class MongoDBAdapter implements DatabaseAdapter {
             this.interestConnectionsCollection = this.db.collection(this.config.collections?.interestConnections || 'interest_connections');
             this.backOfMindCollection = this.db.collection(this.config.collections?.backOfMind || 'back_of_mind');
             this.mistakeLogCollection = this.db.collection(this.config.collections?.mistakeLog || 'mistake_log');
+            this.focusRemindersCollection = this.db.collection(this.config.collections?.focusReminders || 'focus_reminders');
 
             // Create indexes for better performance
             await this.createIndexes();
@@ -837,6 +839,36 @@ export class MongoDBAdapter implements DatabaseAdapter {
         } catch (error) {
             this.logger.error('Failed to delete back of mind item', { id, error });
             throw new Error(`Failed to delete back of mind item: ${error}`);
+        }
+    }
+
+    // FocusReminders operations
+    async getFocusReminders(userId?: string | null): Promise<FocusReminders | null> {
+        this.ensureConnected();
+        try {
+            const query = userId ? { userId } : {};
+            const item = await this.focusRemindersCollection!.findOne(query);
+            return item ? this.convertFromMongo<FocusReminders>(item) : null;
+        } catch (error) {
+            this.logger.error('Failed to get focus reminders', error);
+            throw new Error(`Failed to get focus reminders: ${error}`);
+        }
+    }
+
+    async upsertFocusReminders(reminders: FocusReminders, userId?: string | null): Promise<FocusReminders> {
+        this.ensureConnected();
+        try {
+            const query = userId ? { userId } : { userId: { $exists: false } };
+            const doc = { ...reminders, userId: userId || reminders.userId };
+            await this.focusRemindersCollection!.updateOne(
+                query,
+                { $set: doc },
+                { upsert: true }
+            );
+            return doc;
+        } catch (error) {
+            this.logger.error('Failed to upsert focus reminders', error);
+            throw new Error(`Failed to upsert focus reminders: ${error}`);
         }
     }
 

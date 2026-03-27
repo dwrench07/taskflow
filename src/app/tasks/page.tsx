@@ -53,6 +53,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useGamification } from "@/context/GamificationContext";
 
 
 const priorityStyles: Record<Priority, string> = {
@@ -267,6 +268,7 @@ function TasksPageContent() {
   const [editingSubtask, setEditingSubtask] = useState<Subtask | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { celebrate, refreshGamification } = useGamification();
   const [sortOption, setSortOption] = useState<SortOption>("priority");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<Status[]>([]);
@@ -576,6 +578,19 @@ function TasksPageContent() {
   const handleStatusChange = async (status: Status) => {
     if (selectedTask) {
       await handleUpdateTask({ ...selectedTask, status });
+
+      if (status === 'done') {
+        const isFrog = selectedTask.isFrog ||
+          (selectedTask.pushCount && selectedTask.pushCount >= 3) ||
+          (selectedTask.priority === 'urgent' && selectedTask.energyLevel === 'high');
+
+        if (isFrog) {
+          celebrate({ reason: 'frog-eaten', title: 'Frog eaten!', description: selectedTask.title, intensity: 'big' });
+        } else {
+          celebrate({ reason: 'task-complete', title: 'Task done!', description: selectedTask.title, intensity: 'medium' });
+        }
+        refreshGamification();
+      }
     }
   };
 

@@ -31,6 +31,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { HabitAnalyticsChart } from "@/components/habit-analytics-chart";
 import { calculateStreak } from "@/lib/habits";
+import { useGamification } from "@/context/GamificationContext";
 
 const habitFormSchema = z.object({
     title: z.string().min(2, "Title must be at least 2 characters."),
@@ -215,6 +216,7 @@ function HabitsPageContent() {
     const [allTasks, setAllTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
+    const { celebrate, refreshGamification } = useGamification();
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingHabit, setEditingHabit] = useState<Task | undefined>(undefined);
     const [selectedHabit, setSelectedHabit] = useState<Task | null>(null);
@@ -303,6 +305,17 @@ function HabitsPageContent() {
 
         refreshHabits();
         toast(toastMessage);
+
+        // Celebration on completion (not on undo)
+        if (!completedToday) {
+            const streak = calculateStreak(updatedHabit);
+            if (streak > 0 && streak % 7 === 0) {
+                celebrate({ reason: 'streak-milestone', title: `${streak}-day streak!`, description: habit.title, intensity: 'big' });
+            } else {
+                celebrate({ reason: 'habit-complete', title: 'Habit done!', description: habit.title, intensity: 'small' });
+            }
+            refreshGamification();
+        }
     };
 
     const handleSetDailyStatus = (habitId: string, status: DailyHabitStatus) => {

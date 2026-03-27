@@ -7,8 +7,11 @@ import { Button } from "@/components/ui/button";
 import { getAllTasks, getDailyPlan, updateDailyPlanAsync } from "@/lib/data";
 import { Task, Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { PlusCircle, ArrowLeftCircle, GripVertical, Loader2 } from "lucide-react";
+import { PlusCircle, ArrowLeftCircle, GripVertical, Loader2, BatteryLow, BatteryMedium, BatteryFull } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { EnergyCheckIn, EnergyIndicator } from "@/components/energy-check-in";
+import { getTodayEnergy, getEnergyMatch } from "@/lib/energy";
+import { EnergyLevel } from "@/lib/types";
 
 const priorityStyles: Record<Priority, string> = {
   urgent: "bg-red-600/30 text-red-500 border-red-600/50 shadow-[0_0_10px_rgba(220,38,38,0.3)] animate-pulse",
@@ -88,9 +91,14 @@ export default function PlanPage() {
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [dailyTaskIds, setDailyTaskIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentEnergy, setCurrentEnergy] = useState<EnergyLevel | null>(null);
 
   const dragItem = useRef<string | null>(null);
   const dragOverItem = useRef<string | null>(null);
+
+  useEffect(() => {
+    setCurrentEnergy(getTodayEnergy());
+  }, []);
 
   const refreshData = async () => {
     setLoading(true);
@@ -263,12 +271,30 @@ export default function PlanPage() {
     refreshData();
   };
 
+  // Sort backlog: energy-matched tasks first
+  const sortedBacklog = currentEnergy
+    ? [...backlogTasks].sort((a, b) => {
+        const aMatch = getEnergyMatch(a.energyLevel, currentEnergy);
+        const bMatch = getEnergyMatch(b.energyLevel, currentEnergy);
+        const order = { match: 0, 'slight-mismatch': 1, mismatch: 2 };
+        return order[aMatch] - order[bMatch];
+      })
+    : backlogTasks;
+
+  const matchedCount = currentEnergy
+    ? backlogTasks.filter(t => getEnergyMatch(t.energyLevel, currentEnergy) === 'match').length
+    : 0;
+
   return (
     <div className="flex flex-col gap-8">
+      <EnergyCheckIn onComplete={(level) => setCurrentEnergy(level)} />
       <div className="flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Plan Your Day</h1>
-          <p className="text-muted-foreground">Move tasks from your backlog to today's plan. Drag and drop to reorder.</p>
+          <div className="flex items-center gap-3">
+            <p className="text-muted-foreground">Move tasks from your backlog to today&apos;s plan. Drag and drop to reorder.</p>
+            <EnergyIndicator />
+          </div>
         </div>
         <div>
           <input
@@ -279,6 +305,17 @@ export default function PlanPage() {
           />
         </div>
       </div>
+
+      {/* Energy-matched suggestion bar */}
+      {currentEnergy && matchedCount > 0 && (
+        <div className="flex items-center gap-2 text-xs bg-green-500/5 border border-green-500/20 rounded-xl px-4 py-2.5">
+          {currentEnergy === 'low' ? <BatteryLow className="h-4 w-4 text-red-400" /> : currentEnergy === 'medium' ? <BatteryMedium className="h-4 w-4 text-yellow-400" /> : <BatteryFull className="h-4 w-4 text-green-400" />}
+          <span className="text-muted-foreground">
+            Your energy is <span className="font-semibold text-foreground">{currentEnergy}</span>.
+            {' '}<span className="text-green-400 font-semibold">{matchedCount} task{matchedCount !== 1 ? 's' : ''}</span> match your current energy level.
+          </span>
+        </div>
+      )}
       <div className="grid md:grid-cols-2 gap-8 items-start">
         <Card>
           <CardHeader>
@@ -289,10 +326,19 @@ export default function PlanPage() {
               <div className="flex justify-center items-center h-full pt-10">
                 <Loader2 className="h-6 w-6 animate-spin" />
               </div>
-            ) : backlogTasks.length > 0 ? (
-              backlogTasks.map((task) => (
-                <MiniTaskCard key={task.id} task={task} onMove={addToDailyPlan} isBacklog={true} />
-              ))
+            ) : sortedBacklog.length > 0 ? (
+              sortedBacklog.map((task) => {
+                const match = currentEnergy ? getEnergyMatch(task.energyLevel, currentEnergy) : null;
+                return (
+                  <div key={task.id} className={cn(
+                    "rounded-lg transition-all",
+                    match === 'match' && "ring-1 ring-green-500/30",
+                    match === 'mismatch' && "opacity-50"
+                  )}>
+                    <MiniTaskCard task={task} onMove={addToDailyPlan} isBacklog={true} />
+                  </div>
+                );
+              })
             ) : (
               <p className="text-muted-foreground text-center pt-10">Backlog is empty!</p>
             )}

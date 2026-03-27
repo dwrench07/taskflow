@@ -6,9 +6,38 @@ import { Task } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, Play, Info, Flame, Ghost } from "lucide-react";
+import { AlertCircle, Play, Info, Flame, Ghost, AlertTriangle, HelpCircle, Maximize2, Coffee, Clock, ChevronDown, Lightbulb } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { PushReason } from "@/lib/types";
+
+const PUSH_REASON_LABELS: Record<PushReason, { label: string; icon: React.ReactNode }> = {
+  'too-scary': { label: 'Too Scary', icon: <AlertTriangle className="h-3 w-3" /> },
+  'too-vague': { label: 'Too Vague', icon: <HelpCircle className="h-3 w-3" /> },
+  'too-big': { label: 'Too Big', icon: <Maximize2 className="h-3 w-3" /> },
+  'too-boring': { label: 'Too Boring', icon: <Coffee className="h-3 w-3" /> },
+  'ran-out-of-time': { label: 'No Time', icon: <Clock className="h-3 w-3" /> },
+  'deprioritized': { label: 'Deprioritized', icon: <ChevronDown className="h-3 w-3" /> },
+};
+
+const PUSH_INTERVENTIONS: Record<PushReason, string> = {
+  'too-scary': "Start with just 2 minutes. Fear shrinks once you begin.",
+  'too-vague': "Spend 5 minutes defining the very first step before starting.",
+  'too-big': "Break this into subtasks — you need smaller bites.",
+  'too-boring': "Pair with music or batch with other boring tasks. Power through.",
+  'ran-out-of-time': "Schedule a specific time block for this today.",
+  'deprioritized': "Is this still needed? Consider dropping it if it keeps getting pushed.",
+};
+
+function getTopPushReason(task: Task): PushReason | null {
+  const history = task.pushHistory || [];
+  if (history.length === 0) return null;
+  const counts: Record<string, number> = {};
+  for (const entry of history) {
+    counts[entry.reason] = (counts[entry.reason] || 0) + 1;
+  }
+  return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0] as PushReason;
+}
 
 export default function FrogsPage() {
     const [frogs, setFrogs] = useState<Task[]>([]);
@@ -109,9 +138,22 @@ export default function FrogsPage() {
                                     <Info className="h-4 w-4 text-blue-500" />
                                     Resistance: <span className="text-primary">Very High</span>
                                 </div>
+                                {getTopPushReason(frogs[0]) && (
+                                    <div className="flex items-center gap-2">
+                                        {PUSH_REASON_LABELS[getTopPushReason(frogs[0])!].icon}
+                                        Pattern: <span className="text-orange-400">{PUSH_REASON_LABELS[getTopPushReason(frogs[0])!].label}</span>
+                                    </div>
+                                )}
                             </div>
-                            <Button 
-                                size="lg" 
+                            {/* Smart intervention based on push reason */}
+                            {getTopPushReason(frogs[0]) && (
+                                <div className="flex items-start gap-2 text-sm text-muted-foreground bg-blue-500/5 border border-blue-500/20 rounded-lg px-4 py-3">
+                                    <Lightbulb className="h-4 w-4 text-blue-400 shrink-0 mt-0.5" />
+                                    <span>{PUSH_INTERVENTIONS[getTopPushReason(frogs[0])!]}</span>
+                                </div>
+                            )}
+                            <Button
+                                size="lg"
                                 className="w-full text-xl h-16 font-black gap-3 shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform"
                                 onClick={() => handleEatFrog(frogs[0])}
                             >
@@ -132,13 +174,32 @@ export default function FrogsPage() {
                                                 <Badge variant="secondary" className="text-[10px] uppercase font-bold tracking-wider">
                                                     {frog.priority}
                                                 </Badge>
-                                                {frog.isFrog && <span title="Manually marked">🐸</span>}
+                                                <div className="flex items-center gap-1.5">
+                                                    {frog.pushCount && frog.pushCount > 0 && (
+                                                        <Badge variant="outline" className="text-[10px] text-red-500 border-red-500/50">
+                                                            {frog.pushCount}x pushed
+                                                        </Badge>
+                                                    )}
+                                                    {getTopPushReason(frog) && (
+                                                        <Badge variant="outline" className="text-[10px] text-orange-400 border-orange-500/30">
+                                                            {PUSH_REASON_LABELS[getTopPushReason(frog)!].icon}
+                                                            <span className="ml-1">{PUSH_REASON_LABELS[getTopPushReason(frog)!].label}</span>
+                                                        </Badge>
+                                                    )}
+                                                    {frog.isFrog && <span title="Manually marked">🐸</span>}
+                                                </div>
                                             </div>
                                             <CardTitle className="text-lg font-bold truncate">{frog.title}</CardTitle>
                                         </CardHeader>
-                                        <CardContent className="pb-4">
-                                            <Button 
-                                                variant="outline" 
+                                        <CardContent className="pb-4 space-y-3">
+                                            {getTopPushReason(frog) && (
+                                                <div className="flex items-start gap-1.5 text-xs text-muted-foreground bg-blue-500/5 border border-blue-500/20 rounded-lg px-3 py-2">
+                                                    <Lightbulb className="h-3 w-3 text-blue-400 shrink-0 mt-0.5" />
+                                                    <span>{PUSH_INTERVENTIONS[getTopPushReason(frog)!]}</span>
+                                                </div>
+                                            )}
+                                            <Button
+                                                variant="outline"
                                                 className="w-full group hover:bg-primary/10 hover:border-primary/30"
                                                 onClick={() => handleEatFrog(frog)}
                                             >

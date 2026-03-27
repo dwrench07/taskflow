@@ -76,6 +76,298 @@ Dash is a premium, multi-tenant productivity application designed to help users 
 4. Run the development server: `npm run dev`.
 5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+## 🔧 Strengthening Partially-Addressed Problems
+
+> These enhancements build on features that ALREADY EXIST but don't fully solve the underlying problem. Each section lists what exists, what's missing, and the specific changes to make.
+
+### Implementation Order
+
+| Order | Section | What | Why This Order | Status |
+|-------|---------|------|----------------|--------|
+| 1 | S4 | Push Reason Tracking | Simplest data change; generates avoidance data everything else needs | ✅ Done |
+| 2 | S1 | Jot Categorization | Small data model change, big payoff for anxiety tracking | ✅ Done |
+| 3 | S3 | Energy Matching + Morning Launch | High daily impact; morning routine fixes cascade into #12, #13, #24 | ✅ Done |
+| 4 | S2 | Self-Care Habits | Adds habit category + affirming UI; builds on energy data from S3 | ⬜ Skipped |
+| 5 | S6 | Gamification (Badges, XP, Celebrations) | Reward layer on top of all previous enhancements | ✅ Done |
+| 6 | S5 | Pre-Built Templates + Quick Launch | Content work + friction reduction; less urgent than data changes | ⬜ Skipped |
+| 7 | S7 | Picking Behavior Awareness | Most niche; do last | ⬜ Skipped |
+
+### S1: Jots & Back of Mind → Active Anxiety Coping (Strengthens #6, #3)
+
+**What exists:** Jots are stored as `string[]` on focus sessions. Back of Mind has API endpoints but no UI page. No categorization on either.
+
+**Enhancements:**
+- [x] **Jot Categorization** — When adding a distraction during a focus session, offer a quick-tag: `worry` | `todo` | `idea` | `random`
+  - Stored as object `{ text, category, timestamp }` instead of plain string
+  - Migration: treat existing string jots as `{ text: string, category: 'untagged' }`
+- [x] **Anxious Thought Follow-Up** — Jots tagged `worry` get a scheduled follow-up (7-14 days): "Did this actually happen?"
+  - Builds a **Fear vs Reality** accuracy score over time on the Jots page
+  - Display: "You've had 34 worried thoughts. 31 of them never happened (91%)"
+  - ⚠️ Follow-up result recording UI not yet built (see Open Questions)
+- [x] **Jot-to-Task Conversion** — One-click convert a `todo` jot into an actual task (pre-fills title)
+- [x] **Back of Mind UI Page** — Build the missing page at `/back-of-mind`
+  - Card grid sorted by relevance score
+  - Filter by category
+  - "Surface a random thought" button for reflection
+- [x] **Jots Page Filters** — Filter by category, date range, session. Search across all jots
+
+### S2: Habits → Self-Worth Building (Strengthens #11, #10)
+
+**What exists:** Habits with streaks, daily status (smile/meh/frown), 30-day heatmap, streak goals with trophy icon. No distinction between productivity and self-care habits.
+
+**Enhancements:**
+- [ ] **Self-Care Habit Category** — Add `habitCategory: 'productivity' | 'self-care' | 'health' | 'emotional'` field to habits
+  - Self-care habits use different framing in UI: "You took care of yourself" instead of "Task completed"
+  - Separate self-care streak counter on dashboard: "5-day self-care streak"
+  - Pre-suggested self-care habits on first use: ate 3 meals, dressed intentionally, 10 min outside, basic hygiene, one kind thing for yourself
+- [ ] **Affirming Completion Messages** — When completing a self-care habit, show a rotating affirmation:
+  - "You are worth taking care of"
+  - "Your needs matter"
+  - "This is not optional — you deserve this"
+  - Subtle, not cheesy. Small text below the completion checkmark
+- [ ] **Self-Care Score on Dashboard** — New metric card: "Self-Care Today: 3/5"
+  - Separate from productivity metrics
+  - Framing: not a KPI to optimize, but a minimum to protect
+- [ ] **Needs Awareness Prompt** — Integrate with existing daily review modal:
+  - At end of daily review, add: "Before you start — what do you need right now?" (rest, food, movement, connection, comfort)
+  - Log the answer. Weekly summary: "You needed rest 6 times but only rested twice"
+
+### S3: Energy Tagging → Smart Energy Matching (Strengthens #12, #13, #24)
+
+**What exists:** `energyLevel` field on tasks, subtasks, chores, and focus sessions. Used only in Frogs page filtering (`urgent + high energy = frog`). No energy-based suggestions or filtering elsewhere.
+
+**Enhancements:**
+- [x] **Current Energy Check-In** — On daily plan page load (morning), prompt: "How's your energy right now?" (high / medium / low)
+  - Store as daily log entry with timestamp
+  - Use to filter/sort daily plan: show low-energy tasks first when energy is low
+- [x] **Energy-Matched Task Suggestions** — On plan page, highlight tasks that match current energy level
+  - Green border = matches your energy, yellow = slight mismatch, red = wrong time for this
+  - "Your energy is low. These 3 tasks are a good fit right now:" suggestion bar
+- [x] **Morning Launch Sequence** — When app opens before 10:30 AM:
+  - Simplified view: just today's top 3 tasks + habits due
+  - First task is always low-friction (a "warm-up" task) to build momentum
+  - Optional: attach a small reward to the first morning task (dopamine primer — e.g., "Complete this, then coffee")
+  - Skip the full dashboard complexity — mornings need simplicity
+- [x] **Energy Pattern Tracking** — Log energy across days, chart by time of day
+  - After 2 weeks: "You're consistently low-energy before 11am. Your high-energy window is 2-5pm"
+  - Auto-suggest scheduling high-energy tasks in the afternoon
+- [x] **Weekend vs Weekday Awareness** — Track that Saturday energy is higher (#13)
+  - Different daily plan suggestions on weekends vs weekdays
+  - Weekday mornings: gentler start, fewer tasks, warm-up first
+
+### S4: Push Count → Avoidance Intelligence (Strengthens #2, #5, #17)
+
+**What exists:** `pushCount` on tasks/subtasks. Incremented on daily review "Push" action. Displayed as red badge on Frogs page and daily review. No analytics or reason tracking.
+
+**Enhancements:**
+- [x] **Push Reason Tracking** — When pushing a task in daily review, ask "Why?":
+  - Options: `too scary` | `too vague` | `too big` | `too boring` | `ran out of time` | `genuinely deprioritized`
+  - Stored as `pushHistory: [{ date, reason }]` on the task
+- [x] **Push Pattern Analytics** — New section on analytics dashboard:
+  - "Tasks pushed 3+ times" list with common reasons
+  - Chart: push reasons distribution (pie chart)
+  - Insight: "You push 'too scary' tasks 4x more than 'too boring' ones — your blocker is fear, not boredom"
+  - Trend: are you pushing less over time? (approach vs avoidance trajectory)
+- [x] **Smart Interventions Based on Push Reason** — When a task hits push count 3+:
+  - If `too scary`: suggest breaking into subtasks or using Start Assist (Phase B)
+  - If `too vague`: prompt to clarify with a 5-minute "define the first step" exercise
+  - If `too big`: suggest T-shirt re-sizing or splitting into subtasks
+  - If `too boring`: suggest pairing with music/reward or batching with other boring tasks
+- [x] **The "90% Done" Detector** (#17) — Flag tasks where:
+  - Most subtasks are complete but parent isn't
+  - Task has been "in-progress" for 3+ days with no subtask activity
+  - Surface these separately: "Almost done — just finish these:"
+
+### S5: Templates → Friction-Free Starts (Strengthens #2, #18)
+
+**What exists:** User-created templates with title, description, priority, subtasks, tags, energy, size, goal/milestone linking. Quick Generate for bulk instantiation. No pre-built templates.
+
+**Enhancements:**
+- [ ] **Pre-Built Starter Templates** — Ship with templates for common high-resistance patterns:
+  - "Morning Routine" (wake up → hygiene → breakfast → plan day)
+  - "Deep Work Block" (close distractions → set timer → work → review)
+  - "Weekly Review" (review goals → check habits → plan next week)
+  - "Meal Prep" (plan meals → grocery list → cook → store)
+  - "Self-Care Check" (body scan → eat → move → rest)
+  - User can customize but starting from something > starting from blank
+- [ ] **Template Quick-Launch from Daily Plan** — Instead of creating a task then starting it, one-click: template → task → focus session
+  - Removes 3 steps of friction between deciding and doing
+- [ ] **Emotional Pre-Flight on Templates** — Templates for scary tasks include a built-in first subtask: "Take 3 deep breaths and read the task description"
+  - Normalizes the emotional start-up cost as part of the workflow
+
+### S6: Streaks & Gamification → Dopamine Repair (Strengthens #25, #9)
+
+**What exists:** Streak count with flame icon, trophy icon with pulse animation on goal met, streak goal progress bar, daily status color coding. No badges, no celebration animations, no XP, no sound.
+
+**Enhancements:**
+- [x] **Celebration Moments** — Confetti animation + optional sound on:
+  - Completing a streak goal
+  - Eating a frog (completing a high-resistance task)
+  - Finishing all daily plan tasks
+  - Hitting a milestone
+  - Keep it subtle — 1-2 seconds, not obnoxious
+- [x] **Achievement Badges** — Unlockable badges displayed on a profile/achievements page:
+  - "First Focus" — complete first focus session
+  - "Frog Eater" — complete 5 tasks with pushCount > 3
+  - "Week Warrior" — complete daily plan 5 days in a row
+  - "Self-Care Champion" — 7-day self-care streak
+  - "Fear Crusher" — complete 3 tasks rated "dread" in emotion check-in
+  - "Consistency Machine" — any habit at 21-day streak
+  - "Approach Master" — 7-day approach streak (from Phase D)
+  - Each badge has tiers: bronze (first), silver (10x), gold (50x)
+- [x] **Daily Wins Summary** — End-of-day notification or dashboard section:
+  - "Today you: completed 4 tasks, maintained a 12-day streak, ate 2 frogs, and took care of yourself"
+  - Positive framing only — no guilt for what wasn't done
+  - This is the dopamine hit that "effort not feeling rewarding" (#25) is missing
+- [x] **XP System (Lightweight)** — Points for actions, visible on dashboard:
+  - Complete task: +10 XP (scaled by T-shirt size: S=5, M=10, L=20, XL=40)
+  - Complete habit: +5 XP
+  - Eat a frog: +25 XP bonus
+  - Focus session: +1 XP per minute
+  - Approach bonus: +15 XP when completing a task with pre-task anxiety > 5
+  - Weekly/monthly XP chart — the only metric that always goes up, never punishes
+- [x] **Progress Sound Effects** — Subtle audio cues:
+  - Soft "ding" on task completion
+  - Streak milestone sound
+  - Respect user preference: off by default, opt-in in settings
+
+### S7: Frogs Page → Picking Behavior Awareness (Strengthens #20)
+
+**What exists:** Frogs page identifies high-resistance tasks. Focus timer logs distractions. No awareness mechanism for unconscious physical habits like picking.
+
+**Enhancements:**
+- [ ] **Body Awareness Micro-Prompts** — During focus sessions, optional periodic prompt (every 15-20 min):
+  - Small, non-intrusive toast notification: "Quick body check — what are your hands doing?"
+  - Not a blocker — auto-dismisses after 5 seconds if ignored
+  - Toggle on/off in focus session settings
+  - Log responses over time to track awareness growth
+- [ ] **Post-Session Body Check** — After ending a focus session, add optional question:
+  - "Did you notice any picking or fidgeting during this session?" (yes/no/didn't notice)
+  - Track alongside distraction score — separate "body distraction" metric
+- [ ] **Awareness Streak** — Track consecutive sessions where you noticed AND stopped a picking behavior
+  - Different from habit streaks — this is about building conscious awareness of unconscious actions
+- [ ] **Fidget Alternatives Suggestion** — When body check is triggered:
+  - Suggest: squeeze a stress ball, stretch fingers, take 3 deep breaths
+  - Rotate suggestions to prevent habituation
+
+---
+
+## 🧠 Emotional & Psychological Resilience Features
+
+> These features address problems #2-#11 from PROBLEMS.md — the emotional and psychological barriers that sabotage productivity even when you know what to do. They are ordered by dependency: later phases build on earlier ones.
+
+### Phase A: Foundation — Emotion Check-In System (Addresses #2, #3, #4, #5, #6)
+
+The single highest-leverage feature. Emotional labeling alone reduces amygdala activation by ~30% (Lieberman, UCLA). This integrates into the existing task flow.
+
+- [ ] **Pre-Task Emotion Check-In**
+  - Before starting a focus session or task, prompt: "What are you feeling right now?"
+  - Dropdown options: dread, anxiety, resistance, overwhelm, calm, neutral, excited
+  - Body tension rating: 1-10 slider
+  - Data is stored per task per session
+- [ ] **Post-Task Emotion Check-In**
+  - After completing a focus session: "How do you feel now?"
+  - Same emotion dropdown + tension slider
+  - Over time, builds a dataset proving: feelings BEFORE are always worse than DURING
+- [ ] **Emotion Trends Dashboard**
+  - Chart: pre-task anxiety vs post-task relief over time
+  - Pattern detection: "You feel dread before Large tasks but calm after 80% of them"
+  - Correlation: which task types, times of day, or energy levels trigger the most resistance?
+
+### Phase B: In-the-Moment Interventions (Addresses #2, #6)
+
+Tools to break the freeze response and anxiety spirals in real time. Accessible from anywhere in the app.
+
+- [ ] **Start Assist Flow** (for #2 — freeze response)
+  - Triggers when body tension is rated 7+ in the emotion check-in
+  - Step 1: 60-second guided box breathing (4-4-4-4) with visual animation
+  - Step 2: "2-Minute Commit" — timer auto-starts for just 2 minutes. No pressure to continue
+  - Step 3: After 2 min, gentle prompt: "Keep going?" (most people do)
+  - The point: shift the nervous system BEFORE asking the brain to work
+- [ ] **Grounding Mode / Panic Button** (for #6 — anxiety spirals)
+  - Floating button accessible from any page
+  - Option 1: Guided 5-4-3-2-1 grounding (name 5 things you see, 4 hear, 3 feel, 2 smell, 1 taste)
+  - Option 2: Quick thought dump — textbox to park the intrusive thought (saves to Jots with "anxiety" tag)
+  - Option 3: 90-second "Surf the Urge" timer — just wait. Emotions peak at ~90s then decline naturally
+  - After any option: "Ready to refocus?" links back to current task/focus session
+- [ ] **Reframe Jots & Back of Mind as Anxiety Tools**
+  - Add an "anxious thought" tag/category to Jots
+  - When saving a jot during focus, offer: "Is this an anxious thought or an actionable idea?"
+  - Anxious thoughts get a follow-up prompt later: "Did this actually happen?" (builds evidence against catastrophizing)
+
+### Phase C: Structured Fear Processing (Addresses #3, #4)
+
+For the bigger fears — job loss, visa, career uncertainty — that loop endlessly because the brain never reaches resolution.
+
+- [ ] **Worry Journal**
+  - Structured entry form:
+    - "What am I afraid of?" (free text)
+    - "Worst case scenario?" (free text)
+    - "Best case scenario?" (free text)
+    - "Most likely scenario?" (free text)
+    - "Probability of worst case?" (1-10 slider)
+    - "What can I actually control?" (free text)
+  - Scheduled follow-up (2 weeks later): "What actually happened?"
+  - Over months, builds a **Fear vs Reality** accuracy chart — proof your predictions are wrong 90% of the time
+- [ ] **Decision Time-Boxing**
+  - For ambiguous decisions that cause paralysis: set a decision deadline
+  - "I will decide about X by [date]"
+  - Before deadline: structured pros/cons with "good enough" framing
+  - After deadline: decision is locked. No more deliberation. Track outcome for feedback
+- [ ] **Uncertainty Exposure Ladder** (for #4)
+  - A personal list of small-to-large uncertain situations you commit to entering
+  - Examples: "Try a new restaurant without checking reviews" → "Apply to a job I'm not sure I'm qualified for"
+  - Rate anxiety before (predicted) and after (actual) each exposure
+  - Chart: predicted vs actual anxiety over time — builds tolerance visually
+
+### Phase D: Emotional Pattern Training (Addresses #5, #7, #8)
+
+Long-term rewiring of avoidance patterns. These features work over weeks/months.
+
+- [ ] **Avoidance Pattern Tracker** (for #5)
+  - Integrates with existing push count and daily review
+  - When a task is pushed, ask: "Why?" with options: too hard, too boring, too scary, too vague, genuinely deprioritized
+  - Monthly report: "You avoided 12 tasks tagged 'too scary' — 8 of them were actually easy once started"
+  - Connects avoidance reasons to emotion check-in data
+- [ ] **Approach vs Avoidance Score**
+  - Daily metric: how many times did you approach discomfort vs avoid it?
+  - Every completed focus session with pre-task anxiety > 5 = approach point
+  - Every pushed task with reason "too scary" = avoidance point
+  - Streak: "7-day approach streak" — more meaningful than task completion streaks
+- [ ] **Stretch Goal Nudges** (for #8 — aiming for minimum)
+  - When creating a goal, prompt: "What would the ambitious version of this look like?"
+  - Store both the "safe" goal and the "stretch" goal
+  - After hitting the safe goal, surface the stretch: "You hit your target. The stretch was [X]. Want to keep going?"
+  - No shame if you stop — the stretch is always optional
+- [ ] **Private Milestone Celebrations + Optional Share** (for #7)
+  - When a goal/milestone is completed, trigger a private celebration screen
+  - Show: what you achieved, how long it took, emotional journey (from check-in data)
+  - Optional "Share Win" button — only appears AFTER completion, never before
+  - Sharing is always opt-in, never prompted aggressively
+
+### Phase E: Self-Awareness & Root Cause Work (Addresses #9, #10, #11)
+
+The deepest layer. These address background unhappiness, childhood emotional neglect patterns, and self-care avoidance.
+
+- [ ] **Mood Tracker** (for #9)
+  - Quick daily check-in: mood (1-10), energy (1-10), one word for the day
+  - Optional: what contributed? (sleep, food, exercise, social, work)
+  - Weekly trend chart with correlations: "Your mood is 2 points higher on days you exercise"
+  - Not a replacement for therapy — but makes invisible patterns visible
+- [ ] **Needs Check-In** (for #10 — CEN)
+  - Periodic prompt (2-3x/day): "What do you need right now?"
+  - Options: rest, food, connection, movement, comfort, stimulation, nothing
+  - The point: people with CEN are disconnected from their own needs. The prompt trains awareness
+  - Weekly summary: "You needed rest 8 times but only acted on it twice"
+  - Gentle nudges, never guilt
+- [ ] **Self-Care Streaks** (for #11)
+  - Dedicated self-care habit category separate from productivity habits
+  - Track: ate 3 meals, dressed well, basic hygiene, 10 min outside, one kind thing for yourself
+  - Different framing: not "productive habits" but "you are worth taking care of"
+  - Celebration: "You took care of yourself 5 days in a row"
+
+---
+
 ## 🔮 Future Vision & Idea Sandbox
 
 > **⚠️ CAUTION: The Brainstorming Rule**
@@ -165,3 +457,11 @@ Finally, we build the systems that tell you if you're actually succeeding.
 1. **Alignment Scoring:** Aggregate the time spent on tasks and map them back to their parent Life Pillars. Are you spending 80% of your time on "Health" when you claimed "Wealth" was your top priority?
 2. **The Avoidance Tracker Re-run:** Use the new "T-Shirt Sizing" (S, M, L) to build the behavioral profile we discussed earlier (Do you always push "Large" tasks to tomorrow?).
 . **Quarterly Review UI:** A dedicated dashboard for reviewing OKR progress at a high level, rather than managing daily tasks.
+
+---
+
+## ❓ Open Questions
+
+> Decisions to make before moving forward. Come back to these.
+
+1. **S1: Worry follow-up mechanism** — Should we add a "Did this actually happen?" button on each worry jot in the Jots page? The `followUpResult` field is already typed (`happened | didnt-happen | partially`) but needs a UI to record it. This would complete the Fear vs Reality score loop. Alternative: a scheduled prompt that surfaces old worry jots after 14 days.

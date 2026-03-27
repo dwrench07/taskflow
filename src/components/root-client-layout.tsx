@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { AuthProvider } from "@/context/AuthContext";
 import { ReminderManager } from '@/components/reminder-manager';
 import { PwaInstallPrompt } from '@/components/pwa-install-prompt';
+import { GamificationProvider } from '@/context/GamificationContext';
 
 export function RootClientLayout({
   children,
@@ -24,13 +25,15 @@ export function RootClientLayout({
     <body className={`${fontVariable} min-h-screen bg-background font-sans antialiased`}>
       {isMounted ? (
         <AuthProvider>
-          <AppLayout>
-            <React.Suspense fallback={<div>Loading...</div>}>
-              {children}
-            </React.Suspense>
-          </AppLayout>
-          <ReminderManager />
-          <PwaInstallPrompt />
+          <GamificationProvider>
+            <AppLayout>
+              <React.Suspense fallback={<div>Loading...</div>}>
+                {children}
+              </React.Suspense>
+            </AppLayout>
+            <ReminderManager />
+            <PwaInstallPrompt />
+          </GamificationProvider>
         </AuthProvider>
       ) : null}
       <Toaster />

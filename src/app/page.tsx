@@ -13,6 +13,9 @@ import { DashboardDistractionScore } from "@/components/dashboard-distraction-sc
 import { DashboardGoalVelocity } from "@/components/dashboard-goal-velocity";
 import { DashboardTaskVelocity } from "@/components/dashboard-task-velocity";
 import { DashboardPointOfNoReturn } from "@/components/dashboard-point-of-no-return";
+import { DashboardPushAnalytics } from "@/components/dashboard-push-analytics";
+import { DashboardAlmostDone } from "@/components/dashboard-almost-done";
+import { DashboardDailyWins } from "@/components/dashboard-daily-wins";
 import { SummaryCard } from "@/components/dashboard-summary-card";
 import { PNRDetail } from "@/components/dashboard-summary-pnr";
 import { calculateStreak } from "@/lib/habits";
@@ -32,11 +35,28 @@ import { isSameDay, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 
 import { DailyReviewModal } from "@/components/daily-review-modal";
+import { MorningLaunch } from "@/components/morning-launch";
+import { EnergyCheckIn } from "@/components/energy-check-in";
+
+function isMorningTime(): boolean {
+  const hour = new Date().getHours();
+  const minutes = new Date().getMinutes();
+  return hour < 10 || (hour === 10 && minutes <= 30);
+}
 
 export default function DashboardPage() {
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [focusSessions, setFocusSessions] = useState<FocusSession[]>([]);
   const [viewMode, setViewMode] = useState<'quick' | 'detailed'>('quick');
+  const [showMorningLaunch, setShowMorningLaunch] = useState(false);
+
+  useEffect(() => {
+    // Show morning launch if before 10:30 AM and not dismissed this session
+    const dismissed = sessionStorage.getItem('morning-launch-dismissed');
+    if (isMorningTime() && !dismissed) {
+      setShowMorningLaunch(true);
+    }
+  }, []);
 
   useEffect(() => {
     const loadData = async () => {
@@ -114,9 +134,25 @@ export default function DashboardPage() {
     };
   }, [allTasks, focusSessions]);
 
+  const handleDismissMorning = () => {
+    sessionStorage.setItem('morning-launch-dismissed', 'true');
+    setShowMorningLaunch(false);
+  };
+
+  if (showMorningLaunch) {
+    return (
+      <div className="flex flex-col gap-4 w-full max-w-xl mx-auto px-4 sm:px-8 py-2">
+        <DailyReviewModal />
+        <EnergyCheckIn />
+        <MorningLaunch allTasks={allTasks} onDismiss={handleDismissMorning} />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-4 w-full max-w-[1600px] mx-auto px-4 sm:px-8 py-2">
       <DailyReviewModal />
+      <EnergyCheckIn />
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
@@ -243,7 +279,10 @@ export default function DashboardPage() {
                     </div>
                     </div>
                     <div className="col-span-full xl:col-span-3 space-y-6">
+                     <DashboardDailyWins />
                      <DashboardPointOfNoReturn allTasks={allTasks} />
+                    <DashboardAlmostDone allTasks={allTasks} />
+                    <DashboardPushAnalytics allTasks={allTasks} />
                     <DashboardHabitHeatmap allTasks={allTasks} />
                     <DashboardStats allTasks={allTasks} />
                     </div>

@@ -75,6 +75,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         status: 'active',
                         expectedEndTime,
                         strategy: payload?.strategy,
+                        preEmotion: payload?.preEmotion,
                         events: [{ type: 'start', timestamp }]
                     };
                     const created = await addFocusSessionAsync(newSession, userId);
@@ -109,6 +110,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         }
                         if (payload?.deepWorkScore !== undefined) {
                             activeSession.deepWorkScore = payload.deepWorkScore;
+                        }
+                        if (payload?.postEmotion) {
+                            activeSession.postEmotion = payload.postEmotion;
                         }
                     }
 
