@@ -50,6 +50,9 @@ function createConfig(): AppConfig {
                 chores: process.env.MONGODB_CHORES_COLLECTION || 'chores',
                 interests: process.env.MONGODB_INTERESTS_COLLECTION || 'interests',
                 interestConnections: process.env.MONGODB_INTEREST_CONNECTIONS_COLLECTION || 'interest_connections',
+                backOfMind: process.env.MONGODB_BACK_OF_MIND_COLLECTION || 'back_of_mind',
+                mistakeLog: process.env.MONGODB_MISTAKE_LOG_COLLECTION || 'mistake_log',
+                focusReminders: process.env.MONGODB_FOCUS_REMINDERS_COLLECTION || 'focus_reminders',
             },
         };
     } else {
@@ -69,6 +72,9 @@ function createConfig(): AppConfig {
                 chores: 'chores',
                 interests: 'interests',
                 interestConnections: 'interest_connections',
+                backOfMind: 'back_of_mind',
+                mistakeLog: 'mistake_log',
+                focusReminders: 'focus_reminders',
             },
         };
     }

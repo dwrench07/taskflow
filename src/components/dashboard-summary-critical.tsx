@@ -6,6 +6,7 @@ import { AlertTriangle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
 import { Badge } from "./ui/badge";
+import Link from "next/link";
 
 export function CriticalDetail({ tasks }: { tasks: Task[] }) {
   const today = new Date();
@@ -46,7 +47,8 @@ export function CriticalDetail({ tasks }: { tasks: Task[] }) {
         const isOverdue = hasDeadline && isPast(parseISO(task.endDate!)) && !isSameDay(parseISO(task.endDate!), today);
         
         return (
-          <div
+          <Link
+            href={`/focus?taskId=${task.id}`}
             key={task.id}
             className={cn(
               "block p-4 hover:bg-muted/50 transition-colors",
@@ -54,7 +56,7 @@ export function CriticalDetail({ tasks }: { tasks: Task[] }) {
             )}
           >
             <div className="flex justify-between items-start mb-1 gap-2">
-              <span className={cn("font-bold text-sm", isOverdue ? "text-red-600" : "text-foreground")}>
+              <span className={cn("font-bold text-sm hover:text-primary transition-colors", isOverdue ? "text-red-600" : "text-foreground")}>
                 {task.title}
               </span>
               <Badge variant="outline" className={cn(
@@ -74,7 +76,7 @@ export function CriticalDetail({ tasks }: { tasks: Task[] }) {
                 <span>No hard deadline</span>
               )}
             </div>
-          </div>
+          </Link>
         );
       })}
     </div>

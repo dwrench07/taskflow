@@ -94,7 +94,7 @@ export function MorningLaunch({ allTasks, onDismiss }: MorningLaunchProps) {
                 <Badge variant="outline" className="text-[10px]">Size: {warmupTask.tShirtSize}</Badge>
               )}
             </div>
-            <h2 className="text-xl font-bold">{warmupTask.title}</h2>
+            <Link href={`/focus?taskId=${warmupTask.id}`} className="text-xl font-bold hover:text-primary transition-colors">{warmupTask.title}</Link>
             {warmupTask.description && (
               <p className="text-sm text-muted-foreground line-clamp-2">{warmupTask.description}</p>
             )}
@@ -122,7 +122,7 @@ export function MorningLaunch({ allTasks, onDismiss }: MorningLaunchProps) {
               )}>
                 <CardContent className="p-4 flex items-center gap-3">
                   <div className="flex-1">
-                    <p className="font-semibold text-sm">{task.title}</p>
+                    <Link href={`/focus?taskId=${task.id}`} className="font-semibold text-sm hover:text-primary transition-colors">{task.title}</Link>
                     <div className="flex gap-2 mt-1">
                       <Badge variant="outline" className="text-[10px] capitalize">{task.priority}</Badge>
                       {task.energyLevel && (
@@ -160,7 +160,7 @@ export function MorningLaunch({ allTasks, onDismiss }: MorningLaunchProps) {
                 return (
                   <div key={habit.id} className="flex items-center gap-3 py-1">
                     <CheckCircle2 className="h-4 w-4 text-muted-foreground/40" />
-                    <span className="text-sm flex-1">{habit.title}</span>
+                    <Link href={`/tasks?taskId=${habit.id}`} className="text-sm flex-1 hover:text-primary transition-colors">{habit.title}</Link>
                     {streak > 0 && (
                       <span className="text-xs text-orange-400 flex items-center gap-1">
                         <Flame className="h-3 w-3" /> {streak}d

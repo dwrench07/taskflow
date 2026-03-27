@@ -333,7 +333,8 @@ export type CelebrationReason =
   | 'streak-milestone'
   | 'all-daily-done'
   | 'badge-unlocked'
-  | 'focus-complete';
+  | 'focus-complete'
+  | 'goal-complete';
 
 export interface CelebrationEvent {
   reason: CelebrationReason;

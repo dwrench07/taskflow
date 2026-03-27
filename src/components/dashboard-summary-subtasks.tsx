@@ -6,12 +6,13 @@ import { ListTodo, CheckCircle2, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
 import { Badge } from "./ui/badge";
+import Link from "next/link";
 
 export function SubtaskDetail({ tasks }: { tasks: Task[] }) {
   const today = new Date();
   
   const todaySubtasks = useMemo(() => {
-    const items: { id: string; title: string; priority: string; date?: string; parentTitle: string; completed: boolean }[] = [];
+    const items: { id: string; title: string; priority: string; date?: string; parentTitle: string; parentId: string; completed: boolean }[] = [];
     
     tasks.forEach(task => {
         if (task.isHabit) return;
@@ -27,6 +28,7 @@ export function SubtaskDetail({ tasks }: { tasks: Task[] }) {
                     priority: sub.priority || task.priority,
                     date: sub.doDate || sub.endDate,
                     parentTitle: task.title,
+                    parentId: task.id,
                     completed: sub.completed
                 });
             }
@@ -52,7 +54,8 @@ export function SubtaskDetail({ tasks }: { tasks: Task[] }) {
   return (
     <div className="divide-y divide-white/5">
       {todaySubtasks.map(item => (
-        <div
+        <Link
+          href={`/focus?taskId=${item.parentId}`}
           key={item.id}
           className={cn(
               "block p-4 hover:bg-white/5 transition-colors group/item",
@@ -87,7 +90,7 @@ export function SubtaskDetail({ tasks }: { tasks: Task[] }) {
                 <CheckCircle2 className="w-3 h-3 text-green-500" />
             )}
           </div>
-        </div>
+        </Link>
       ))}
     </div>
   );

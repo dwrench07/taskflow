@@ -6,6 +6,7 @@ import { ListTodo } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
 import { Badge } from "./ui/badge";
+import Link from "next/link";
 
 export function TaskDetail({ tasks }: { tasks: Task[] }) {
   const today = new Date();
@@ -49,7 +50,8 @@ export function TaskDetail({ tasks }: { tasks: Task[] }) {
   return (
     <div className="divide-y divide-border/50">
       {todayItems.map(item => (
-        <div
+        <Link
+          href={`/focus?taskId=${item.id}`}
           key={item.id}
           className={cn(
               "block p-4 hover:bg-muted/50 transition-colors",
@@ -58,7 +60,7 @@ export function TaskDetail({ tasks }: { tasks: Task[] }) {
         >
           <div className="flex justify-between items-start mb-1 gap-2">
             <div className="flex flex-col min-w-0">
-                <span className={cn("font-bold text-sm text-foreground truncate", item.completed && "line-through")}>
+                <span className={cn("font-bold text-sm text-foreground truncate hover:text-primary transition-colors", item.completed && "line-through")}>
                 {item.title}
                 </span>
             </div>
@@ -72,7 +74,7 @@ export function TaskDetail({ tasks }: { tasks: Task[] }) {
           <div className="text-[11px] text-muted-foreground">
             {item.date ? `${format(parseISO(item.date), "MMM d, h:mm a")}` : "No time set"}
           </div>
-        </div>
+        </Link>
       ))}
     </div>
   );

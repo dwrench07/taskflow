@@ -6,6 +6,7 @@ import { CheckCircle2, Circle, Flame, TrendingUp, Clock } from "lucide-react";
 import { isSameDay, parseISO, format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { calculateStreak } from "@/lib/habits";
+import Link from "next/link";
 
 export function HabitDetail({ tasks }: { tasks: Task[] }) {
   const habits = tasks.filter(t => t.isHabit);
@@ -30,7 +31,7 @@ export function HabitDetail({ tasks }: { tasks: Task[] }) {
             : null;
 
         return (
-          <div key={habit.id} className="p-4 flex items-center justify-between gap-4 group/habit hover:bg-white/5 transition-colors">
+          <Link href={`/tasks?taskId=${habit.id}`} key={habit.id} className="p-4 flex items-center justify-between gap-4 group/habit hover:bg-white/5 transition-colors">
             <div className="flex flex-col gap-1 min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <span className={cn("font-bold text-sm truncate", isDoneToday && "text-primary")}>{habit.title}</span>
@@ -61,7 +62,7 @@ export function HabitDetail({ tasks }: { tasks: Task[] }) {
                 </div>
                 )}
             </div>
-          </div>
+          </Link>
         );
       })}
     </div>

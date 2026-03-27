@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ChevronRight, ChevronDown, CheckCircle2, Circle, Target, Flag, LocateFixed, ExternalLink } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import type { Pillar, Milestone, Task } from "@/lib/types";
 
 interface AlignmentTreeViewProps {
@@ -124,9 +125,9 @@ export function AlignmentTreeView({ pillars, milestones, tasks }: AlignmentTreeV
                                       ) : (
                                         <Circle className="h-4 w-4 text-muted-foreground" />
                                       )}
-                                      <span className={`text-sm ${task.status === "done" ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                                      <Link href={`/focus?taskId=${task.id}`} className={`text-sm hover:text-primary transition-colors ${task.status === "done" ? "line-through text-muted-foreground" : "text-foreground"}`}>
                                         {task.title}
-                                      </span>
+                                      </Link>
                                       {task.blockedBy && task.blockedBy.length > 0 && task.status !== "done" && (
                                         <span className="text-xs bg-red-500/10 text-red-500 px-2 py-0.5 rounded-full outline outline-1 outline-red-500/20">Blocked</span>
                                       )}
@@ -176,7 +177,7 @@ export function AlignmentTreeView({ pillars, milestones, tasks }: AlignmentTreeV
                          <div className="bg-muted/20 border-t p-2 pl-8 space-y-1">
                            {mTasks.map(task => (
                              <div key={task.id} className="flex items-center gap-3 p-2 text-sm">
-                               {task.title}
+                               <Link href={`/focus?taskId=${task.id}`} className="hover:text-primary transition-colors">{task.title}</Link>
                              </div>
                            ))}
                          </div>

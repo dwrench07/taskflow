@@ -3,6 +3,7 @@
 import { FocusSession } from "@/lib/types";
 import { format, parseISO, differenceInMinutes } from "date-fns";
 import { Brain, Zap, Clock, TrendingUp } from "lucide-react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
@@ -45,7 +46,11 @@ export function FocusDetail({ sessions }: { sessions: FocusSession[] }) {
       {todaySessions.map(session => (
         <div key={session.id} className="p-4 flex items-center justify-between group/session hover:bg-white/5 transition-colors">
           <div className="flex flex-col min-w-0 flex-1 mr-4">
-            <span className="text-sm font-bold truncate group-hover/session:text-primary transition-colors">{session.taskTitle || "General Focus"}</span>
+            {session.taskId ? (
+              <Link href={`/focus?taskId=${session.taskId}`} className="text-sm font-bold truncate group-hover/session:text-primary transition-colors hover:underline">{session.taskTitle || "General Focus"}</Link>
+            ) : (
+              <span className="text-sm font-bold truncate group-hover/session:text-primary transition-colors">{session.taskTitle || "General Focus"}</span>
+            )}
             <div className="flex items-center gap-2 mt-0.5">
                 <Clock className="w-3 h-3 text-muted-foreground/50" />
                 <span className="text-[10px] text-muted-foreground/70 font-bold uppercase">

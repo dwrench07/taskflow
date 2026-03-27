@@ -3,6 +3,7 @@ import { type Goal } from "@/lib/types";
 import { getAllGoals, getAllTasks } from "@/lib/data";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Target, Loader2 } from "lucide-react";
+import Link from "next/link";
 
 export function DashboardGoals() {
     const [goals, setGoals] = useState<Goal[]>([]);
@@ -55,7 +56,7 @@ export function DashboardGoals() {
                             return (
                                 <div key={goal.id} className="space-y-2">
                                     <div className="flex justify-between items-center text-sm font-medium">
-                                        <span className="truncate pr-4">{goal.title}</span>
+                                        <Link href="/goals" className="truncate pr-4 hover:text-primary transition-colors">{goal.title}</Link>
                                         <span className="text-muted-foreground shrink-0">{progress}%</span>
                                     </div>
                                     <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">

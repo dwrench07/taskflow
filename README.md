@@ -370,7 +370,7 @@ The deepest layer. These address background unhappiness, childhood emotional neg
 
 Small improvements to the daily workflow that compound over time. These shape whether the app *pulls* you into action or makes you think about what to do.
 
-- [ ] **Task Selector on Focus Page** — Currently if you land on `/focus` without a task pre-selected, you can only type a free-text goal. Add a task picker/dropdown so you can browse and select from your tasks without leaving the page.
+- [x] **Task Selector on Focus Page** — Currently if you land on `/focus` without a task pre-selected, you can only type a free-text goal. Add a task picker/dropdown so you can browse and select from your tasks without leaving the page.
 - [ ] **"What's Next?" Post-Session Suggestion** — When a focus session ends, suggest the next task to work on (based on energy, priority, today's plan). Right now the session just ends and you navigate yourself.
 - [ ] **Global Quick-Add (Ctrl+K)** — A command palette or floating button accessible from any page for instant task capture. The Command UI component already exists but is unused.
 - [ ] **Clickable Tasks on Dashboard** — Summary cards (frogs, urgent, tasks today) show task names but you can't click them to jump into a focus session. One-click start from the dashboard.

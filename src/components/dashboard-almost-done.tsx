@@ -5,6 +5,7 @@ import { Task } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Circle } from "lucide-react";
+import Link from "next/link";
 
 interface DashboardAlmostDoneProps {
   allTasks: Task[];
@@ -55,7 +56,7 @@ export function DashboardAlmostDone({ allTasks }: DashboardAlmostDoneProps) {
         {almostDoneTasks.slice(0, 5).map(({ task, completed, total, percentage, remaining }) => (
           <div key={task.id} className="space-y-2">
             <div className="flex items-center justify-between gap-2">
-              <span className="text-sm font-medium truncate">{task.title}</span>
+              <Link href={`/focus?taskId=${task.id}`} className="text-sm font-medium truncate hover:text-primary transition-colors">{task.title}</Link>
               <Badge variant="outline" className="text-[10px] shrink-0 text-green-500 border-green-500/30">
                 {completed}/{total} ({percentage}%)
               </Badge>

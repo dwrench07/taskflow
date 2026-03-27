@@ -23,7 +23,8 @@ import { useGamification } from "@/context/GamificationContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Play, Square, Pause, Flame, Medal, CheckCircle2, Sparkles, AlertCircle, Bell, BellOff, Plus, X, Settings2 } from "lucide-react";
+import { Play, Square, Pause, Flame, Medal, CheckCircle2, Sparkles, AlertCircle, Bell, BellOff, Plus, X, Settings2, Search, Target, Zap } from "lucide-react";
+import { isSameDay, parseISO } from "date-fns";
 import { FocusAnalyticsChart } from "@/components/focus-analytics-chart";
 import { DashboardEmotionTrends } from "@/components/dashboard-emotion-trends";
 import { EmotionCheckInModal, EmotionCheckInInline } from "@/components/emotion-check-in";
@@ -80,6 +81,10 @@ export default function FocusPage() {
     const [newReminderText, setNewReminderText] = useState("");
     const [activeReminder, setActiveReminder] = useState<string | null>(null);
     const lastReminderTime = useRef<number>(0);
+
+    // Task Picker
+    const [showTaskPicker, setShowTaskPicker] = useState(false);
+    const [taskSearch, setTaskSearch] = useState("");
 
     // Audio Cues
     const beepsPlayedRef = useRef(new Set<number>());
@@ -531,6 +536,11 @@ export default function FocusPage() {
                                     <div className="flex items-center gap-2 bg-muted/40 px-5 py-2.5 rounded-2xl border border-border/50 text-sm font-medium text-foreground/80 text-center w-full justify-center shadow-sm backdrop-blur-sm">
                                         <span className="opacity-70">Focusing on:</span> <span className="font-bold truncate max-w-[200px] sm:max-w-[300px]">{selectedTask.title}</span>
                                         {selectedTask.priority === 'high' && <Flame className="h-4 w-4 text-orange-500 animate-pulse ml-1 shrink-0" />}
+                                        {!isActive && (
+                                            <button onClick={() => { setTargetTaskId(undefined); setShowTaskPicker(false); }} className="ml-1 opacity-50 hover:opacity-100 transition-opacity shrink-0">
+                                                <X className="h-3.5 w-3.5" />
+                                            </button>
+                                        )}
                                     </div>
                                     {selectedTask.endDate && new Date(selectedTask.endDate) < new Date() && (
                                         <Badge variant="default" className="bg-green-500/10 text-green-600 border-green-500/20 hover:bg-green-500/20 px-3 py-1 font-semibold">
@@ -539,14 +549,117 @@ export default function FocusPage() {
                                     )}
                                 </div>
                             ) : (
-                                <div className="w-full max-w-sm mb-10">
-                                    <Input
-                                        placeholder="What is your main goal for this session?"
-                                        value={sessionGoal}
-                                        onChange={(e) => setSessionGoal(e.target.value)}
-                                        disabled={isActive}
-                                        className="text-center bg-muted/20 border-border/50 h-14 rounded-2xl text-lg shadow-inner"
-                                    />
+                                <div className="w-full max-w-md mb-10 space-y-3">
+                                    {!showTaskPicker ? (
+                                        <div className="flex flex-col items-center gap-3">
+                                            <Button
+                                                variant="outline"
+                                                onClick={() => setShowTaskPicker(true)}
+                                                disabled={isActive}
+                                                className="h-14 w-full rounded-2xl text-base bg-muted/20 border-border/50 shadow-inner hover:bg-muted/40 gap-2"
+                                            >
+                                                <Search className="h-4 w-4 opacity-50" />
+                                                Pick a task to focus on...
+                                            </Button>
+                                            <span className="text-xs text-muted-foreground">or</span>
+                                            <Input
+                                                placeholder="Type a freeform goal"
+                                                value={sessionGoal}
+                                                onChange={(e) => setSessionGoal(e.target.value)}
+                                                disabled={isActive}
+                                                className="text-center bg-muted/10 border-border/30 h-10 rounded-xl text-sm"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="bg-card border border-border/50 rounded-2xl shadow-lg overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
+                                            <div className="flex items-center gap-2 px-4 py-3 border-b border-border/30">
+                                                <Search className="h-4 w-4 text-muted-foreground shrink-0" />
+                                                <input
+                                                    type="text"
+                                                    placeholder="Search tasks..."
+                                                    value={taskSearch}
+                                                    onChange={(e) => setTaskSearch(e.target.value)}
+                                                    autoFocus
+                                                    className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground/50"
+                                                />
+                                                <button onClick={() => { setShowTaskPicker(false); setTaskSearch(""); }} className="text-muted-foreground hover:text-foreground transition-colors">
+                                                    <X className="h-4 w-4" />
+                                                </button>
+                                            </div>
+                                            <div className="max-h-64 overflow-y-auto">
+                                                {(() => {
+                                                    const today = new Date();
+                                                    const activeTasks = tasks.filter(t => t.status !== 'done' && t.status !== 'abandoned' && !t.isHabit);
+                                                    const search = taskSearch.toLowerCase().trim();
+                                                    const filtered = search
+                                                        ? activeTasks.filter(t => t.title.toLowerCase().includes(search))
+                                                        : activeTasks;
+
+                                                    // Categorize
+                                                    const frogs = filtered.filter(t => t.isFrog);
+                                                    const todayTasks = filtered.filter(t =>
+                                                        !t.isFrog &&
+                                                        ((t.doDate && isSameDay(parseISO(t.doDate), today)) ||
+                                                         (t.endDate && isSameDay(parseISO(t.endDate), today)))
+                                                    );
+                                                    const urgent = filtered.filter(t =>
+                                                        !t.isFrog &&
+                                                        !todayTasks.includes(t) &&
+                                                        (t.priority === 'urgent' || t.priority === 'high')
+                                                    );
+                                                    const rest = filtered.filter(t =>
+                                                        !frogs.includes(t) && !todayTasks.includes(t) && !urgent.includes(t)
+                                                    );
+
+                                                    const renderSection = (label: string, icon: React.ReactNode, items: Task[]) => {
+                                                        if (items.length === 0) return null;
+                                                        return (
+                                                            <div key={label}>
+                                                                <div className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 flex items-center gap-1.5">
+                                                                    {icon} {label}
+                                                                </div>
+                                                                {items.slice(0, 5).map(t => (
+                                                                    <button
+                                                                        key={t.id}
+                                                                        onClick={() => {
+                                                                            setTargetTaskId(t.id);
+                                                                            setShowTaskPicker(false);
+                                                                            setTaskSearch("");
+                                                                        }}
+                                                                        className="w-full text-left px-4 py-2.5 hover:bg-muted/40 transition-colors flex items-center gap-3 text-sm"
+                                                                    >
+                                                                        <div className="flex-1 truncate">
+                                                                            <span className="font-medium">{t.title}</span>
+                                                                            {t.tShirtSize && (
+                                                                                <span className="ml-2 text-[10px] text-muted-foreground opacity-60">{t.tShirtSize}</span>
+                                                                            )}
+                                                                        </div>
+                                                                        {t.priority === 'urgent' && <Badge variant="destructive" className="text-[9px] px-1.5 py-0">urgent</Badge>}
+                                                                        {t.priority === 'high' && <Badge className="text-[9px] px-1.5 py-0 bg-orange-500/10 text-orange-400 border-orange-500/30">high</Badge>}
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        );
+                                                    };
+
+                                                    const hasResults = frogs.length + todayTasks.length + urgent.length + rest.length > 0;
+
+                                                    return hasResults ? (
+                                                        <>
+                                                            {renderSection("Frogs", <Zap className="h-3 w-3 text-emerald-500" />, frogs)}
+                                                            {renderSection("Today", <Target className="h-3 w-3 text-blue-500" />, todayTasks)}
+                                                            {renderSection("High Priority", <Flame className="h-3 w-3 text-orange-500" />, urgent)}
+                                                            {renderSection("Other", <CheckCircle2 className="h-3 w-3 text-muted-foreground" />, rest)}
+                                                        </>
+                                                    ) : (
+                                                        <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+                                                            No tasks found
+                                                        </div>
+                                                    );
+                                                })()}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 

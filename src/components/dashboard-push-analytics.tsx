@@ -5,6 +5,7 @@ import { Task, PushReason } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRightCircle, AlertTriangle, HelpCircle, Maximize2, Coffee, Clock, ChevronDown, TrendingDown, TrendingUp } from "lucide-react";
+import Link from "next/link";
 
 const REASON_CONFIG: Record<PushReason, { label: string; icon: React.ReactNode; color: string; insight: string }> = {
   'too-scary': { label: 'Too Scary', icon: <AlertTriangle className="h-3.5 w-3.5" />, color: 'text-red-500 bg-red-500/10', insight: 'Your main blocker is fear, not ability. Try smaller first steps.' },
@@ -154,7 +155,7 @@ export function DashboardPushAnalytics({ allTasks }: DashboardPushAnalyticsProps
               const reasonConfig = topReason ? REASON_CONFIG[topReason] : null;
               return (
                 <div key={task.id} className="flex items-center justify-between text-xs gap-2">
-                  <span className="truncate font-medium">{task.title}</span>
+                  <Link href={`/focus?taskId=${task.id}`} className="truncate font-medium hover:text-primary transition-colors">{task.title}</Link>
                   <div className="flex items-center gap-1.5 shrink-0">
                     {reasonConfig && (
                       <Badge variant="outline" className={`text-[10px] ${reasonConfig.color}`}>
