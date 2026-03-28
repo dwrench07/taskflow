@@ -105,11 +105,11 @@ export function DashboardTimeLimitAdherence({ allTasks, focusSessions }: TimeLim
           <>
             {/* Summary */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="text-center p-3 bg-rose-500/5 rounded-xl border border-rose-500/10">
-                <p className="text-2xl font-black text-rose-400">{analysis.withinLimitRate}%</p>
+              <div className="text-center p-3 bg-muted/50 rounded-xl border border-border">
+                <p className="text-2xl font-black text-rose-500">{analysis.withinLimitRate}%</p>
                 <p className="text-[10px] text-muted-foreground mt-1">Within time limit</p>
               </div>
-              <div className="text-center p-3 bg-muted/20 rounded-xl">
+              <div className="text-center p-3 bg-muted/30 rounded-xl border border-border">
                 <p className="text-2xl font-black text-muted-foreground">{analysis.avgRatio}%</p>
                 <p className="text-[10px] text-muted-foreground mt-1">Avg time used</p>
               </div>
@@ -123,21 +123,21 @@ export function DashboardTimeLimitAdherence({ allTasks, focusSessions }: TimeLim
                     <span className="truncate font-medium flex-1">{task.title}</span>
                     <div className="flex items-center gap-1 shrink-0">
                       {task.withinLimit ? (
-                        <CheckCircle2 className="h-3 w-3 text-green-400" />
+                        <CheckCircle2 className="h-3 w-3 text-green-500" />
                       ) : (
-                        <XCircle className="h-3 w-3 text-red-400" />
+                        <XCircle className="h-3 w-3 text-red-500" />
                       )}
                       <span className="text-[10px] text-muted-foreground">
                         {formatMinutes(task.actualMinutes)} / {formatMinutes(task.timeLimit)}
                       </span>
                     </div>
                   </div>
-                  <div className="h-1.5 rounded-full bg-muted/20 overflow-hidden">
+                  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                     <div
                       className={cn(
                         "h-full rounded-full transition-all duration-700",
-                        task.ratio <= 100 ? "bg-green-400/60" :
-                        task.ratio <= 150 ? "bg-amber-400/50" : "bg-red-400/50"
+                        task.ratio <= 100 ? "bg-green-500" :
+                        task.ratio <= 150 ? "bg-amber-500" : "bg-red-500"
                       )}
                       style={{ width: `${Math.min(task.ratio, 100)}%`, minWidth: '4px' }}
                     />
@@ -150,8 +150,8 @@ export function DashboardTimeLimitAdherence({ allTasks, focusSessions }: TimeLim
             <div className={cn(
               "text-xs rounded-xl px-4 py-3 border",
               analysis.withinLimitRate >= 60
-                ? "bg-green-500/5 border-green-500/20 text-green-300"
-                : "bg-amber-500/5 border-amber-500/20 text-amber-300"
+                ? "bg-green-500/5 border-green-500/20 text-green-600 dark:text-green-400"
+                : "bg-amber-500/5 border-amber-500/20 text-amber-600 dark:text-amber-400"
             )}>
               {analysis.withinLimitRate >= 60
                 ? "⏱️ Timeboxing is working! You're completing most tasks within their limits."

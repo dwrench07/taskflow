@@ -42,19 +42,20 @@ import { SubtaskDetail } from "@/components/dashboard-summary-subtasks";
 import { CriticalDetail } from "@/components/dashboard-summary-critical";
 import { DashboardUpcomingDeadlines } from "@/components/dashboard-upcoming-deadlines-v2";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getAllTasks, getFocusSessions } from "@/lib/data";
+import { getAllTasks, getFocusSessions, getDailyPlan, updateTask } from "@/lib/data";
 import { useEffect, useState, useMemo } from "react";
-import { Task, FocusSession } from "@/lib/types";
+import { Task, FocusSession, Priority } from "@/lib/types";
 import {
   LayoutDashboard, BarChart3, Clock, Flame, Brain, ListTodo, Timer,
   PlusCircle,
   FileText,
   ClipboardList,
   Zap,
-  AlertTriangle, ChevronRight, CheckCircle2, Layers
+  AlertTriangle, ChevronRight, CheckCircle2, Layers, Repeat, CalendarCheck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { isSameDay, parseISO } from "date-fns";
+import { Checkbox } from "@/components/ui/checkbox";
+import { isSameDay, parseISO, startOfDay, format } from "date-fns";
 import { cn } from "@/lib/utils";
 
 import { DailyReviewModal } from "@/components/daily-review-modal";
@@ -73,7 +74,8 @@ function isMorningTime(): boolean {
 export default function DashboardPage() {
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [focusSessions, setFocusSessions] = useState<FocusSession[]>([]);
-  const [viewMode, setViewMode] = useState<'quick' | 'detailed'>('quick');
+  const [dailyPlanIds, setDailyPlanIds] = useState<string[]>([]);
+  const [viewMode, setViewMode] = useState<'schedule' | 'quick' | 'detailed'>('schedule');
   const [showMorningLaunch, setShowMorningLaunch] = useState(false);
 
   useEffect(() => {
@@ -86,12 +88,14 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const loadData = async () => {
-      const [tasks, sessions] = await Promise.all([
+      const [tasks, sessions, planIds] = await Promise.all([
         getAllTasks(),
-        getFocusSessions()
+        getFocusSessions(),
+        getDailyPlan().catch(() => []),
       ]);
       setAllTasks(tasks);
       setFocusSessions(sessions);
+      setDailyPlanIds(Array.isArray(planIds) ? planIds : []);
 
       // Schedule native notifications if in Capacitor
       await scheduleNotifications(tasks);
@@ -170,6 +174,156 @@ export default function DashboardPage() {
     };
   }, [allTasks, focusSessions]);
 
+  interface TodayItem {
+    id: string;
+    title: string;
+    type: 'frog' | 'task' | 'habit';
+    parentId?: string;
+    isSubtask: boolean;
+    completed: boolean;
+    priority: Priority;
+  }
+
+  const todayList = useMemo((): TodayItem[] => {
+    const today = new Date();
+    const items: TodayItem[] = [];
+    const addedIds = new Set<string>();
+
+    const addTask = (t: Task) => {
+      if (addedIds.has(t.id)) return;
+      items.push({
+        id: t.id,
+        title: t.title,
+        type: t.isFrog ? 'frog' : 'task',
+        isSubtask: false,
+        completed: t.status === 'done',
+        priority: t.priority,
+      });
+      addedIds.add(t.id);
+    };
+
+    const addSubtask = (parentTask: Task, stId: string) => {
+      if (addedIds.has(stId)) return;
+      const st = parentTask.subtasks?.find(s => s.id === stId);
+      if (!st) return;
+      items.push({
+        id: st.id,
+        title: `${st.title} — ${parentTask.title}`,
+        type: parentTask.isFrog ? 'frog' : 'task',
+        parentId: parentTask.id,
+        isSubtask: true,
+        completed: st.completed,
+        priority: st.priority ?? parentTask.priority,
+      });
+      addedIds.add(stId);
+    };
+
+    // 1. Frogs first
+    allTasks.filter(t => t.isFrog && !t.isHabit && t.status !== 'done').forEach(addTask);
+
+    // 2. Daily plan items (in plan order)
+    dailyPlanIds.forEach(id => {
+      if (addedIds.has(id)) return;
+      for (const t of allTasks) {
+        if (t.id === id) { addTask(t); break; }
+        if (t.subtasks?.some(s => s.id === id)) { addSubtask(t, id); break; }
+      }
+    });
+
+    // 3. Tasks/subtasks with doDate = today, not already added
+    allTasks.filter(t => !t.isHabit && t.status !== 'done').forEach(t => {
+      if (t.doDate && isSameDay(parseISO(t.doDate), today)) {
+        addTask(t);
+      }
+      t.subtasks?.filter(st => !st.completed && st.doDate && isSameDay(parseISO(st.doDate), today))
+        .forEach(st => addSubtask(t, st.id));
+    });
+
+    // 4. Urgent tasks not yet listed
+    allTasks.filter(t => !t.isHabit && t.status !== 'done' && t.priority === 'urgent').forEach(addTask);
+
+    // 5. Habits (not completed today)
+    allTasks.filter(t => t.isHabit).forEach(t => {
+      if (addedIds.has(t.id)) return;
+      const doneToday = t.completionHistory?.some(d => isSameDay(parseISO(d), today)) ?? false;
+      items.push({
+        id: t.id,
+        title: t.title,
+        type: 'habit',
+        isSubtask: false,
+        completed: doneToday,
+        priority: t.priority,
+      });
+      addedIds.add(t.id);
+    });
+
+    // Completed items sink to bottom
+    return [...items.filter(i => !i.completed), ...items.filter(i => i.completed)];
+  }, [allTasks, dailyPlanIds]);
+
+  const refreshScheduleData = async () => {
+    const [tasks, planIds] = await Promise.all([
+      getAllTasks(),
+      getDailyPlan().catch(() => []),
+    ]);
+    setAllTasks(tasks);
+    setDailyPlanIds(Array.isArray(planIds) ? planIds : []);
+  };
+
+  const handleToggleTodayItem = async (item: TodayItem) => {
+    const today = new Date();
+    const newCompleted = !item.completed;
+
+    // Optimistic update
+    if (item.type === 'habit') {
+      setAllTasks(prev => prev.map(t => {
+        if (t.id !== item.id) return t;
+        const dayStr = startOfDay(today).toISOString();
+        const history = [...(t.completionHistory || [])];
+        if (newCompleted) {
+          if (!history.some(d => isSameDay(parseISO(d), today))) history.push(dayStr);
+        } else {
+          history.splice(history.findIndex(d => isSameDay(parseISO(d), today)), 1);
+        }
+        return { ...t, completionHistory: history };
+      }));
+    } else if (item.isSubtask && item.parentId) {
+      setAllTasks(prev => prev.map(t => {
+        if (t.id !== item.parentId) return t;
+        return { ...t, subtasks: t.subtasks.map(st => st.id === item.id ? { ...st, completed: newCompleted } : st) };
+      }));
+    } else {
+      setAllTasks(prev => prev.map(t => t.id === item.id ? { ...t, status: newCompleted ? 'done' : 'in-progress' } : t));
+    }
+
+    // Persist
+    try {
+      if (item.type === 'habit') {
+        const habit = allTasks.find(t => t.id === item.id);
+        if (!habit) return;
+        const dayStr = startOfDay(today).toISOString();
+        const history = [...(habit.completionHistory || [])];
+        if (newCompleted) {
+          if (!history.some(d => isSameDay(parseISO(d), today))) history.push(dayStr);
+        } else {
+          history.splice(history.findIndex(d => isSameDay(parseISO(d), today)), 1);
+        }
+        await updateTask({ ...habit, completionHistory: history });
+      } else if (item.isSubtask && item.parentId) {
+        const parent = allTasks.find(t => t.id === item.parentId);
+        if (!parent) return;
+        const updatedSubtasks = parent.subtasks.map(st => st.id === item.id ? { ...st, completed: newCompleted } : st);
+        await updateTask({ ...parent, subtasks: updatedSubtasks });
+      } else {
+        const task = allTasks.find(t => t.id === item.id);
+        if (!task) return;
+        await updateTask({ ...task, status: newCompleted ? 'done' : 'in-progress' });
+      }
+    } catch {
+      await refreshScheduleData();
+    }
+  };
+
   const handleDismissMorning = () => {
     sessionStorage.setItem('morning-launch-dismissed', 'true');
     setShowMorningLaunch(false);
@@ -192,7 +346,7 @@ export default function DashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.3)] rotate-3 hover:rotate-0 transition-transform duration-500">
+            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center shadow-sm rotate-3 hover:rotate-0 transition-transform duration-500">
               <Flame className="w-6 h-6 text-white" />
             </div>
             <h1 className="text-3xl font-bold tracking-tight text-foreground">Dash</h1>
@@ -200,14 +354,26 @@ export default function DashboardPage() {
           <p className="text-muted-foreground text-sm font-medium pl-1.5">Focus on what matters. Ignore the rest.</p>
         </div>
 
-        <div className="glass-morphism p-1 rounded-xl flex items-center shadow-inner">
+        <div className="bg-muted p-1 rounded-xl flex items-center shadow-sm border border-border">
+          <Button
+            variant={viewMode === 'schedule' ? 'secondary' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('schedule')}
+            className={cn(
+              "h-9 px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
+              viewMode === 'schedule' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <CalendarCheck className="w-3.5 h-3.5 mr-2" />
+            Schedule
+          </Button>
           <Button
             variant={viewMode === 'quick' ? 'secondary' : 'ghost'}
             size="sm"
             onClick={() => setViewMode('quick')}
             className={cn(
-              "h-9 px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-500",
-              viewMode === 'quick' ? "bg-white/10 text-white shadow-lg" : "text-muted-foreground hover:text-white"
+              "h-9 px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
+              viewMode === 'quick' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
             )}
           >
             <LayoutDashboard className="w-3.5 h-3.5 mr-2" />
@@ -218,8 +384,8 @@ export default function DashboardPage() {
             size="sm"
             onClick={() => setViewMode('detailed')}
             className={cn(
-              "h-9 px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-500",
-              viewMode === 'detailed' ? "bg-white/10 text-white shadow-lg" : "text-muted-foreground hover:text-white"
+              "h-9 px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
+              viewMode === 'detailed' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
             )}
           >
             <BarChart3 className="w-3.5 h-3.5 mr-2" />
@@ -228,7 +394,77 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {viewMode === 'quick' ? (
+      {viewMode === 'schedule' && (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-400">
+          {/* Stats strip */}
+          <div className="flex items-center gap-4 text-xs text-muted-foreground mb-5 pl-1">
+            <span className="flex items-center gap-1.5">
+              <span className="text-emerald-500 font-semibold">{stats.frogsRemaining}</span> frogs left
+            </span>
+            <span className="text-muted-foreground/40">·</span>
+            <span className="flex items-center gap-1.5">
+              <span className="text-red-400 font-semibold">{stats.criticalTasks}</span> urgent
+            </span>
+            <span className="text-muted-foreground/40">·</span>
+            <span className="flex items-center gap-1.5">
+              <span className="text-green-400 font-semibold">{stats.habitsDoneToday}/{stats.habitsTotal}</span> habits
+            </span>
+            <span className="text-muted-foreground/40">·</span>
+            <span className="text-muted-foreground">{format(new Date(), 'EEEE, MMM d')}</span>
+          </div>
+
+          {/* Task list */}
+          {todayList.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
+              <CheckCircle2 className="w-10 h-10 text-green-500 opacity-60" />
+              <p className="text-muted-foreground font-medium">Nothing on your list. Clean slate.</p>
+            </div>
+          ) : (
+            <div className="space-y-0.5 max-w-2xl">
+              {todayList.map((item, idx) => {
+                const isFirstCompleted = item.completed && (idx === 0 || !todayList[idx - 1].completed);
+                return (
+                  <div key={item.id}>
+                    {isFirstCompleted && todayList.some(i => !i.completed) && (
+                      <div className="flex items-center gap-3 py-3">
+                        <div className="h-px flex-1 bg-border" />
+                        <span className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold">Done</span>
+                        <div className="h-px flex-1 bg-border" />
+                      </div>
+                    )}
+                    <div
+                      className={cn(
+                        "flex items-center gap-3 px-3 py-2.5 rounded-lg group transition-colors",
+                        item.completed ? "opacity-40" : "hover:bg-muted/50"
+                      )}
+                    >
+                      <Checkbox
+                        checked={item.completed}
+                        onCheckedChange={() => handleToggleTodayItem(item)}
+                        className="shrink-0"
+                      />
+                      <span className={cn(
+                        "flex-1 text-sm font-medium leading-snug",
+                        item.completed && "line-through"
+                      )}>
+                        {item.title}
+                      </span>
+                      {item.type === 'frog' && (
+                        <span className="text-base leading-none shrink-0" title="Frog">🐸</span>
+                      )}
+                      {item.type === 'habit' && (
+                        <Repeat className="w-3.5 h-3.5 text-muted-foreground/50 shrink-0" />
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {viewMode === 'quick' && (
         <div className="animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200 fill-mode-both">
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 mb-10">
             <SummaryCard
@@ -296,7 +532,9 @@ export default function DashboardPage() {
             </SummaryCard>
           </div>
         </div>
-      ) : (
+      )}
+
+      {viewMode === 'detailed' && (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
           {/* The Overview metrics remain visible at the top */}
           <DashboardOverview allTasks={allTasks} />

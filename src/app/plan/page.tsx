@@ -9,7 +9,7 @@ import { Task, Priority } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { PlusCircle, ArrowLeftCircle, GripVertical, Loader2, BatteryLow, BatteryMedium, BatteryFull } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { EnergyCheckIn, EnergyIndicator } from "@/components/energy-check-in";
+import { EnergyIndicator } from "@/components/energy-check-in";
 import { getTodayEnergy, getEnergyMatch } from "@/lib/energy";
 import { EnergyLevel } from "@/lib/types";
 
@@ -287,7 +287,6 @@ export default function PlanPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <EnergyCheckIn onComplete={(level) => setCurrentEnergy(level)} />
       <div className="flex justify-between items-end">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Plan Your Day</h1>
@@ -296,7 +295,7 @@ export default function PlanPage() {
             <EnergyIndicator />
           </div>
         </div>
-        <div>
+        <div className="flex items-center gap-3">
           <input
             type="date"
             value={selectedDate}

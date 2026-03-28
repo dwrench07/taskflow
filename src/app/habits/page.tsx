@@ -458,7 +458,7 @@ function HabitsPageContent() {
 
             <div className="w-full min-w-0 h-[calc(100vh-theme(spacing.36))]">
                 <ScrollArea className="h-full pr-4">
-                    <div className="grid gap-4 sm:gap-4 pb-8 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    <div className="grid gap-4 sm:gap-4 pb-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                         {sortedHabits.map(habit => {
                             const streak = calculateStreak(habit);
                             const completedToday = hasCompletedToday(habit);
@@ -482,7 +482,7 @@ function HabitsPageContent() {
                                             <TooltipProvider delayDuration={300}>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
-                                                        <CardTitle className="flex-1 truncate text-left min-w-0 text-base sm:text-xl leading-tight cursor-help">{habit.title}</CardTitle>
+                                                        <CardTitle className="flex-1 line-clamp-2 text-left min-w-0 text-base sm:text-lg leading-tight cursor-help">{habit.title}</CardTitle>
                                                     </TooltipTrigger>
                                                     <TooltipContent side="top" className="max-w-[250px] break-words z-50">
                                                         <p>{habit.title}</p>

@@ -8,12 +8,12 @@ import { ArrowRightCircle, AlertTriangle, HelpCircle, Maximize2, Coffee, Clock, 
 import Link from "next/link";
 
 const REASON_CONFIG: Record<PushReason, { label: string; icon: React.ReactNode; color: string; insight: string }> = {
-  'too-scary': { label: 'Too Scary', icon: <AlertTriangle className="h-3.5 w-3.5" />, color: 'text-red-500 bg-red-500/10', insight: 'Your main blocker is fear, not ability. Try smaller first steps.' },
+  'too-scary': { label: 'Too Scary', icon: <AlertTriangle className="h-3.5 w-3.5" />, color: 'text-red-600 dark:text-red-400 bg-red-500/10', insight: 'Your main blocker is fear, not ability. Try smaller first steps.' },
   'too-vague': { label: 'Too Vague', icon: <HelpCircle className="h-3.5 w-3.5" />, color: 'text-purple-500 bg-purple-500/10', insight: 'You need more clarity before starting. Spend 5 min defining step 1.' },
   'too-big': { label: 'Too Big', icon: <Maximize2 className="h-3.5 w-3.5" />, color: 'text-orange-500 bg-orange-500/10', insight: 'Break tasks into subtasks more often. Big = paralysis for you.' },
   'too-boring': { label: 'Too Boring', icon: <Coffee className="h-3.5 w-3.5" />, color: 'text-yellow-500 bg-yellow-500/10', insight: 'Batch boring tasks together or pair with music/rewards.' },
   'ran-out-of-time': { label: 'No Time', icon: <Clock className="h-3.5 w-3.5" />, color: 'text-blue-500 bg-blue-500/10', insight: 'Your daily plan may be too ambitious. Try planning fewer tasks.' },
-  'deprioritized': { label: 'Deprioritized', icon: <ChevronDown className="h-3.5 w-3.5" />, color: 'text-slate-500 bg-slate-500/10', insight: 'This is healthy prioritization — but check if these tasks should be dropped entirely.' },
+  'deprioritized': { label: 'Deprioritized', icon: <ChevronDown className="h-3.5 w-3.5" />, color: 'text-slate-600 dark:text-slate-400 bg-slate-500/10', insight: 'This is healthy prioritization — but check if these tasks should be dropped entirely.' },
 };
 
 interface DashboardPushAnalyticsProps {
@@ -67,7 +67,7 @@ export function DashboardPushAnalytics({ allTasks }: DashboardPushAnalyticsProps
 
   if (!analytics) {
     return (
-      <Card className="border-border/50">
+      <Card className="border-border shadow-sm">
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-bold flex items-center gap-2">
             <ArrowRightCircle className="h-4 w-4 text-orange-500" />
@@ -84,7 +84,7 @@ export function DashboardPushAnalytics({ allTasks }: DashboardPushAnalyticsProps
   const topConfig = REASON_CONFIG[analytics.topReason.reason];
 
   return (
-    <Card className="border-border/50">
+    <Card className="border-border shadow-sm">
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-bold flex items-center gap-2">
           <ArrowRightCircle className="h-4 w-4 text-orange-500" />
@@ -94,11 +94,11 @@ export function DashboardPushAnalytics({ allTasks }: DashboardPushAnalyticsProps
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Main insight */}
-        <div className="rounded-lg bg-orange-500/5 border border-orange-500/20 p-3 space-y-1.5">
+        <div className="rounded-lg bg-muted/50 border border-border p-3 space-y-1.5">
           <div className="flex items-center gap-2 text-sm font-semibold">
             {topConfig.icon}
             <span>Your #1 push reason: <span className={topConfig.color.split(' ')[0]}>{topConfig.label}</span></span>
-            <span className="text-muted-foreground">({analytics.topReason.percentage}%)</span>
+            <span className="text-muted-foreground ml-1">({analytics.topReason.percentage}%)</span>
           </div>
           <p className="text-xs text-muted-foreground">{topConfig.insight}</p>
         </div>
@@ -128,19 +128,19 @@ export function DashboardPushAnalytics({ allTasks }: DashboardPushAnalyticsProps
         </div>
 
         {/* Emotional vs Practical */}
-        <div className="flex items-center gap-3 text-xs pt-2 border-t border-border/50">
+        <div className="flex items-center gap-3 text-xs pt-2 border-t border-border">
           {analytics.emotionalVsPractical.emotionalPct > 50 ? (
             <>
               <TrendingDown className="h-3.5 w-3.5 text-red-500 shrink-0" />
               <span className="text-muted-foreground">
-                <span className="text-red-400 font-semibold">{analytics.emotionalVsPractical.emotionalPct}% emotional</span> — fear and boredom are your main blockers, not logistics
+                <span className="text-red-500 dark:text-red-400 font-semibold">{analytics.emotionalVsPractical.emotionalPct}% emotional</span> — fear and boredom are your main blockers, not logistics
               </span>
             </>
           ) : (
             <>
               <TrendingUp className="h-3.5 w-3.5 text-green-500 shrink-0" />
               <span className="text-muted-foreground">
-                <span className="text-green-400 font-semibold">{100 - analytics.emotionalVsPractical.emotionalPct}% practical</span> — your pushes are mostly rational, not fear-based
+                <span className="text-green-500 dark:text-green-400 font-semibold">{100 - analytics.emotionalVsPractical.emotionalPct}% practical</span> — your pushes are mostly rational, not fear-based
               </span>
             </>
           )}
@@ -148,7 +148,7 @@ export function DashboardPushAnalytics({ allTasks }: DashboardPushAnalyticsProps
 
         {/* Chronic pushers */}
         {analytics.chronicPushers.length > 0 && (
-          <div className="space-y-2 pt-2 border-t border-border/50">
+          <div className="space-y-2 pt-2 border-t border-border">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Chronically Pushed</p>
             {analytics.chronicPushers.map(task => {
               const topReason = task.pushHistory?.[task.pushHistory.length - 1]?.reason;

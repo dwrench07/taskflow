@@ -57,6 +57,12 @@
     --habits-gradient: linear-gradient(135deg, #22c55e 0%, #064e3b 100%);
     --focus-gradient: linear-gradient(135deg, #06b6d4 0%, #164e63 100%);
   }
+  .glass {
+    @apply bg-card border border-border shadow-md;
+  }
+  .glass-morphism {
+    @apply bg-card border border-border shadow-md;
+  }
   .dark {
     /* Same as root since we're forcing a premium dark mode */
     --background: 240 10% 4%;
@@ -107,8 +113,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground tracking-tight selection:bg-primary/20 selection:text-primary-foreground;
+    @apply bg-background text-foreground tracking-tight selection:bg-primary/30 selection:text-primary-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
-    background-attachment: fixed;
   }
 }

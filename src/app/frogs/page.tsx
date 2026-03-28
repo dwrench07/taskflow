@@ -112,7 +112,7 @@ export default function FrogsPage() {
             ) : (
                 <div className="grid gap-8">
                     {/* The Biggest Frog */}
-                    <Card className="border-2 border-primary/30 bg-primary/5 shadow-2xl shadow-primary/10 overflow-hidden relative">
+                    <Card className="border-2 border-primary bg-card shadow-lg overflow-hidden relative">
                         <div className="absolute top-0 right-0 p-4 opacity-10">
                             <Flame className="h-24 w-24 text-primary" />
                         </div>
@@ -147,14 +147,14 @@ export default function FrogsPage() {
                             </div>
                             {/* Smart intervention based on push reason */}
                             {getTopPushReason(frogs[0]) && (
-                                <div className="flex items-start gap-2 text-sm text-muted-foreground bg-blue-500/5 border border-blue-500/20 rounded-lg px-4 py-3">
-                                    <Lightbulb className="h-4 w-4 text-blue-400 shrink-0 mt-0.5" />
+                                <div className="flex items-start gap-2 text-sm text-foreground bg-muted border border-border rounded-lg px-4 py-3">
+                                    <Lightbulb className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                                     <span>{PUSH_INTERVENTIONS[getTopPushReason(frogs[0])!]}</span>
                                 </div>
                             )}
                             <Button
                                 size="lg"
-                                className="w-full text-xl h-16 font-black gap-3 shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform"
+                                className="w-full text-xl h-16 font-black gap-3 shadow-sm hover:scale-[1.01] transition-transform"
                                 onClick={() => handleEatFrog(frogs[0])}
                             >
                                 <Play className="fill-current" /> EAT THIS FROG NOW
@@ -168,7 +168,7 @@ export default function FrogsPage() {
                             <h3 className="text-xl font-bold px-1">Other Frogs in Waiting</h3>
                             <div className="grid gap-4 md:grid-cols-2">
                                 {frogs.slice(1).map(frog => (
-                                    <Card key={frog.id} className="glass-morphism border-white/5 hover:border-primary/20 transition-all hover:shadow-lg">
+                                    <Card key={frog.id} className="bg-card border border-border hover:border-primary transition-all hover:shadow-md">
                                         <CardHeader className="pb-3">
                                             <div className="flex justify-between items-start mb-1">
                                                 <Badge variant="secondary" className="text-[10px] uppercase font-bold tracking-wider">
@@ -193,8 +193,8 @@ export default function FrogsPage() {
                                         </CardHeader>
                                         <CardContent className="pb-4 space-y-3">
                                             {getTopPushReason(frog) && (
-                                                <div className="flex items-start gap-1.5 text-xs text-muted-foreground bg-blue-500/5 border border-blue-500/20 rounded-lg px-3 py-2">
-                                                    <Lightbulb className="h-3 w-3 text-blue-400 shrink-0 mt-0.5" />
+                                                <div className="flex items-start gap-1.5 text-xs text-foreground bg-muted border border-border rounded-lg px-3 py-2">
+                                                    <Lightbulb className="h-3 w-3 text-primary shrink-0 mt-0.5" />
                                                     <span>{PUSH_INTERVENTIONS[getTopPushReason(frog)!]}</span>
                                                 </div>
                                             )}
