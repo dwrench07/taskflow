@@ -45,9 +45,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getAllTasks, getFocusSessions } from "@/lib/data";
 import { useEffect, useState, useMemo } from "react";
 import { Task, FocusSession } from "@/lib/types";
-import { LayoutDashboard, BarChart3, Clock, Flame, Brain, ListTodo, Timer, 
-  PlusCircle, 
-  FileText, 
+import {
+  LayoutDashboard, BarChart3, Clock, Flame, Brain, ListTodo, Timer,
+  PlusCircle,
+  FileText,
   ClipboardList,
   Zap,
   AlertTriangle, ChevronRight, CheckCircle2, Layers
@@ -91,7 +92,7 @@ export default function DashboardPage() {
       ]);
       setAllTasks(tasks);
       setFocusSessions(sessions);
-      
+
       // Schedule native notifications if in Capacitor
       await scheduleNotifications(tasks);
     }
@@ -101,12 +102,12 @@ export default function DashboardPage() {
   const stats = useMemo(() => {
     const today = new Date();
     const activeTasks = allTasks.filter(t => t.status !== 'done' && !t.isHabit);
-    const criticalTasks = activeTasks.filter(t => 
-        t.priority === 'urgent' || t.priority === 'high' || (t.endDate && isSameDay(parseISO(t.endDate), today))
+    const criticalTasks = activeTasks.filter(t =>
+      t.priority === 'urgent' || t.priority === 'high' || (t.endDate && isSameDay(parseISO(t.endDate), today))
     ).length;
 
     const pnrCount = allTasks.filter(t => t.doDate && t.status !== 'done' && !t.isHabit).length;
-    
+
     const habits = allTasks.filter(t => t.isHabit);
     const habitsDoneToday = habits.filter(h => h.completionHistory?.some(d => isSameDay(parseISO(d), today))).length;
 
@@ -121,27 +122,27 @@ export default function DashboardPage() {
     let subTasksDoneToday = 0;
 
     allTasks.forEach(task => {
-        if (task.isHabit) return;
+      if (task.isHabit) return;
 
-        // Check top-level task
-        const isTaskToday = (task.doDate && isSameDay(parseISO(task.doDate), today)) || 
-                           (task.endDate && isSameDay(parseISO(task.endDate), today));
-        
-        if (isTaskToday) {
-            topTasksTotalToday++;
-            if (task.status === 'done') topTasksDoneToday++;
+      // Check top-level task
+      const isTaskToday = (task.doDate && isSameDay(parseISO(task.doDate), today)) ||
+        (task.endDate && isSameDay(parseISO(task.endDate), today));
+
+      if (isTaskToday) {
+        topTasksTotalToday++;
+        if (task.status === 'done') topTasksDoneToday++;
+      }
+
+      // Check subtasks
+      task.subtasks?.forEach(sub => {
+        const isSubToday = (sub.doDate && isSameDay(parseISO(sub.doDate), today)) ||
+          (sub.endDate && isSameDay(parseISO(sub.endDate), today));
+
+        if (isSubToday) {
+          subTasksTotalToday++;
+          if (sub.completed) subTasksDoneToday++;
         }
-
-        // Check subtasks
-        task.subtasks?.forEach(sub => {
-            const isSubToday = (sub.doDate && isSameDay(parseISO(sub.doDate), today)) || 
-                              (sub.endDate && isSameDay(parseISO(sub.endDate), today));
-            
-            if (isSubToday) {
-                subTasksTotalToday++;
-                if (sub.completed) subTasksDoneToday++;
-            }
-        });
+      });
     });
 
     const todaySessions = focusSessions.filter(s => isSameDay(parseISO(s.startTime), today));
@@ -152,20 +153,20 @@ export default function DashboardPage() {
     const frogsTotal = allTasks.filter(t => t.isFrog).length;
 
     return {
-        criticalTasks,
-        pnrCount,
-        habitsDoneToday,
-        habitsTotal: habits.length,
-        habitsWithStreak: habits.filter(h => calculateStreak(h) > 0).length,
-        habitDelta,
-        focusMinutes,
-        topTasksDoneToday,
-        topTasksTotalToday,
-        subTasksDoneToday,
-        subTasksTotalToday,
-        frogsRemaining: frogs.length,
-        frogsDoneToday,
-        frogsTotal
+      criticalTasks,
+      pnrCount,
+      habitsDoneToday,
+      habitsTotal: habits.length,
+      habitsWithStreak: habits.filter(h => calculateStreak(h) > 0).length,
+      habitDelta,
+      focusMinutes,
+      topTasksDoneToday,
+      topTasksTotalToday,
+      subTasksDoneToday,
+      subTasksTotalToday,
+      frogsRemaining: frogs.length,
+      frogsDoneToday,
+      frogsTotal
     };
   }, [allTasks, focusSessions]);
 
@@ -191,39 +192,39 @@ export default function DashboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
-             <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.3)] rotate-3 hover:rotate-0 transition-transform duration-500">
-                <Flame className="w-6 h-6 text-white" />
-             </div>
-             <h1 className="text-3xl font-bold tracking-tight text-foreground">Dash</h1>
+            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.3)] rotate-3 hover:rotate-0 transition-transform duration-500">
+              <Flame className="w-6 h-6 text-white" />
+            </div>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Dash</h1>
           </div>
           <p className="text-muted-foreground text-sm font-medium pl-1.5">Focus on what matters. Ignore the rest.</p>
         </div>
-        
+
         <div className="glass-morphism p-1 rounded-xl flex items-center shadow-inner">
-            <Button 
-                variant={viewMode === 'quick' ? 'secondary' : 'ghost'} 
-                size="sm" 
-                onClick={() => setViewMode('quick')}
-                className={cn(
-                    "h-9 px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-500",
-                    viewMode === 'quick' ? "bg-white/10 text-white shadow-lg" : "text-muted-foreground hover:text-white"
-                )}
-            >
-                <LayoutDashboard className="w-3.5 h-3.5 mr-2" />
-                Quick View
-            </Button>
-            <Button 
-                variant={viewMode === 'detailed' ? 'secondary' : 'ghost'} 
-                size="sm" 
-                onClick={() => setViewMode('detailed')}
-                className={cn(
-                    "h-9 px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-500",
-                    viewMode === 'detailed' ? "bg-white/10 text-white shadow-lg" : "text-muted-foreground hover:text-white"
-                )}
-            >
-                <BarChart3 className="w-3.5 h-3.5 mr-2" />
-                Deep Dive
-            </Button>
+          <Button
+            variant={viewMode === 'quick' ? 'secondary' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('quick')}
+            className={cn(
+              "h-9 px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-500",
+              viewMode === 'quick' ? "bg-white/10 text-white shadow-lg" : "text-muted-foreground hover:text-white"
+            )}
+          >
+            <LayoutDashboard className="w-3.5 h-3.5 mr-2" />
+            Quick View
+          </Button>
+          <Button
+            variant={viewMode === 'detailed' ? 'secondary' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('detailed')}
+            className={cn(
+              "h-9 px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-500",
+              viewMode === 'detailed' ? "bg-white/10 text-white shadow-lg" : "text-muted-foreground hover:text-white"
+            )}
+          >
+            <BarChart3 className="w-3.5 h-3.5 mr-2" />
+            Deep Dive
+          </Button>
         </div>
       </div>
 
@@ -231,160 +232,160 @@ export default function DashboardPage() {
         <div className="animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200 fill-mode-both">
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 mb-10">
             <SummaryCard
-                icon={Zap}
-                title="Frogs"
-                value={stats.frogsRemaining}
-                subtitle={`${stats.frogsDoneToday}/${stats.frogsTotal} Eaten`}
-                color="text-emerald-500"
+              icon={Zap}
+              title="Frogs"
+              value={stats.frogsRemaining}
+              subtitle={`${stats.frogsDoneToday}/${stats.frogsTotal} Eaten`}
+              color="text-emerald-500"
             >
-                <div className="space-y-2">
-                    {allTasks.filter(t => t.isFrog && t.status !== 'done').slice(0, 3).map(t => (
-                        <div key={t.id} className="text-[10px] flex items-center gap-2">
-                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                             <span className="truncate opacity-80">{t.title}</span>
-                        </div>
-                    ))}
-                    {stats.frogsRemaining === 0 && <p className="text-[10px] text-emerald-500 font-bold">All frogs eaten! 🐸🏆</p>}
-                </div>
+              <div className="space-y-2">
+                {allTasks.filter(t => t.isFrog && t.status !== 'done').slice(0, 3).map(t => (
+                  <div key={t.id} className="text-[10px] flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                    <span className="truncate opacity-80">{t.title}</span>
+                  </div>
+                ))}
+                {stats.frogsRemaining === 0 && <p className="text-[10px] text-emerald-500 font-bold">All frogs eaten! 🐸🏆</p>}
+              </div>
             </SummaryCard>
             <SummaryCard
-                icon={AlertTriangle}
-                title="Urgent"
-                value={stats.criticalTasks}
-                subtitle="High priority & deadlines"
-                color="text-red-500"
+              icon={AlertTriangle}
+              title="Urgent"
+              value={stats.criticalTasks}
+              subtitle="High priority & deadlines"
+              color="text-red-500"
             >
-                <CriticalDetail tasks={allTasks} />
+              <CriticalDetail tasks={allTasks} />
             </SummaryCard>
             <SummaryCard
-                icon={ListTodo}
-                title="Tasks"
-                value={`${stats.topTasksDoneToday}/${stats.topTasksTotalToday}`}
-                subtitle="Main objectives today"
-                color="text-blue-500"
+              icon={ListTodo}
+              title="Tasks"
+              value={`${stats.topTasksDoneToday}/${stats.topTasksTotalToday}`}
+              subtitle="Main objectives today"
+              color="text-blue-500"
             >
-                <TaskDetail tasks={allTasks} />
+              <TaskDetail tasks={allTasks} />
             </SummaryCard>
             <SummaryCard
-                icon={Clock}
-                title="PNR"
-                value={stats.pnrCount}
-                subtitle="Must start immediately"
-                color="text-orange-400"
+              icon={Clock}
+              title="PNR"
+              value={stats.pnrCount}
+              subtitle="Must start immediately"
+              color="text-orange-400"
             >
-                <PNRDetail tasks={allTasks} />
+              <PNRDetail tasks={allTasks} />
             </SummaryCard>
             <SummaryCard
-                icon={Flame}
-                title="Habits"
-                value={`${stats.habitsDoneToday}/${stats.habitsTotal}`}
-                subtitle="Consistency is key"
-                color="text-green-400"
-                trend={{ value: stats.habitDelta, isGood: true }}
+              icon={Flame}
+              title="Habits"
+              value={`${stats.habitsDoneToday}/${stats.habitsTotal}`}
+              subtitle="Consistency is key"
+              color="text-green-400"
+              trend={{ value: stats.habitDelta, isGood: true }}
             >
-                <HabitDetail tasks={allTasks} />
+              <HabitDetail tasks={allTasks} />
             </SummaryCard>
             <SummaryCard
-                icon={Brain}
-                title="Focus"
-                value={`${Math.round(stats.focusMinutes / 60 * 10) / 10}h`}
-                subtitle="Total deep work today"
-                color="text-cyan-400"
+              icon={Brain}
+              title="Focus"
+              value={`${Math.round(stats.focusMinutes / 60 * 10) / 10}h`}
+              subtitle="Total deep work today"
+              color="text-cyan-400"
             >
-                <FocusDetail sessions={focusSessions} />
+              <FocusDetail sessions={focusSessions} />
             </SummaryCard>
           </div>
         </div>
       ) : (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* The Overview metrics remain visible at the top */}
-            <DashboardOverview allTasks={allTasks} />
+          {/* The Overview metrics remain visible at the top */}
+          <DashboardOverview allTasks={allTasks} />
 
-            <div className="max-w-[800px]">
-                <DashboardUpcomingDeadlines allTasks={allTasks} />
-            </div>
+          <div className="max-w-[800px]">
+            <DashboardUpcomingDeadlines allTasks={allTasks} />
+          </div>
 
-            <Tabs defaultValue="overview" className="w-full space-y-6">
-                <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto md:w-[600px] bg-muted/30 p-1">
-                <TabsTrigger value="overview" className="py-2">Performance</TabsTrigger>
-                <TabsTrigger value="deep-work" className="py-2">Deep Work</TabsTrigger>
-                <TabsTrigger value="strategic" className="py-2">Strategic</TabsTrigger>
-                <TabsTrigger value="velocity" className="py-2">Velocity</TabsTrigger>
-                <TabsTrigger value="settings" className="py-2">Settings</TabsTrigger>
-                </TabsList>
+          <Tabs defaultValue="overview" className="w-full space-y-6">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto md:w-[600px] bg-muted/30 p-1">
+              <TabsTrigger value="overview" className="py-2">Performance</TabsTrigger>
+              <TabsTrigger value="deep-work" className="py-2">Deep Work</TabsTrigger>
+              <TabsTrigger value="strategic" className="py-2">Strategic</TabsTrigger>
+              <TabsTrigger value="velocity" className="py-2">Velocity</TabsTrigger>
+              <TabsTrigger value="settings" className="py-2">Settings</TabsTrigger>
+            </TabsList>
 
-                <TabsContent value="overview" className="space-y-6 animate-fade-in">
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-                    <div className="col-span-full xl:col-span-4 space-y-6">
-                    <DashboardCompletionChart allTasks={allTasks} />
-                    <div className="grid gap-6 sm:grid-cols-2">
-                        <DashboardPriorityChart allTasks={allTasks} />
-                        <DashboardStatusChart allTasks={allTasks} />
-                    </div>
-                    </div>
-                    <div className="col-span-full xl:col-span-3 space-y-6">
-                     <DashboardWeeklyReport allTasks={allTasks} focusSessions={focusSessions} />
-                     <DashboardDailyWins />
-                     <DashboardPointOfNoReturn allTasks={allTasks} />
-                    <DashboardOverdueRisk allTasks={allTasks} />
-                    <DashboardAlmostDone allTasks={allTasks} />
-                    <DashboardPushAnalytics allTasks={allTasks} />
-                    <DashboardApproachScore allTasks={allTasks} focusSessions={focusSessions} />
-                    <DashboardFrogCompletion allTasks={allTasks} />
-                    <DashboardBlockerInsights allTasks={allTasks} />
-                    <DashboardTShirtAccuracy allTasks={allTasks} />
-                    <DashboardPushFunnel allTasks={allTasks} />
-                    <DashboardHabitHeatmap allTasks={allTasks} />
-                    <DashboardStats allTasks={allTasks} />
-                    </div>
+            <TabsContent value="overview" className="space-y-6 animate-fade-in">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+                <div className="col-span-full xl:col-span-4 space-y-6">
+                  <DashboardCompletionChart allTasks={allTasks} />
+                  <div className="grid gap-6 sm:grid-cols-2">
+                    <DashboardPriorityChart allTasks={allTasks} />
+                    <DashboardStatusChart allTasks={allTasks} />
+                  </div>
                 </div>
-                </TabsContent>
+                <div className="col-span-full xl:col-span-3 space-y-6">
+                  <DashboardWeeklyReport allTasks={allTasks} focusSessions={focusSessions} />
+                  <DashboardDailyWins />
+                  <DashboardPointOfNoReturn allTasks={allTasks} />
+                  <DashboardOverdueRisk allTasks={allTasks} />
+                  <DashboardAlmostDone allTasks={allTasks} />
+                  <DashboardPushAnalytics allTasks={allTasks} />
+                  <DashboardApproachScore allTasks={allTasks} focusSessions={focusSessions} />
+                  <DashboardFrogCompletion allTasks={allTasks} />
+                  <DashboardBlockerInsights allTasks={allTasks} />
+                  <DashboardTShirtAccuracy allTasks={allTasks} />
+                  <DashboardPushFunnel allTasks={allTasks} />
+                  <DashboardHabitHeatmap allTasks={allTasks} />
+                  <DashboardStats allTasks={allTasks} />
+                </div>
+              </div>
+            </TabsContent>
 
-                <TabsContent value="deep-work" className="space-y-6 animate-fade-in">
-                <div className="grid gap-6 md:grid-cols-2">
-                    <DashboardFocusDistribution allTasks={allTasks} focusSessions={focusSessions} />
-                    <DashboardDistractionScore focusSessions={focusSessions} />
-                </div>
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    <DashboardPeakHours focusSessions={focusSessions} />
-                    <DashboardEnergyMatrix focusSessions={focusSessions} />
-                    <DashboardWorryTracker focusSessions={focusSessions} allTasks={allTasks} />
-                </div>
-                <div className="grid gap-6 md:grid-cols-2">
-                    <DashboardEmotionProductivity focusSessions={focusSessions} />
-                    <DashboardTimeLimitAdherence allTasks={allTasks} focusSessions={focusSessions} />
-                </div>
-                </TabsContent>
+            <TabsContent value="deep-work" className="space-y-6 animate-fade-in">
+              <div className="grid gap-6 md:grid-cols-2">
+                <DashboardFocusDistribution allTasks={allTasks} focusSessions={focusSessions} />
+                <DashboardDistractionScore focusSessions={focusSessions} />
+              </div>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <DashboardPeakHours focusSessions={focusSessions} />
+                <DashboardEnergyMatrix focusSessions={focusSessions} />
+                <DashboardWorryTracker focusSessions={focusSessions} allTasks={allTasks} />
+              </div>
+              <div className="grid gap-6 md:grid-cols-2">
+                <DashboardEmotionProductivity focusSessions={focusSessions} />
+                <DashboardTimeLimitAdherence allTasks={allTasks} focusSessions={focusSessions} />
+              </div>
+            </TabsContent>
 
-                <TabsContent value="strategic" className="space-y-6 animate-fade-in">
-                <div className="grid gap-6 lg:grid-cols-7">
-                    <div className="col-span-full xl:col-span-4 space-y-6">
-                    <DashboardGoalVelocity />
-                    <DashboardPillarBalance allTasks={allTasks} focusSessions={focusSessions} />
-                    </div>
-                    <div className="col-span-full xl:col-span-3 space-y-6">
-                    <DashboardGoals />
-                    <DashboardGoalCoverage allTasks={allTasks} />
-                    </div>
+            <TabsContent value="strategic" className="space-y-6 animate-fade-in">
+              <div className="grid gap-6 lg:grid-cols-7">
+                <div className="col-span-full xl:col-span-4 space-y-6">
+                  <DashboardGoalVelocity />
+                  <DashboardPillarBalance allTasks={allTasks} focusSessions={focusSessions} />
                 </div>
-                </TabsContent>
+                <div className="col-span-full xl:col-span-3 space-y-6">
+                  <DashboardGoals />
+                  <DashboardGoalCoverage allTasks={allTasks} />
+                </div>
+              </div>
+            </TabsContent>
 
-                <TabsContent value="velocity" className="space-y-6 animate-fade-in">
-                <div className="grid gap-6 md:grid-cols-2">
-                    <DashboardTaskVelocity allTasks={allTasks} />
-                    <DashboardTagHeatmap allTasks={allTasks} />
-                </div>
-                <div className="grid gap-6 md:grid-cols-2">
-                    <DashboardHabitResilience allTasks={allTasks} />
-                </div>
-                </TabsContent>
+            <TabsContent value="velocity" className="space-y-6 animate-fade-in">
+              <div className="grid gap-6 md:grid-cols-2">
+                <DashboardTaskVelocity allTasks={allTasks} />
+                <DashboardTagHeatmap allTasks={allTasks} />
+              </div>
+              <div className="grid gap-6 md:grid-cols-2">
+                <DashboardHabitResilience allTasks={allTasks} />
+              </div>
+            </TabsContent>
 
-                <TabsContent value="settings" className="space-y-6 animate-fade-in">
-                    <div className="max-w-md mx-auto">
-                        <NotificationSettings />
-                    </div>
-                </TabsContent>
-            </Tabs>
+            <TabsContent value="settings" className="space-y-6 animate-fade-in">
+              <div className="max-w-md mx-auto">
+                <NotificationSettings />
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       )}
     </div>
