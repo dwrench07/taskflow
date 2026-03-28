@@ -29,7 +29,7 @@ import { FocusAnalyticsChart } from "@/components/focus-analytics-chart";
 import { DashboardEmotionTrends } from "@/components/dashboard-emotion-trends";
 import { EmotionCheckInModal, EmotionCheckInInline } from "@/components/emotion-check-in";
 import { StartAssist } from "@/components/start-assist";
-import { buildJotString } from "@/lib/jots";
+import { buildJotString, stripAllMetadata } from "@/lib/jots";
 
 export default function FocusPage() {
     const searchParams = useSearchParams();
@@ -721,8 +721,29 @@ export default function FocusPage() {
                                     onChange={e => setCurrentDistraction(e.target.value)}
                                     onKeyDown={e => {
                                         if (e.key === 'Enter' && currentDistraction.trim()) {
+                                            let text = currentDistraction.trim();
+                                            let cat = jotCategory;
+
+                                            // Detect slash commands
+                                            if (text.startsWith('/idea ')) {
+                                                cat = 'idea';
+                                                text = text.replace('/idea ', '');
+                                            } else if (text.startsWith('/todo ')) {
+                                                cat = 'todo';
+                                                text = text.replace('/todo ', '');
+                                            } else if (text.startsWith('/worry ')) {
+                                                cat = 'worry';
+                                                text = text.replace('/worry ', '');
+                                            } else if (text.startsWith('/random ')) {
+                                                cat = 'random';
+                                                text = text.replace('/random ', '');
+                                            } else if (text.startsWith('/note ')) {
+                                                cat = 'random';
+                                                text = text.replace('/note ', '');
+                                            }
+
                                             const timeStamp = mode === 'stopwatch' ? formatTime(elapsedTime) : formatTime(timeRemaining);
-                                            const jotStr = buildJotString(currentDistraction.trim(), jotCategory, timeStamp);
+                                            const jotStr = buildJotString(text, cat, timeStamp);
                                             const newDistractions = [...distractions, jotStr];
                                             setDistractions(newDistractions);
                                             setCurrentDistraction("");
@@ -749,7 +770,7 @@ export default function FocusPage() {
                                         return (
                                             <div key={i} className={cn("text-sm bg-muted/40 border border-border/50 border-l-2 p-3 rounded-xl shadow-sm animate-fade-in", cat ? catColors[cat] : '')}>
                                                 {cat && <span className="mr-1.5">{catIcons[cat]}</span>}
-                                                {d.replace(/\{category:\w+\}\s*/, '').replace(/^\[([ x])\]\s*/, '')}
+                                                {stripAllMetadata(d)}
                                             </div>
                                         );
                                     })}

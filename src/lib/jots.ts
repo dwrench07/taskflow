@@ -13,6 +13,15 @@ const CATEGORY_REGEX = /\{category:(\w+)\}\s*/;
 const TIMESTAMP_REGEX = /\[(\d{2}:\d{2})\]\s*/;
 const CHECKBOX_REGEX = /^\[([ x])\]\s*/;
 
+// Shared stripping logic for UI display
+export function stripAllMetadata(text: string): string {
+  return text
+    .replace(/\{category:\w+\}\s*/g, '')
+    .replace(/\[\d{2}:\d{2}\]\s*/g, '')
+    .replace(/^\[([ x])\]\s*/g, '')
+    .trim();
+}
+
 export function parseJotString(raw: string, sessionId: string, sessionDate: string, taskTitle?: string): ParsedJot {
   let text = raw;
   let category: JotCategory = 'untagged';
@@ -41,7 +50,7 @@ export function parseJotString(raw: string, sessionId: string, sessionDate: stri
   }
 
   return {
-    text: text.trim(),
+    text: stripAllMetadata(raw),
     category,
     timestamp,
     isDone,

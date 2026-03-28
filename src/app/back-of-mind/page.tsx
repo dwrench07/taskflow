@@ -23,6 +23,7 @@ import {
 } from "@/lib/data";
 import type { BackOfMindItem } from "@/lib/types";
 import { formatDistanceToNow, parseISO } from "date-fns";
+import { stripAllMetadata } from "@/lib/jots";
 
 const CATEGORIES = [
   { value: "worry", label: "Worry", icon: AlertTriangle, color: "text-red-400 border-red-500/30 bg-red-500/10" },
@@ -207,7 +208,7 @@ export default function BackOfMindPage() {
                   <Sparkles className="h-4 w-4 text-violet-400" />
                   <span className="text-xs font-bold uppercase tracking-wider text-violet-400">Random Reflection</span>
                 </div>
-                <p className="text-lg font-medium">{surfacedItem.content}</p>
+                <p className="text-lg font-medium">{stripAllMetadata(surfacedItem.content)}</p>
                 <div className="flex items-center gap-2 pt-1">
                   <Badge variant="outline" className={cn("text-[10px]", getCategoryConfig(surfacedItem.category).color)}>
                     {getCategoryConfig(surfacedItem.category).label}
@@ -367,7 +368,7 @@ export default function BackOfMindPage() {
                     </div>
                   </div>
 
-                  <p className="text-sm leading-relaxed">{item.content}</p>
+                  <p className="text-sm leading-relaxed">{stripAllMetadata(item.content)}</p>
 
                   <div className="flex items-center justify-between pt-1">
                     <Badge variant="outline" className={cn("text-[10px]", catConfig.color)}>

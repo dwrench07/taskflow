@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { getFocusSessions, getAllTasks, updateFocusSession, addTask } from "@/lib/data";
+import { getFocusSessions, getAllTasks, updateFocusSession, addTask, addBackOfMindItem } from "@/lib/data";
 import { FocusSession, Task, JotCategory } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
     StickyNote, Loader2, Calendar, Search, ListTodo, Lightbulb,
     AlertTriangle, MessageCircle, Filter, ArrowRightLeft, ShieldCheck,
-    ShieldAlert, HelpCircle, X
+    ShieldAlert, HelpCircle, X, Brain
 } from "lucide-react";
 import { format, parseISO, isAfter, isBefore } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -104,6 +104,32 @@ export default function JotsPage() {
             await updateFocusSession(sessionId, { distractions: newDistractions });
         } catch {
             setSessions(prev => prev.map(s => s.id === sessionId ? { ...s, distractions: session.distractions } : s));
+        }
+    };
+
+    const handleMoveToDeepStore = async (jot: ParsedJot) => {
+        try {
+            // Map JotCategory to BackOfMindCategory
+            const categoryMap: Record<JotCategory, string> = {
+                worry: 'worry',
+                idea: 'idea',
+                todo: 'task-idea',
+                random: 'other',
+                untagged: 'other'
+            };
+
+            await addBackOfMindItem({
+                content: jot.text,
+                category: categoryMap[jot.category],
+                relevanceScore: 5, // Default relevance
+            });
+
+            // Mark the jot as done
+            await handleToggleJot(jot.sessionId, jot.text);
+
+            toast({ title: "Promoted to Deep Store!", description: `"${jot.text}" is now in your Back of Mind.` });
+        } catch {
+            toast({ variant: "destructive", title: "Failed to promote to Deep Store" });
         }
     };
 
@@ -326,6 +352,18 @@ export default function JotsPage() {
 
                                                     {/* Actions */}
                                                     <div className="flex gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        {!jot.isDone && (
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-7 px-2 text-[10px] text-violet-400 hover:text-violet-300"
+                                                                onClick={() => handleMoveToDeepStore(jot)}
+                                                                title="Move to Deep Store"
+                                                            >
+                                                                <Brain className="h-3 w-3 mr-1" />
+                                                                Brain
+                                                            </Button>
+                                                        )}
                                                         {jot.category === 'todo' && !jot.isDone && (
                                                             <Button
                                                                 variant="ghost"
