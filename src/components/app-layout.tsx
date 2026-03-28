@@ -59,7 +59,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarHeader>
         <SidebarContent className="px-2 pb-4">
           <SidebarGroup className="py-1">
-            <SidebarGroupLabel className="text-[10px] uppercase tracking-wider h-6 px-2">Core</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-[11px] uppercase tracking-wider h-6 px-2">Core</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="gap-0.5">
                 {[
@@ -78,8 +78,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                       className="rounded-md transition-all hover:bg-white/5 data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
                     >
                       <Link href={item.href} className="flex items-center gap-2 px-2 py-0">
-                        <item.icon className="h-3.5 w-3.5" />
-                        <span className="font-medium text-xs">{item.label}</span>
+                        <item.icon className="h-4 w-4" />
+                        <span className="font-medium text-sm">{item.label}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -89,7 +89,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </SidebarGroup>
 
           <SidebarGroup className="py-1">
-            <SidebarGroupLabel className="text-[10px] uppercase tracking-wider h-6 px-2">Plan</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-[11px] uppercase tracking-wider h-6 px-2">Plan</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="gap-0.5">
                 {[
@@ -107,8 +107,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                       className="rounded-md transition-all hover:bg-white/5 data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
                     >
                       <Link href={item.href} className="flex items-center gap-2 px-2 py-0">
-                        <item.icon className="h-3.5 w-3.5" />
-                        <span className="font-medium text-xs">{item.label}</span>
+                        <item.icon className="h-4 w-4" />
+                        <span className="font-medium text-sm">{item.label}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -118,7 +118,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </SidebarGroup>
 
           <SidebarGroup className="py-1">
-            <SidebarGroupLabel className="text-[10px] uppercase tracking-wider h-6 px-2">Brain</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-[11px] uppercase tracking-wider h-6 px-2">Brain</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="gap-0.5">
                 {[
@@ -139,8 +139,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                       className="rounded-md transition-all hover:bg-white/5 data-[active=true]:bg-primary/10 data-[active=true]:text-primary"
                     >
                       <Link href={item.href} className="flex items-center gap-2 px-2 py-0">
-                        <item.icon className="h-3.5 w-3.5" />
-                        <span className="font-medium text-xs">{item.label}</span>
+                        <item.icon className="h-4 w-4" />
+                        <span className="font-medium text-sm">{item.label}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
