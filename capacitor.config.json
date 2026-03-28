@@ -1,0 +1,15 @@
+{
+  "appId": "com.dash.productivity",
+  "appName": "Dash",
+  "webDir": "out",
+  "server": {
+    "url": "https://taskflow-iota-ashen.vercel.app",
+    "cleartext": false
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_icon",
+      "iconColor": "#e11d48"
+    }
+  }
+}

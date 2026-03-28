@@ -59,6 +59,9 @@ import { cn } from "@/lib/utils";
 import { DailyReviewModal } from "@/components/daily-review-modal";
 import { MorningLaunch } from "@/components/morning-launch";
 import { EnergyCheckIn } from "@/components/energy-check-in";
+import { scheduleNotifications } from "@/lib/notifications";
+import { NotificationSettings } from "@/components/notification-settings";
+
 
 function isMorningTime(): boolean {
   const hour = new Date().getHours();
@@ -88,6 +91,9 @@ export default function DashboardPage() {
       ]);
       setAllTasks(tasks);
       setFocusSessions(sessions);
+      
+      // Schedule native notifications if in Capacitor
+      await scheduleNotifications(tasks);
     }
     loadData();
   }, []);
@@ -304,6 +310,7 @@ export default function DashboardPage() {
                 <TabsTrigger value="deep-work" className="py-2">Deep Work</TabsTrigger>
                 <TabsTrigger value="strategic" className="py-2">Strategic</TabsTrigger>
                 <TabsTrigger value="velocity" className="py-2">Velocity</TabsTrigger>
+                <TabsTrigger value="settings" className="py-2">Settings</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-6 animate-fade-in">
@@ -370,6 +377,12 @@ export default function DashboardPage() {
                 <div className="grid gap-6 md:grid-cols-2">
                     <DashboardHabitResilience allTasks={allTasks} />
                 </div>
+                </TabsContent>
+
+                <TabsContent value="settings" className="space-y-6 animate-fade-in">
+                    <div className="max-w-md mx-auto">
+                        <NotificationSettings />
+                    </div>
                 </TabsContent>
             </Tabs>
         </div>
