@@ -1,379 +1,327 @@
 
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { getAllTasks, getDailyPlan, updateDailyPlanAsync } from "@/lib/data";
-import { Task, Priority } from "@/lib/types";
+import { Task, Priority, EnergyLevel } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { PlusCircle, ArrowLeftCircle, GripVertical, Loader2, BatteryLow, BatteryMedium, BatteryFull } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { EnergyIndicator } from "@/components/energy-check-in";
+import { CheckCircle2, Loader2, X, Plus, ChevronRight, BatteryLow, BatteryMedium, BatteryFull, Zap, CalendarCheck } from "lucide-react";
+import { isSameDay, parseISO, isPast, isToday } from "date-fns";
 import { getTodayEnergy, getEnergyMatch } from "@/lib/energy";
-import { EnergyLevel } from "@/lib/types";
+import { EnergyIndicator } from "@/components/energy-check-in";
 
 const priorityStyles: Record<Priority, string> = {
-  urgent: "bg-red-600/30 text-red-500 border-red-600/50 shadow-[0_0_10px_rgba(220,38,38,0.3)] animate-pulse",
-  high: "bg-red-500/20 text-red-400 border-red-500/30",
+  urgent: "bg-red-600/20 text-red-400 border-red-600/40",
+  high: "bg-orange-500/20 text-orange-400 border-orange-500/30",
   medium: "bg-yellow-500/20 text-yellow-500 border-yellow-500/30",
   low: "bg-green-500/20 text-green-500 border-green-500/30",
 };
 
-function MiniTaskCard({
+const energyIcon = (level: EnergyLevel | null) => {
+  if (level === 'low') return <BatteryLow className="h-3.5 w-3.5 text-red-400" />;
+  if (level === 'medium') return <BatteryMedium className="h-3.5 w-3.5 text-yellow-400" />;
+  if (level === 'high') return <BatteryFull className="h-3.5 w-3.5 text-green-400" />;
+  return null;
+};
+
+function TaskRow({
   task,
-  onMove,
-  isBacklog,
-  onDragStart,
-  onDragEnter,
-  onDragEnd,
-  isDragging
+  onRemove,
+  onAdd,
+  mode,
+  energyMatch,
 }: {
   task: Task;
-  onMove: (id: string) => void;
-  isBacklog: boolean;
-  onDragStart?: (e: React.DragEvent<HTMLDivElement>, id: string) => void;
-  onDragEnter?: (e: React.DragEvent<HTMLDivElement>, id: string) => void;
-  onDragEnd?: (e: React.DragEvent<HTMLDivElement>) => void;
-  isDragging?: boolean;
+  onRemove?: () => void;
+  onAdd?: () => void;
+  mode: 'approved' | 'suggestion';
+  energyMatch?: 'match' | 'slight-mismatch' | 'mismatch' | null;
 }) {
   const renderTitle = (title: string) => {
     const match = title.match(/^(.*)\s*—\s*(.*)$/);
-    if (match) {
-      return (
-        <span>
-          {match[1]}{" "}
-          <span className="text-muted-foreground font-normal opacity-75">— {match[2]}</span>
-        </span>
-      );
-    }
+    if (match) return (
+      <span>{match[1]} <span className="text-muted-foreground font-normal opacity-70">— {match[2]}</span></span>
+    );
     return title;
   };
 
   return (
-    <Card
-      className={cn(
-        "group transition-all duration-300 ease-in-out hover:border-primary hover:shadow-md animate-fade-in",
-        isDragging ? "opacity-30 scale-95" : "hover:scale-[1.02]"
-      )}
-      draggable={!isBacklog}
-      onDragStart={(e) => onDragStart?.(e, task.id)}
-      onDragEnter={(e) => onDragEnter?.(e, task.id)}
-      onDragEnd={onDragEnd}
-      onDragOver={(e) => e.preventDefault()}
-    >
-      <CardContent className="p-3 flex items-center justify-between gap-2">
-        {!isBacklog && (
-          <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab group-hover:text-foreground" />
-        )}
-        <div className="flex-1">
-          <p className="font-semibold">{renderTitle(task.title)}</p>
-          <Badge variant="outline" className={cn("capitalize mt-1", priorityStyles[task.priority])}>
+    <div className={cn(
+      "flex items-center gap-3 px-4 py-3 rounded-xl border transition-all",
+      mode === 'approved' ? "bg-muted/30 border-border" : "bg-muted/10 border-border/50",
+      energyMatch === 'match' && "border-green-500/30",
+      energyMatch === 'mismatch' && "opacity-50",
+    )}>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium truncate">{renderTitle(task.title)}</p>
+        <div className="flex items-center gap-1.5 mt-1">
+          <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 capitalize", priorityStyles[task.priority])}>
             {task.priority}
           </Badge>
+          {task.energyLevel && (
+            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+              {energyIcon(task.energyLevel as EnergyLevel)}
+              {task.energyLevel}
+            </span>
+          )}
         </div>
-        <Button size="icon" variant="ghost" onClick={() => onMove(task.id)} className="opacity-0 group-hover:opacity-100 transition-opacity">
-          {isBacklog ? <PlusCircle className="h-5 w-5 text-primary" /> : <ArrowLeftCircle className="h-5 w-5 text-muted-foreground" />}
+      </div>
+      {mode === 'approved' && onRemove && (
+        <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive" onClick={onRemove}>
+          <X className="h-4 w-4" />
         </Button>
-      </CardContent>
-    </Card>
+      )}
+      {mode === 'suggestion' && onAdd && (
+        <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0 text-muted-foreground hover:text-primary" onClick={onAdd}>
+          <Plus className="h-4 w-4" />
+        </Button>
+      )}
+    </div>
   );
 }
 
-// Helper to determine if an ID is a subtask format typical of this app.
-// Since we don't naturally have a global subtask ID tracker that tells us its parent,
-// we will structure the combined ID as parentId_subtaskId for the daily plan if needed,
-// OR we just store the subtask ID if they are universally unique.
-// Actually, earlier we stored just task IDs. Let's see how dailyTaskIds handles it.
-
 export default function PlanPage() {
-  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [dailyTaskIds, setDailyTaskIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentEnergy, setCurrentEnergy] = useState<EnergyLevel | null>(null);
-
-  const dragItem = useRef<string | null>(null);
-  const dragOverItem = useRef<string | null>(null);
+  const [step, setStep] = useState<1 | 2 | 'done'>(1);
+  const [approvedIds, setApprovedIds] = useState<string[]>([]);
+  const [addedSuggestionIds, setAddedSuggestionIds] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+  const currentEnergy = getTodayEnergy();
+  const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
 
   useEffect(() => {
-    setCurrentEnergy(getTodayEnergy());
+    const load = async () => {
+      setLoading(true);
+      try {
+        const [tasks, planIds] = await Promise.all([getAllTasks(), getDailyPlan().catch(() => [])]);
+        setAllTasks(tasks || []);
+        const ids = Array.isArray(planIds) ? planIds : [];
+        setDailyTaskIds(ids);
+        if (ids.length > 0) {
+          setApprovedIds(ids);
+          setStep('done');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
   }, []);
 
-  const refreshData = async () => {
-    setLoading(true);
-    try {
-      const tasks = await getAllTasks();
-      const planIds = await getDailyPlan(selectedDate);
-      setAllTasks(tasks || []);
-      setDailyTaskIds(Array.isArray(planIds) ? planIds : []);
-    } catch (error) {
-      console.error("Failed to refresh daily plan:", error);
-    } finally {
-      setLoading(false);
+  // Non-negotiables: doDate=today, endDate=today, overdue incomplete
+  const nonNegotiables = useMemo(() => {
+    return allTasks.filter(t => {
+      if (t.isHabit || t.status === 'done') return false;
+      const doToday = t.doDate && isSameDay(parseISO(t.doDate), today);
+      const dueToday = t.endDate && isSameDay(parseISO(t.endDate), today);
+      const overdue = t.endDate && isPast(parseISO(t.endDate)) && !isToday(parseISO(t.endDate));
+      return doToday || dueToday || overdue;
+    });
+  }, [allTasks]);
+
+  // Suggestions: backlog tasks not in non-negotiables, sorted by energy match + priority
+  const suggestions = useMemo(() => {
+    const nonNegIds = new Set(nonNegotiables.map(t => t.id));
+    const priorityOrder: Record<Priority, number> = { urgent: 0, high: 1, medium: 2, low: 3 };
+    return allTasks
+      .filter(t => !t.isHabit && t.status !== 'done' && !nonNegIds.has(t.id) && !t.doDate && !t.endDate)
+      .sort((a, b) => {
+        const aMatch = currentEnergy ? getEnergyMatch(a.energyLevel, currentEnergy) : 'slight-mismatch';
+        const bMatch = currentEnergy ? getEnergyMatch(b.energyLevel, currentEnergy) : 'slight-mismatch';
+        const matchOrder = { match: 0, 'slight-mismatch': 1, mismatch: 2 };
+        const matchDiff = matchOrder[aMatch] - matchOrder[bMatch];
+        if (matchDiff !== 0) return matchDiff;
+        return priorityOrder[a.priority] - priorityOrder[b.priority];
+      })
+      .slice(0, 3);
+  }, [allTasks, nonNegotiables, currentEnergy]);
+
+  // Step 1: init approved from non-negotiables
+  useEffect(() => {
+    if (!loading && step === 1 && dailyTaskIds.length === 0) {
+      setApprovedIds(nonNegotiables.map(t => t.id));
     }
+  }, [loading, nonNegotiables]);
+
+  const approvedTasks = useMemo(() =>
+    approvedIds.map(id => allTasks.find(t => t.id === id)).filter(Boolean) as Task[],
+    [approvedIds, allTasks]
+  );
+
+  const handleRemove = (id: string) => setApprovedIds(prev => prev.filter(x => x !== id));
+  const handleAddSuggestion = (id: string) => {
+    setApprovedIds(prev => [...prev, id]);
+    setAddedSuggestionIds(prev => [...prev, id]);
+  };
+
+  const handleFinalize = async () => {
+    setSaving(true);
+    try {
+      await updateDailyPlanAsync(approvedIds, todayStr);
+      setDailyTaskIds(approvedIds);
+      setStep('done');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleReset = async () => {
+    setSaving(true);
+    try {
+      await updateDailyPlanAsync([], todayStr);
+      setDailyTaskIds([]);
+      setApprovedIds(nonNegotiables.map(t => t.id));
+      setAddedSuggestionIds([]);
+      setStep(1);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
-  useEffect(() => {
-    refreshData();
-  }, [selectedDate]);
-
-  const dailyTasks = dailyTaskIds.map(id => {
-    // Find parent or subtask
-    for (const t of (Array.isArray(allTasks) ? allTasks : [])) {
-      if (t.id === id) return t;
-      if (t.subtasks) {
-        const st = t.subtasks.find(s => s.id === id);
-        if (st) {
-          return {
-            ...st,
-            parentId: t.id,
-            description: "",
-            status: st.completed ? 'done' : 'todo' as 'done' | 'todo',
-            priority: t.priority,
-            subtasks: [],
-            notes: [],
-            isSubtask: true,
-            title: `${st.title} — ${t.title}`
-          } as unknown as Task;
-        }
-      }
-    }
-    return undefined;
-  }).filter((t): t is Task => !!t);
-
-  const backlogTasks: Task[] = [];
-  (Array.isArray(allTasks) ? allTasks : []).forEach(task => {
-    if (task.status === 'done' || task.isHabit) return;
-
-    // Only add parent if it has no incomplete subtasks, OR we add subtasks individually.
-    // Wait, let's just add the parent if the parent is not in dailyTaskIds AND has no subtasks.
-    // Or add subtasks if they exist.
-
-    const incompleteSubtasks = task.subtasks?.filter(st => !st.completed) || [];
-
-    if (incompleteSubtasks.length > 0) {
-      incompleteSubtasks.forEach(st => {
-        if (!dailyTaskIds.includes(st.id)) {
-          backlogTasks.push({
-            ...st,
-            parentId: task.id,
-            description: "",
-            status: 'todo',
-            priority: task.priority,
-            subtasks: [],
-            notes: [],
-            isSubtask: true,
-            title: `${st.title} — ${task.title}`
-          } as unknown as Task);
-        }
-      });
-    } else {
-      if (!dailyTaskIds.includes(task.id)) {
-        backlogTasks.push(task);
-      }
-    }
-  });
-
-  const addToDailyPlan = async (taskId: string) => {
-    let taskEndDate = "";
-
-    // Find task or subtask end date
-    for (const t of allTasks) {
-      if (t.id === taskId && t.endDate) {
-        taskEndDate = t.endDate.split('T')[0];
-        break;
-      }
-      const st = t.subtasks?.find(s => s.id === taskId);
-      if (st && st.endDate) {
-        taskEndDate = st.endDate.split('T')[0];
-        break;
-      } else if (st && t.endDate) {
-        // Fallback to parent end date
-        taskEndDate = t.endDate.split('T')[0];
-        break;
-      }
-    }
-
-    if (taskEndDate) {
-      if (selectedDate > taskEndDate) {
-        alert(`Cannot plan this task for ${selectedDate} because its deadline was ${taskEndDate}`);
-        return;
-      }
-    }
-    const newDailyIds = [...dailyTaskIds, taskId];
-    await updateDailyPlanAsync(newDailyIds, selectedDate);
-    refreshData();
-  };
-
-  const removeFromDailyPlan = async (taskId: string) => {
-    const newDailyIds = dailyTaskIds.filter(id => id !== taskId);
-    await updateDailyPlanAsync(newDailyIds, selectedDate);
-    refreshData();
-  };
-
-  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, id: string) => {
-    dragItem.current = id;
-  };
-
-  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>, id: string) => {
-    if (dragItem.current === null || dragItem.current === id) return;
-
-    dragOverItem.current = id;
-
-    const newIds = [...dailyTaskIds];
-    const dragItemIndex = newIds.indexOf(dragItem.current);
-    const dragOverItemIndex = newIds.indexOf(id);
-
-    if (dragItemIndex === -1 || dragOverItemIndex === -1) return;
-
-    const [draggedId] = newIds.splice(dragItemIndex, 1);
-    newIds.splice(dragOverItemIndex, 0, draggedId);
-
-    setDailyTaskIds(newIds);
-  };
-
-  const handleDragEnd = async () => {
-    if (dragItem.current === null) return;
-
-    let taskEndDate = "";
-    const taskId = dragItem.current;
-
-    for (const t of allTasks) {
-      if (t.id === taskId && t.endDate) {
-        taskEndDate = t.endDate.split('T')[0];
-        break;
-      }
-      const st = t.subtasks?.find(s => s.id === taskId);
-      if (st && st.endDate) {
-        taskEndDate = st.endDate.split('T')[0];
-        break;
-      } else if (st && t.endDate) {
-        taskEndDate = t.endDate.split('T')[0];
-        break;
-      }
-    }
-
-    if (taskEndDate) {
-      if (selectedDate > taskEndDate) {
-        alert(`Cannot plan this task for ${selectedDate} because its deadline was ${taskEndDate}`);
-        refreshData(); // Revert visual drag
-        dragItem.current = null;
-        dragOverItem.current = null;
-        return;
-      }
-    }
-
-    await updateDailyPlanAsync(dailyTaskIds, selectedDate);
-
-    dragItem.current = null;
-    dragOverItem.current = null;
-    refreshData();
-  };
-
-  // Sort backlog: energy-matched tasks first
-  const sortedBacklog = currentEnergy
-    ? [...backlogTasks].sort((a, b) => {
-        const aMatch = getEnergyMatch(a.energyLevel, currentEnergy);
-        const bMatch = getEnergyMatch(b.energyLevel, currentEnergy);
-        const order = { match: 0, 'slight-mismatch': 1, mismatch: 2 };
-        return order[aMatch] - order[bMatch];
-      })
-    : backlogTasks;
-
-  const matchedCount = currentEnergy
-    ? backlogTasks.filter(t => getEnergyMatch(t.energyLevel, currentEnergy) === 'match').length
-    : 0;
-
-  return (
-    <div className="flex flex-col gap-8">
-      <div className="flex justify-between items-end">
+  // Already planned today
+  if (step === 'done') {
+    return (
+      <div className="flex flex-col gap-6 max-w-xl">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Plan Your Day</h1>
-          <div className="flex items-center gap-3">
-            <p className="text-muted-foreground">Move tasks from your backlog to today&apos;s plan. Drag and drop to reorder.</p>
-            <EnergyIndicator />
+          <p className="text-muted-foreground text-sm mt-1">Today's plan is set. Head to the dashboard to execute.</p>
+        </div>
+
+        <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3">
+          <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+          <span className="text-sm font-medium text-green-400">{approvedIds.length} task{approvedIds.length !== 1 ? 's' : ''} on today's plan</span>
+        </div>
+
+        <div className="space-y-2">
+          {approvedTasks.map(task => (
+            <TaskRow key={task.id} task={task} mode="approved" />
+          ))}
+        </div>
+
+        <Button variant="outline" size="sm" className="self-start" onClick={handleReset} disabled={saving}>
+          {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+          Replan today
+        </Button>
+      </div>
+    );
+  }
+
+  // Step 1: Non-negotiables review
+  if (step === 1) {
+    return (
+      <div className="flex flex-col gap-6 max-w-xl">
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Plan Your Day</h1>
+            <p className="text-muted-foreground text-sm mt-1">Step 1 of 2 — Review today's committed work</p>
           </div>
+          <EnergyIndicator />
         </div>
-        <div className="flex items-center gap-3">
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
-          />
+
+        {approvedTasks.length === 0 ? (
+          <div className="text-center py-10 text-muted-foreground text-sm border border-dashed rounded-xl">
+            Nothing scheduled for today. Add tasks via search or proceed to suggestions.
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {approvedTasks.map(task => (
+              <TaskRow
+                key={task.id}
+                task={task}
+                mode="approved"
+                onRemove={() => handleRemove(task.id)}
+              />
+            ))}
+          </div>
+        )}
+
+        <div className="flex items-center gap-3 pt-2">
+          <Button
+            className="flex-1"
+            onClick={() => setStep(2)}
+          >
+            Looks good ({approvedTasks.length} items)
+            <ChevronRight className="h-4 w-4 ml-1" />
+          </Button>
         </div>
+      </div>
+    );
+  }
+
+  // Step 2: Suggestions
+  const remainingSuggestions = suggestions.filter(s => !addedSuggestionIds.includes(s.id));
+
+  return (
+    <div className="flex flex-col gap-6 max-w-xl">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Plan Your Day</h1>
+        <p className="text-muted-foreground text-sm mt-1">Step 2 of 2 — Want to add anything else?</p>
       </div>
 
-      {/* Energy-matched suggestion bar */}
-      {currentEnergy && matchedCount > 0 && (
-        <div className="flex items-center gap-2 text-xs bg-green-500/5 border border-green-500/20 rounded-xl px-4 py-2.5">
-          {currentEnergy === 'low' ? <BatteryLow className="h-4 w-4 text-red-400" /> : currentEnergy === 'medium' ? <BatteryMedium className="h-4 w-4 text-yellow-400" /> : <BatteryFull className="h-4 w-4 text-green-400" />}
-          <span className="text-muted-foreground">
-            Your energy is <span className="font-semibold text-foreground">{currentEnergy}</span>.
-            {' '}<span className="text-green-400 font-semibold">{matchedCount} task{matchedCount !== 1 ? 's' : ''}</span> match your current energy level.
-          </span>
+      {remainingSuggestions.length > 0 ? (
+        <div className="space-y-2">
+          {remainingSuggestions.map(task => {
+            const match = currentEnergy ? getEnergyMatch(task.energyLevel, currentEnergy) : null;
+            return (
+              <TaskRow
+                key={task.id}
+                task={task}
+                mode="suggestion"
+                energyMatch={match}
+                onAdd={() => handleAddSuggestion(task.id)}
+              />
+            );
+          })}
+        </div>
+      ) : (
+        <div className="text-center py-8 text-muted-foreground text-sm border border-dashed rounded-xl">
+          No additional suggestions.
         </div>
       )}
-      <div className="grid md:grid-cols-2 gap-8 items-start">
-        <Card>
-          <CardHeader>
-            <CardTitle>Task Backlog</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 min-h-[50vh]">
-            {loading ? (
-              <div className="flex justify-center items-center h-full pt-10">
-                <Loader2 className="h-6 w-6 animate-spin" />
-              </div>
-            ) : sortedBacklog.length > 0 ? (
-              sortedBacklog.map((task) => {
-                const match = currentEnergy ? getEnergyMatch(task.energyLevel, currentEnergy) : null;
-                return (
-                  <div key={task.id} className={cn(
-                    "rounded-lg transition-all",
-                    match === 'match' && "ring-1 ring-green-500/30",
-                    match === 'mismatch' && "opacity-50"
-                  )}>
-                    <MiniTaskCard task={task} onMove={addToDailyPlan} isBacklog={true} />
-                  </div>
-                );
-              })
-            ) : (
-              <p className="text-muted-foreground text-center pt-10">Backlog is empty!</p>
-            )}
-          </CardContent>
-        </Card>
-        <Card className="sticky top-20">
-          <CardHeader>
-            <CardTitle>Today's Plan</CardTitle>
-          </CardHeader>
-          <CardContent
-            className="space-y-3 min-h-[50vh] bg-primary/5 rounded-b-lg"
-            onDragOver={(e) => e.preventDefault()}
-          >
-            {loading ? (
-              <div className="flex justify-center items-center h-full pt-10">
-                <Loader2 className="h-6 w-6 animate-spin" />
-              </div>
-            ) : dailyTasks.length > 0 ? (
-              dailyTasks.map((task) => (
-                <MiniTaskCard
-                  key={task.id}
-                  task={task}
-                  onMove={removeFromDailyPlan}
-                  isBacklog={false}
-                  onDragStart={handleDragStart}
-                  onDragEnter={handleDragEnter}
-                  onDragEnd={handleDragEnd}
-                  isDragging={dragItem.current === task.id}
-                />
-              ))
-            ) : (
-              <p className="text-muted-foreground text-center pt-10">Plan your day by adding tasks from the backlog.</p>
-            )}
-          </CardContent>
-        </Card>
+
+      {addedSuggestionIds.length > 0 && (
+        <p className="text-xs text-muted-foreground pl-1">
+          {addedSuggestionIds.length} suggestion{addedSuggestionIds.length !== 1 ? 's' : ''} added
+        </p>
+      )}
+
+      <div className="flex items-center gap-3 pt-2">
+        <Button variant="outline" className="flex-1" onClick={handleFinalize} disabled={saving}>
+          {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+          Skip, I'm ready
+        </Button>
+        {remainingSuggestions.length > 0 && (
+          <Button className="flex-1" onClick={() => {
+            remainingSuggestions.forEach(s => handleAddSuggestion(s.id));
+          }}>
+            <Zap className="h-4 w-4 mr-1.5" />
+            Add all suggestions
+          </Button>
+        )}
       </div>
+
+      <Button
+        size="lg"
+        className="w-full"
+        onClick={handleFinalize}
+        disabled={saving}
+      >
+        {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CalendarCheck className="h-4 w-4 mr-2" />}
+        Finalize plan ({approvedIds.length} tasks)
+      </Button>
     </div>
   );
 }

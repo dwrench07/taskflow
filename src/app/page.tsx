@@ -42,20 +42,22 @@ import { SubtaskDetail } from "@/components/dashboard-summary-subtasks";
 import { CriticalDetail } from "@/components/dashboard-summary-critical";
 import { DashboardUpcomingDeadlines } from "@/components/dashboard-upcoming-deadlines-v2";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getAllTasks, getFocusSessions, getDailyPlan, updateTask } from "@/lib/data";
+import { getAllTasks, getFocusSessions, getDailyPlan, updateTask, getAllChores, updateChore } from "@/lib/data";
 import { useEffect, useState, useMemo } from "react";
-import { Task, FocusSession, Priority } from "@/lib/types";
+import { Task, FocusSession, Priority, EnergyLevel, Chore } from "@/lib/types";
 import {
   LayoutDashboard, BarChart3, Clock, Flame, Brain, ListTodo, Timer,
   PlusCircle,
   FileText,
   ClipboardList,
   Zap,
-  AlertTriangle, ChevronRight, CheckCircle2, Layers, Repeat, CalendarCheck
+  AlertTriangle, ChevronRight, CheckCircle2, Layers, Repeat, CalendarCheck,
+  ChevronDown, BatteryLow, BatteryMedium, BatteryFull
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { isSameDay, parseISO, startOfDay, format } from "date-fns";
+import { getTodayEnergy } from "@/lib/energy";
 import { cn } from "@/lib/utils";
 
 import { DailyReviewModal } from "@/components/daily-review-modal";
@@ -73,9 +75,13 @@ function isMorningTime(): boolean {
 
 export default function DashboardPage() {
   const [allTasks, setAllTasks] = useState<Task[]>([]);
+  const [allChores, setAllChores] = useState<Chore[]>([]);
   const [focusSessions, setFocusSessions] = useState<FocusSession[]>([]);
   const [dailyPlanIds, setDailyPlanIds] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'schedule' | 'quick' | 'detailed'>('schedule');
+  const [scheduleView, setScheduleView] = useState<'list' | 'eisenhower' | 'energy'>('list');
+  const [habitsOpen, setHabitsOpen] = useState(false);
+  const [choresOpen, setChoresOpen] = useState(false);
   const [showMorningLaunch, setShowMorningLaunch] = useState(false);
 
   useEffect(() => {
@@ -88,14 +94,16 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const loadData = async () => {
-      const [tasks, sessions, planIds] = await Promise.all([
+      const [tasks, sessions, planIds, chores] = await Promise.all([
         getAllTasks(),
         getFocusSessions(),
         getDailyPlan().catch(() => []),
+        getAllChores().catch(() => []),
       ]);
       setAllTasks(tasks);
       setFocusSessions(sessions);
       setDailyPlanIds(Array.isArray(planIds) ? planIds : []);
+      setAllChores(Array.isArray(chores) ? chores : []);
 
       // Schedule native notifications if in Capacitor
       await scheduleNotifications(tasks);
@@ -262,13 +270,49 @@ export default function DashboardPage() {
   }, [allTasks, dailyPlanIds]);
 
   const refreshScheduleData = async () => {
-    const [tasks, planIds] = await Promise.all([
+    const [tasks, planIds, chores] = await Promise.all([
       getAllTasks(),
       getDailyPlan().catch(() => []),
+      getAllChores().catch(() => []),
     ]);
     setAllTasks(tasks);
     setDailyPlanIds(Array.isArray(planIds) ? planIds : []);
+    setAllChores(Array.isArray(chores) ? chores : []);
   };
+
+  const handleToggleChore = async (chore: Chore) => {
+    const today = new Date();
+    const isCompletedToday = chore.lastCompleted && isSameDay(parseISO(chore.lastCompleted), today);
+    const updated = { ...chore, lastCompleted: isCompletedToday ? undefined : today.toISOString() };
+    setAllChores(prev => prev.map(c => c.id === chore.id ? updated : c));
+    try {
+      await updateChore(updated);
+    } catch {
+      setAllChores(prev => prev.map(c => c.id === chore.id ? chore : c));
+    }
+  };
+
+  const todayChores = useMemo(() => allChores.filter(c => {
+    if (c.frequency === 'daily') return true;
+    if (c.frequency === 'weekly') {
+      if (!c.lastCompleted) return true;
+      const last = parseISO(c.lastCompleted);
+      const diff = (new Date().getTime() - last.getTime()) / (1000 * 60 * 60 * 24);
+      return diff >= 7;
+    }
+    if (c.frequency === 'monthly') {
+      if (!c.lastCompleted) return true;
+      const last = parseISO(c.lastCompleted);
+      const diff = (new Date().getTime() - last.getTime()) / (1000 * 60 * 60 * 24);
+      return diff >= 30;
+    }
+    return true;
+  }), [allChores]);
+
+  const choresDoneToday = useMemo(() =>
+    todayChores.filter(c => c.lastCompleted && isSameDay(parseISO(c.lastCompleted), new Date())).length,
+    [todayChores]
+  );
 
   const handleToggleTodayItem = async (item: TodayItem) => {
     const today = new Date();
@@ -394,75 +438,199 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {viewMode === 'schedule' && (
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-400">
-          {/* Stats strip */}
-          <div className="flex items-center gap-4 text-xs text-muted-foreground mb-5 pl-1">
-            <span className="flex items-center gap-1.5">
-              <span className="text-emerald-500 font-semibold">{stats.frogsRemaining}</span> frogs left
-            </span>
-            <span className="text-muted-foreground/40">·</span>
-            <span className="flex items-center gap-1.5">
-              <span className="text-red-400 font-semibold">{stats.criticalTasks}</span> urgent
-            </span>
-            <span className="text-muted-foreground/40">·</span>
-            <span className="flex items-center gap-1.5">
-              <span className="text-green-400 font-semibold">{stats.habitsDoneToday}/{stats.habitsTotal}</span> habits
-            </span>
-            <span className="text-muted-foreground/40">·</span>
-            <span className="text-muted-foreground">{format(new Date(), 'EEEE, MMM d')}</span>
-          </div>
+      {viewMode === 'schedule' && (() => {
+        const today = new Date();
+        const habits = allTasks.filter(t => t.isHabit);
+        const habitsDone = habits.filter(h => h.completionHistory?.some(d => isSameDay(parseISO(d), today))).length;
+        const currentEnergy = getTodayEnergy();
 
-          {/* Task list */}
-          {todayList.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
-              <CheckCircle2 className="w-10 h-10 text-green-500 opacity-60" />
-              <p className="text-muted-foreground font-medium">Nothing on your list. Clean slate.</p>
+        // Eisenhower quadrant helper
+        const getQuadrant = (priority: Priority) => {
+          if (priority === 'urgent') return 'q1';
+          if (priority === 'high') return 'q2';
+          if (priority === 'medium') return 'q3';
+          return 'q4';
+        };
+
+        const incompleteTasks = todayList.filter(i => !i.completed && i.type !== 'habit');
+        const completedTasks = todayList.filter(i => i.completed && i.type !== 'habit');
+
+        const TaskItem = ({ item }: { item: typeof todayList[0] }) => (
+          <div className={cn(
+            "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
+            item.completed ? "opacity-40" : "hover:bg-muted/50"
+          )}>
+            <Checkbox checked={item.completed} onCheckedChange={() => handleToggleTodayItem(item)} className="shrink-0" />
+            <span className={cn("flex-1 text-sm font-medium leading-snug truncate", item.completed && "line-through")}>
+              {item.title}
+            </span>
+            {item.type === 'frog' && <span className="text-sm leading-none shrink-0">🐸</span>}
+          </div>
+        );
+
+        return (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-400 space-y-5">
+            {/* Stats strip */}
+            <div className="flex items-center gap-4 text-xs text-muted-foreground pl-1">
+              <span><span className="text-emerald-500 font-semibold">{stats.frogsRemaining}</span> frogs</span>
+              <span className="opacity-30">·</span>
+              <span><span className="text-red-400 font-semibold">{stats.criticalTasks}</span> urgent</span>
+              <span className="opacity-30">·</span>
+              <span><span className="text-green-400 font-semibold">{habitsDone}/{habits.length}</span> habits</span>
+              <span className="opacity-30">·</span>
+              <span><span className="text-blue-400 font-semibold">{choresDoneToday}/{todayChores.length}</span> chores</span>
+              <span className="opacity-30">·</span>
+              <span>{format(today, 'EEE, MMM d')}</span>
             </div>
-          ) : (
-            <div className="space-y-0.5 max-w-2xl">
-              {todayList.map((item, idx) => {
-                const isFirstCompleted = item.completed && (idx === 0 || !todayList[idx - 1].completed);
-                return (
-                  <div key={item.id}>
-                    {isFirstCompleted && todayList.some(i => !i.completed) && (
-                      <div className="flex items-center gap-3 py-3">
-                        <div className="h-px flex-1 bg-border" />
-                        <span className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold">Done</span>
-                        <div className="h-px flex-1 bg-border" />
-                      </div>
-                    )}
-                    <div
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2.5 rounded-lg group transition-colors",
-                        item.completed ? "opacity-40" : "hover:bg-muted/50"
-                      )}
-                    >
-                      <Checkbox
-                        checked={item.completed}
-                        onCheckedChange={() => handleToggleTodayItem(item)}
-                        className="shrink-0"
-                      />
-                      <span className={cn(
-                        "flex-1 text-sm font-medium leading-snug",
-                        item.completed && "line-through"
-                      )}>
-                        {item.title}
-                      </span>
-                      {item.type === 'frog' && (
-                        <span className="text-base leading-none shrink-0" title="Frog">🐸</span>
-                      )}
-                      {item.type === 'habit' && (
-                        <Repeat className="w-3.5 h-3.5 text-muted-foreground/50 shrink-0" />
-                      )}
-                    </div>
+
+            {/* Habits accordion */}
+            {habits.length > 0 && (
+              <div className="border border-border rounded-xl overflow-hidden">
+                <button
+                  onClick={() => setHabitsOpen(o => !o)}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-muted/20 hover:bg-muted/40 transition-colors text-sm font-medium"
+                >
+                  <span className="flex items-center gap-2">
+                    <Repeat className="h-4 w-4 text-green-400" />
+                    Habits
+                    <span className="text-xs text-muted-foreground font-normal">{habitsDone}/{habits.length} done</span>
+                  </span>
+                  <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", habitsOpen && "rotate-180")} />
+                </button>
+                {habitsOpen && (
+                  <div className="px-2 py-2 space-y-0.5">
+                    {habits.map(habit => {
+                      const doneToday = habit.completionHistory?.some(d => isSameDay(parseISO(d), today)) ?? false;
+                      return (
+                        <div key={habit.id} className={cn("flex items-center gap-3 px-3 py-2 rounded-lg transition-colors", doneToday ? "opacity-40" : "hover:bg-muted/50")}>
+                          <Checkbox
+                            checked={doneToday}
+                            onCheckedChange={() => handleToggleTodayItem({ id: habit.id, title: habit.title, type: 'habit', isSubtask: false, completed: doneToday, priority: habit.priority })}
+                            className="shrink-0"
+                          />
+                          <span className={cn("flex-1 text-sm truncate", doneToday && "line-through")}>{habit.title}</span>
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
+                )}
+              </div>
+            )}
+
+            {/* Chores accordion */}
+            {todayChores.length > 0 && (
+              <div className="border border-border rounded-xl overflow-hidden">
+                <button
+                  onClick={() => setChoresOpen(o => !o)}
+                  className="w-full flex items-center justify-between px-4 py-3 bg-muted/20 hover:bg-muted/40 transition-colors text-sm font-medium"
+                >
+                  <span className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-blue-400" />
+                    Chores
+                    <span className="text-xs text-muted-foreground font-normal">{choresDoneToday}/{todayChores.length} done</span>
+                  </span>
+                  <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", choresOpen && "rotate-180")} />
+                </button>
+                {choresOpen && (
+                  <div className="px-2 py-2 space-y-0.5">
+                    {todayChores.map(chore => {
+                      const doneToday = chore.lastCompleted ? isSameDay(parseISO(chore.lastCompleted), today) : false;
+                      return (
+                        <div key={chore.id} className={cn("flex items-center gap-3 px-3 py-2 rounded-lg transition-colors", doneToday ? "opacity-40" : "hover:bg-muted/50")}>
+                          <Checkbox checked={doneToday} onCheckedChange={() => handleToggleChore(chore)} className="shrink-0" />
+                          <span className={cn("flex-1 text-sm truncate", doneToday && "line-through")}>{chore.title}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* View toggle */}
+            <div className="flex items-center gap-1 bg-muted/30 rounded-lg p-1 w-fit">
+              {(['list', 'eisenhower', 'energy'] as const).map(v => (
+                <button
+                  key={v}
+                  onClick={() => setScheduleView(v)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider transition-all",
+                    scheduleView === v ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {v === 'eisenhower' ? 'Matrix' : v.charAt(0).toUpperCase() + v.slice(1)}
+                </button>
+              ))}
             </div>
-          )}
-        </div>
-      )}
+
+            {/* Task views */}
+            {incompleteTasks.length === 0 && completedTasks.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
+                <CheckCircle2 className="w-10 h-10 text-green-500 opacity-50" />
+                <p className="text-muted-foreground font-medium">Nothing planned yet.</p>
+                <a href="/plan" className="text-xs text-primary underline underline-offset-2">Go to Plan to set up your day →</a>
+              </div>
+            ) : scheduleView === 'list' ? (
+              <div className="space-y-0.5 max-w-2xl">
+                {incompleteTasks.map(item => <TaskItem key={item.id} item={item} />)}
+                {completedTasks.length > 0 && incompleteTasks.length > 0 && (
+                  <div className="flex items-center gap-3 py-3">
+                    <div className="h-px flex-1 bg-border" />
+                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold">Done</span>
+                    <div className="h-px flex-1 bg-border" />
+                  </div>
+                )}
+                {completedTasks.map(item => <TaskItem key={item.id} item={item} />)}
+              </div>
+            ) : scheduleView === 'eisenhower' ? (
+              <div className="grid grid-cols-2 gap-3 max-w-2xl">
+                {([
+                  { key: 'q1', label: 'Do First', sub: 'Urgent · Important', color: 'border-red-500/40 bg-red-500/5' },
+                  { key: 'q2', label: 'Schedule', sub: 'Not Urgent · Important', color: 'border-blue-500/40 bg-blue-500/5' },
+                  { key: 'q3', label: 'Delegate', sub: 'Urgent · Less Important', color: 'border-yellow-500/40 bg-yellow-500/5' },
+                  { key: 'q4', label: 'Eliminate', sub: 'Not Urgent · Less Important', color: 'border-muted bg-muted/10' },
+                ] as const).map(({ key, label, sub, color }) => {
+                  const items = [...incompleteTasks, ...completedTasks].filter(i => getQuadrant(i.priority) === key);
+                  return (
+                    <div key={key} className={cn("rounded-xl border p-3 space-y-1.5 min-h-[120px]", color)}>
+                      <div className="mb-2">
+                        <p className="text-xs font-bold uppercase tracking-wide">{label}</p>
+                        <p className="text-[10px] text-muted-foreground">{sub}</p>
+                      </div>
+                      {items.length === 0 ? (
+                        <p className="text-[11px] text-muted-foreground/40 italic">Empty</p>
+                      ) : items.map(item => <TaskItem key={item.id} item={item} />)}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              // Energy view
+              <div className="space-y-4 max-w-2xl">
+                {(['high', 'medium', 'low'] as EnergyLevel[]).map(level => {
+                  const levelItems = [...incompleteTasks, ...completedTasks].filter(i => {
+                    const task = allTasks.find(t => t.id === i.id);
+                    return (task?.energyLevel ?? 'medium') === level;
+                  });
+                  if (levelItems.length === 0) return null;
+                  const icon = level === 'high' ? <BatteryFull className="h-3.5 w-3.5 text-green-400" /> : level === 'medium' ? <BatteryMedium className="h-3.5 w-3.5 text-yellow-400" /> : <BatteryLow className="h-3.5 w-3.5 text-red-400" />;
+                  const isCurrent = currentEnergy === level;
+                  return (
+                    <div key={level} className={cn("rounded-xl border p-3 space-y-1", isCurrent ? "border-primary/40 bg-primary/5" : "border-border")}>
+                      <div className="flex items-center gap-2 mb-2">
+                        {icon}
+                        <span className="text-xs font-semibold capitalize">{level} Energy</span>
+                        {isCurrent && <span className="text-[10px] text-primary font-semibold ml-1">← You're here</span>}
+                      </div>
+                      {levelItems.map(item => <TaskItem key={item.id} item={item} />)}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {viewMode === 'quick' && (
         <div className="animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200 fill-mode-both">

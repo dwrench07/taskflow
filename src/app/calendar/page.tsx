@@ -245,7 +245,7 @@ export default function CalendarPage() {
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [view, setView] = useState<CalendarView>("day");
+  const [view, setView] = useState<CalendarView>("week");
   const [dayFilter, setDayFilter] = useState<"all" | "done" | "undone">("all");
   const { toast } = useToast();
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false);
@@ -586,17 +586,15 @@ export default function CalendarPage() {
             <TabsList>
               <TabsTrigger value="month">Month</TabsTrigger>
               <TabsTrigger value="week">Week</TabsTrigger>
-              <TabsTrigger value="day">Day</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
       </div>
 
       <Tabs value={view} onValueChange={(v) => setView(v as CalendarView)} className="block md:hidden">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="month">Month</TabsTrigger>
           <TabsTrigger value="week">Week</TabsTrigger>
-          <TabsTrigger value="day">Day</TabsTrigger>
         </TabsList>
       </Tabs>
 

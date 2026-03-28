@@ -397,6 +397,16 @@ export async function addChore(chore: Omit<Chore, 'id'>): Promise<Chore> {
   throw new Error(`Failed to add chore: ${response.statusText}`);
 }
 
+export async function updateChore(chore: Chore): Promise<Chore> {
+  const response = await fetch(`/api/chores/${chore.id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(chore),
+  });
+  if (response.ok) return await response.json();
+  throw new Error(`Failed to update chore: ${response.statusText}`);
+}
+
 export async function deleteChore(id: string): Promise<void> {
   await fetch(`/api/chores/${id}`, { method: 'DELETE' });
 }

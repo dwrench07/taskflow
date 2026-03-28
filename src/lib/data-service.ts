@@ -796,6 +796,23 @@ export async function addChoreAsync(chore: Omit<Chore, 'id'>, userId?: string | 
     }
 }
 
+export async function updateChoreAsync(chore: Chore, userId?: string | null): Promise<Chore> {
+    if (!isServer) {
+        const idx = mockChores.findIndex(c => c.id === chore.id);
+        if (idx !== -1) mockChores[idx] = chore;
+        return chore;
+    }
+    try {
+        const db = await getDatabase();
+        return await db.updateChore(chore, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to update chore', { chore, error });
+        const idx = mockChores.findIndex(c => c.id === chore.id);
+        if (idx !== -1) mockChores[idx] = chore;
+        return chore;
+    }
+}
+
 export async function deleteChoreAsync(id: string, userId?: string | null): Promise<boolean> {
     if (!isServer) {
         const idx = mockChores.findIndex(c => c.id === id);
