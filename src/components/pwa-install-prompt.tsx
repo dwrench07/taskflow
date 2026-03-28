@@ -47,7 +47,7 @@ export function PwaInstallPrompt() {
 
   return (
     <div className="fixed bottom-20 left-4 right-4 z-50 animate-in fade-in slide-in-from-bottom-5 duration-500 md:bottom-8 md:right-8 md:left-auto md:w-96">
-      <Card className="glass-morphism border-primary/20 p-5 shadow-2xl relative overflow-hidden bg-background/80 backdrop-blur-xl">
+      <Card className="border-border p-5 shadow-2xl relative overflow-hidden bg-card">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-transparent" />
         
         <Button 

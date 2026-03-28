@@ -467,15 +467,10 @@ export default function FocusPage() {
                     <div className="lg:col-span-12 xl:col-span-7 flex flex-col gap-4">
                         {/* Timer Card */}
                         <Card className={cn(
-                            "flex flex-col items-center justify-center p-4 sm:p-6 border-primary/20 bg-background/60 backdrop-blur-md shadow-lg rounded-[2.5rem] relative overflow-hidden transition-all duration-500",
-                            isActive && timeRemaining < 300 && timeRemaining > 0 && "shadow-[0_0_50px_rgba(239,68,68,0.2)] border-red-500/30",
-                            isActive && timeRemaining <= 0 && "shadow-[0_0_80px_rgba(239,68,68,0.4)] border-red-500 bg-red-500/5"
+                            "flex flex-col items-center justify-center p-4 sm:p-6 border-border bg-card shadow-sm rounded-[2rem] relative overflow-hidden transition-all duration-500",
+                            isActive && timeRemaining < 300 && timeRemaining > 0 && "border-red-500/50",
+                            isActive && timeRemaining <= 0 && "border-red-500 bg-red-500/5"
                         )}>
-                            <div className={cn(
-                                "absolute inset-0 bg-gradient-to-br transition-opacity duration-1000 -z-10",
-                                isActive ? "from-primary/10 via-background to-background opacity-100" : "from-transparent to-transparent opacity-0",
-                                isActive && timeRemaining < 300 && "from-red-500/10 via-background to-background"
-                            )} />
 
                             {selectedTask?.timeLimit && (
                                 <Badge variant="outline" className="absolute top-6 right-8 animate-pulse border-red-500/50 text-red-500 gap-1">
@@ -493,15 +488,10 @@ export default function FocusPage() {
 
                             <div className="relative mb-10 group">
                                 <div className={cn(
-                                    "absolute inset-0 bg-primary/20 blur-3xl rounded-full transition-opacity duration-1000",
-                                    isActive ? "opacity-100" : "opacity-0",
-                                    isActive && timeRemaining < 300 && "opacity-40 bg-red-500/40"
-                                )} />
-                                <div className={cn(
                                     "text-[4rem] sm:text-[5rem] md:text-[6rem] font-black tracking-tighter tabular-nums text-primary leading-none transition-transform duration-300 relative z-10",
                                     isActive && "scale-105",
                                     isActive && timeRemaining < 60 && "text-red-500 animate-pulse",
-                                    isActive && timeRemaining <= 0 && "text-red-600 scale-110"
+                                    isActive && timeRemaining <= 0 && "text-red-600"
                                 )}>
                                     {mode === 'stopwatch' && !selectedTask?.timeLimit ? formatTime(elapsedTime) : formatTime(timeRemaining)}
                                 </div>
@@ -533,7 +523,7 @@ export default function FocusPage() {
 
                             {selectedTask ? (
                                 <div className="flex flex-col items-center gap-3 mb-10 w-full max-w-lg">
-                                    <div className="flex items-center gap-2 bg-muted/40 px-5 py-2.5 rounded-2xl border border-border/50 text-sm font-medium text-foreground/80 text-center w-full justify-center shadow-sm backdrop-blur-sm">
+                                    <div className="flex items-center gap-2 bg-muted/50 px-5 py-2.5 rounded-2xl border border-border/50 text-sm font-medium text-foreground/80 text-center w-full justify-center shadow-sm">
                                         <span className="opacity-70">Focusing on:</span> <span className="font-bold truncate max-w-[200px] sm:max-w-[300px]">{selectedTask.title}</span>
                                         {selectedTask.priority === 'high' && <Flame className="h-4 w-4 text-orange-500 animate-pulse ml-1 shrink-0" />}
                                         {!isActive && (
@@ -768,7 +758,7 @@ export default function FocusPage() {
                                         };
                                         const catIcons: Record<string, string> = { worry: '😟', todo: '✅', idea: '💡', random: '💭' };
                                         return (
-                                            <div key={i} className={cn("text-sm bg-muted/40 border border-border/50 border-l-2 p-3 rounded-xl shadow-sm animate-fade-in", cat ? catColors[cat] : '')}>
+                                            <div key={i} className={cn("text-sm bg-card border border-border p-3 rounded-xl shadow-sm animate-fade-in", cat ? catColors[cat] : '')}>
                                                 {cat && <span className="mr-1.5">{catIcons[cat]}</span>}
                                                 {stripAllMetadata(d)}
                                             </div>
@@ -892,7 +882,7 @@ export default function FocusPage() {
             {/* Mindfulness Reminder Toast */}
             {activeReminder && (
                 <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-4 duration-300">
-                    <div className="bg-violet-500/15 border border-violet-500/30 backdrop-blur-xl rounded-2xl px-6 py-4 shadow-lg shadow-violet-500/10 flex items-center gap-3 max-w-md">
+                    <div className="bg-card border border-border rounded-2xl px-6 py-4 shadow-xl flex items-center gap-3 max-w-md">
                         <Bell className="h-5 w-5 text-violet-400 shrink-0 animate-pulse" />
                         <p className="text-sm font-medium">{activeReminder}</p>
                         <button onClick={() => setActiveReminder(null)} className="text-muted-foreground hover:text-foreground ml-2 shrink-0">

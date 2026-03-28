@@ -48,10 +48,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <Sidebar className="border-r border-white/5 bg-background/50 backdrop-blur-xl">
+      <Sidebar className="border-r border-border bg-sidebar">
         <SidebarHeader className="p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#e11d48] shadow-lg shadow-red-500/20 overflow-hidden">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#e11d48] overflow-hidden">
               <img src="/icon.png" alt="Dash Logo" className="h-full w-full object-cover" />
             </div>
             <h1 className="text-xl font-bold tracking-tight text-foreground">Dash</h1>
@@ -164,10 +164,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         )}
       </Sidebar>
       <SidebarInset className="bg-transparent">
-        <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b border-white/5 bg-background/50 backdrop-blur-xl px-4 sm:px-6 md:hidden">
+        <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b border-border bg-background px-4 sm:px-6 md:hidden">
           <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#e11d48] shadow-sm overflow-hidden">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#e11d48] overflow-hidden">
               <img src="/icon.png" alt="Dash Logo" className="h-full w-full object-cover" />
             </div>
             <h1 className="text-lg font-bold tracking-tight text-foreground">Dash</h1>

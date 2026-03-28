@@ -150,7 +150,7 @@ export default function LogsPage() {
       </div>
 
       <Tabs defaultValue="bom" className="space-y-6">
-        <TabsList className="bg-background/40 backdrop-blur-md border border-white/5">
+        <TabsList className="bg-muted border border-border">
           <TabsTrigger value="bom" className="flex items-center gap-2">
             <Brain className="h-4 w-4" />
             Back of Mind
@@ -167,8 +167,8 @@ export default function LogsPage() {
             <h2 className="text-xl font-semibold">Long-Term Thoughts & Ideas</h2>
             <Dialog open={isBomOpen} onOpenChange={setIsBomOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-primary/20 text-primary hover:bg-primary/30">
-                  <Plus className="h-4 w-4 mr-2" />
+                <Button variant="secondary" className="gap-2">
+                  <Plus className="h-4 w-4" />
                   Capture Thought
                 </Button>
               </DialogTrigger>
@@ -222,7 +222,7 @@ export default function LogsPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {bomItems.map((item) => (
-              <Card key={item.id} className="bg-background/40 backdrop-blur-md border-white/5 hover:border-white/10 transition-all group">
+              <Card key={item.id} className="bg-card border-border hover:border-primary/30 transition-all group shadow-sm">
                 <CardHeader className="pb-2 flex flex-row items-start justify-between space-y-0">
                   <div className="flex flex-col gap-1">
                     {item.category && <Badge variant="outline" className="w-fit">{item.category}</Badge>}
@@ -244,7 +244,7 @@ export default function LogsPage() {
               </Card>
             ))}
             {bomItems.length === 0 && (
-              <div className="col-span-full py-12 text-center text-muted-foreground border border-dashed border-white/10 rounded-xl bg-white/5">
+              <div className="col-span-full py-12 text-center text-muted-foreground border border-dashed border-border rounded-xl bg-muted/30">
                 <Brain className="h-8 w-8 mx-auto mb-3 opacity-50" />
                 <p>Your back of mind is empty.</p>
                 <p className="text-sm opacity-70">Capture long-term thoughts here to unclutter your active workspace.</p>
@@ -259,8 +259,8 @@ export default function LogsPage() {
             <h2 className="text-xl font-semibold">Feedback & Lessons Learned</h2>
             <Dialog open={isMistakeOpen} onOpenChange={setIsMistakeOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-destructive/20 text-destructive-foreground hover:bg-destructive/30 border border-destructive/30">
-                  <Plus className="h-4 w-4 mr-2" />
+                <Button variant="secondary" className="text-destructive hover:text-destructive-foreground hover:bg-destructive gap-2 border-destructive/20">
+                  <Plus className="h-4 w-4" />
                   Log Mistake
                 </Button>
               </DialogTrigger>
@@ -313,7 +313,7 @@ export default function LogsPage() {
 
           <div className="space-y-4">
             {mistakes.map((entry) => (
-              <Card key={entry.id} className={`bg-background/40 backdrop-blur-md border-l-4 transition-all group ${entry.status === 'open' ? 'border-l-destructive/80 border-white/5' : 'border-l-emerald-500/80 border-white/5'}`}>
+              <Card key={entry.id} className={`bg-card border-l-4 transition-all group shadow-sm ${entry.status === 'open' ? 'border-l-destructive border-border' : 'border-l-emerald-500 border-border'}`}>
                 <CardHeader className="py-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
@@ -380,7 +380,7 @@ export default function LogsPage() {
               </Card>
             ))}
             {mistakes.length === 0 && (
-              <div className="py-12 text-center text-muted-foreground border border-dashed border-white/10 rounded-xl bg-white/5">
+              <div className="py-12 text-center text-muted-foreground border border-dashed border-border rounded-xl bg-muted/30">
                 <AlertTriangle className="h-8 w-8 mx-auto mb-3 opacity-50" />
                 <p>No mistakes logged yet.</p>
                 <p className="text-sm opacity-70">Acknowledge mistakes objectively to refine your process.</p>

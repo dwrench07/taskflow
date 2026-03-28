@@ -136,10 +136,10 @@ const InterestNode = ({ data }: NodeProps) => {
       />
 
       <div
-        className="rounded-2xl px-5 py-3 shadow-lg border-2 backdrop-blur-sm"
+        className="rounded-2xl px-5 py-3 shadow-lg border-2"
         style={{
           borderColor: color,
-          background: `linear-gradient(135deg, ${color}15, ${color}08)`,
+          backgroundColor: `${color}10`,
         }}
       >
         <div className="flex items-center gap-2 mb-1">
@@ -744,11 +744,11 @@ export default function InterestsPage() {
                   size={1.5}
                   color="rgba(148, 163, 184, 0.15)"
                 />
-                <Controls className="bg-background/80 backdrop-blur-sm border-border" />
+                <Controls className="bg-background border-border" />
                 <MiniMap
                   nodeColor={(n) => (n.data?.color as string) || "#6b7280"}
-                  maskColor="rgba(0, 0, 0, 0.15)"
-                  className="bg-background/80 backdrop-blur-sm border-border rounded-lg"
+                  maskColor="rgba(0, 0, 0, 0.1)"
+                  className="bg-background border-border rounded-lg"
                 />
               </ReactFlow>
             )}

@@ -57,10 +57,10 @@ import { useGamification } from "@/context/GamificationContext";
 
 
 const priorityStyles: Record<Priority, string> = {
-  urgent: "bg-red-600/30 text-red-500 border-red-600/50 shadow-[0_0_10px_rgba(220,38,38,0.3)] animate-pulse",
-  high: "bg-orange-500/20 text-orange-400 border-orange-500/30 hover:bg-orange-50/30",
-  medium: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/30",
-  low: "bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30",
+  urgent: "bg-red-500/10 text-red-500 border-red-500/30",
+  high: "bg-orange-500/10 text-orange-500 border-orange-500/20",
+  medium: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
+  low: "bg-green-500/10 text-green-600 border-green-500/20",
 };
 
 const statusStyles: Record<Status, string> = {
@@ -97,7 +97,7 @@ function TaskListItem({ task, allTasks, goals, onSelect, isSelected }: { task: T
       isBlocked && 'opacity-50 grayscale select-none pointer-events-none hover:scale-100 hover:bg-card'
     )}>
       {isBlocked && (
-        <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-background/80 backdrop-blur text-red-500 px-2 py-1 rounded-md border border-red-500/20 shadow-sm z-10">
+        <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-muted text-red-500 px-2 py-1 rounded-md border border-red-500/30 shadow-sm z-10">
           <Lock className="w-3.5 h-3.5" />
           <span className="text-xs font-semibold tracking-wide">LOCKED</span>
         </div>
@@ -243,7 +243,7 @@ function NotesSection({ task, onUpdateTask }: { task: Task, onUpdateTask: (task:
           {task.notes && task.notes.length > 0 ? (
             <div className="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
               {task.notes.map((note, index) => (
-                <div key={index} className="bg-background/60 backdrop-blur-sm border rounded-2xl p-4 text-sm text-foreground/90 shadow-sm">
+                <div key={index} className="bg-card border rounded-2xl p-4 text-sm text-foreground/90 shadow-sm">
                   {note}
                 </div>
               ))}

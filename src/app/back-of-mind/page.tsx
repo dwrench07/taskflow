@@ -26,12 +26,12 @@ import { formatDistanceToNow, parseISO } from "date-fns";
 import { stripAllMetadata } from "@/lib/jots";
 
 const CATEGORIES = [
-  { value: "worry", label: "Worry", icon: AlertTriangle, color: "text-red-400 border-red-500/30 bg-red-500/10" },
-  { value: "idea", label: "Idea", icon: Lightbulb, color: "text-amber-400 border-amber-500/30 bg-amber-500/10" },
-  { value: "question", label: "Question", icon: HelpCircle, color: "text-blue-400 border-blue-500/30 bg-blue-500/10" },
-  { value: "someday", label: "Someday", icon: Sparkles, color: "text-purple-400 border-purple-500/30 bg-purple-500/10" },
-  { value: "task-idea", label: "Task Idea", icon: ListTodo, color: "text-green-400 border-green-500/30 bg-green-500/10" },
-  { value: "other", label: "Other", icon: Brain, color: "text-zinc-400 border-zinc-500/30 bg-zinc-500/10" },
+  { value: "worry", label: "Worry", icon: AlertTriangle, color: "text-red-500 border-red-500/20 bg-red-500/5" },
+  { value: "idea", label: "Idea", icon: Lightbulb, color: "text-amber-500 border-amber-500/20 bg-amber-500/5" },
+  { value: "question", label: "Question", icon: HelpCircle, color: "text-blue-500 border-blue-500/20 bg-blue-500/5" },
+  { value: "someday", label: "Someday", icon: Sparkles, color: "text-purple-500 border-purple-500/20 bg-purple-500/5" },
+  { value: "task-idea", label: "Task Idea", icon: ListTodo, color: "text-green-500 border-green-500/20 bg-green-500/5" },
+  { value: "other", label: "Other", icon: Brain, color: "text-zinc-500 border-zinc-500/20 bg-zinc-500/5" },
 ];
 
 function getCategoryConfig(cat?: string) {
@@ -171,10 +171,10 @@ export default function BackOfMindPage() {
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-violet-600 flex items-center justify-center shadow-[0_0_20px_rgba(139,92,246,0.3)]">
+            <div className="h-10 w-10 rounded-xl bg-violet-600 flex items-center justify-center shadow-sm">
               <Brain className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-3xl font-black tracking-tight">Back of Mind</h1>
+            <h1 className="text-3xl font-black tracking-tight text-foreground">Back of Mind</h1>
           </div>
           <p className="text-muted-foreground text-sm pl-1">
             Capture thoughts so they stop looping. Surface them when you&apos;re ready to think.
@@ -185,7 +185,7 @@ export default function BackOfMindPage() {
           <Button
             onClick={surfaceRandom}
             variant="outline"
-            className="gap-2 border-violet-500/30 text-violet-400 hover:bg-violet-500/10"
+            className="gap-2 border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground"
             disabled={items.length === 0}
           >
             <Shuffle className="h-4 w-4" />
@@ -200,7 +200,7 @@ export default function BackOfMindPage() {
 
       {/* Surfaced thought card */}
       {surfacedItem && (
-        <Card className="border-2 border-violet-500/30 bg-violet-500/5 shadow-lg shadow-violet-500/10 animate-in fade-in slide-in-from-top-4 duration-500">
+        <Card className="border-border bg-card shadow-md animate-in fade-in slide-in-from-top-4 duration-500">
           <CardContent className="p-6">
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-2 flex-1">
@@ -234,7 +234,7 @@ export default function BackOfMindPage() {
               <Button
                 variant="outline"
                 size="sm"
-                className="text-xs text-red-400 border-red-500/30 hover:bg-red-500/10 gap-1.5"
+                className="text-xs text-red-500 border-border hover:bg-red-500/10 gap-1.5"
                 onClick={() => handleDelete(surfacedItem.id)}
               >
                 <Trash2 className="h-3 w-3" /> Resolved / Delete
@@ -346,7 +346,7 @@ export default function BackOfMindPage() {
             return (
               <Card
                 key={item.id}
-                className="group transition-all duration-300 hover:border-violet-500/30 hover:shadow-md hover:shadow-violet-500/5"
+                className="group transition-all duration-300 hover:border-primary/30 hover:shadow-md"
               >
                 <CardContent className="p-5 space-y-3">
                   <div className="flex items-start justify-between gap-2">

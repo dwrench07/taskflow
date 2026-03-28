@@ -11,10 +11,10 @@ import Link from "next/link";
 import { Calendar, Clock } from "lucide-react";
 
 const priorityStyles: Record<Priority, string> = {
-    urgent: "bg-red-600/30 text-red-500 border-red-600/50 shadow-[0_0_10px_rgba(220,38,38,0.3)] animate-pulse",
-    high: "bg-red-500/20 text-red-400 border-red-500/30",
-    medium: "bg-yellow-500/20 text-yellow-500 border-yellow-500/30",
-    low: "bg-green-500/20 text-green-500 border-green-500/30",
+  urgent: "bg-red-500/10 text-red-500 border-red-500/30",
+  high: "bg-orange-500/10 text-orange-500 border-orange-500/20",
+  medium: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
+  low: "bg-green-500/10 text-green-600 border-green-500/20",
 };
 
 export function DashboardUpcomingDeadlines({ allTasks }: { allTasks: Task[] }) {
@@ -38,7 +38,7 @@ export function DashboardUpcomingDeadlines({ allTasks }: { allTasks: Task[] }) {
     if (upcomingTasks.length === 0) return null;
 
     return (
-        <Card className="transition-all duration-500 ease-in-out animate-fade-in hover:shadow-md border-primary/20 bg-background/50 backdrop-blur-sm" style={{ animationDelay: '250ms', animationFillMode: 'both' }}>
+        <Card className="transition-all duration-500 ease-in-out animate-fade-in hover:shadow-md border-border bg-card" style={{ animationDelay: '250ms', animationFillMode: 'both' }}>
             <CardHeader className="py-4">
                 <CardTitle className="text-primary flex items-center gap-2 text-sm font-bold">
                     <Calendar className="w-5 h-5" />
@@ -52,7 +52,7 @@ export function DashboardUpcomingDeadlines({ allTasks }: { allTasks: Task[] }) {
                         <Link 
                             href={`/tasks?taskId=${task.id}`} 
                             key={task.id} 
-                            className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-card/30 hover:bg-accent/50 hover:border-primary/30 hover:scale-[1.01] transition-all duration-300"
+                            className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30 hover:bg-accent/50 hover:border-primary/30 hover:scale-[1.01] transition-all duration-300"
                         >
                             <div className="flex flex-col min-w-0">
                                 <span className="font-bold text-sm truncate">{task.title}</span>

@@ -30,38 +30,24 @@ export function SummaryCard({
   className,
   trend
 }: SummaryCardProps) {
-  // Map color classes to gradient/glow effects
-  const getGlowColor = () => {
-    if (color.includes("red")) return "shadow-red-500/10 border-red-500/20";
-    if (color.includes("blue")) return "shadow-blue-500/10 border-blue-500/20";
-    if (color.includes("indigo")) return "shadow-indigo-500/10 border-indigo-500/20";
-    if (color.includes("orange")) return "shadow-orange-500/10 border-orange-500/20";
-    if (color.includes("green")) return "shadow-green-500/10 border-green-500/20";
-    return "shadow-primary/10 border-primary/20";
-  };
+  // Removed getGlowColor in favor of static border-border for solid form UI
 
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Card className={cn(
-          "group cursor-pointer transition-all duration-500 hover:translate-y-[-4px]",
-          "glass-morphism border-opacity-20 relative overflow-hidden",
-          getGlowColor(),
+          "group cursor-pointer transition-all duration-300 hover:translate-y-[-2px]",
+          "bg-card border-border shadow-sm relative overflow-hidden",
           className
         )}>
-          {/* Subtle background glow on hover */}
-          <div className={cn(
-            "absolute -inset-1 opacity-0 group-hover:opacity-10 transition-opacity duration-500 blur-2xl",
-            color.replace("text-", "bg-")
-          )} />
 
           <CardContent className="p-3 flex flex-col items-center text-center gap-2 relative z-10">
             <div className={cn(
-                "p-2 rounded-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-3",
-                "bg-white/5 border border-white/10",
+                "p-2 rounded-2xl transition-all duration-500 group-hover:scale-110",
+                "bg-muted/50 border border-border/50",
                 color
             )}>
-              <Icon className="w-5 h-5 filter drop-shadow-[0_0_8px_currentColor]" />
+              <Icon className="w-5 h-5" />
             </div>
             
             <div className="flex flex-col items-center gap-0.5 mt-1">
@@ -84,10 +70,10 @@ export function SummaryCard({
           </CardContent>
         </Card>
       </PopoverTrigger>
-      <PopoverContent className="w-[calc(100vw-2rem)] sm:w-96 p-0 overflow-hidden shadow-2xl border-white/10 glass-morphism bg-popover/95 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-300" align="center" side="bottom" sideOffset={12} collisionPadding={16}>
-        <div className="bg-white/5 p-4 border-b border-white/5 flex items-center justify-between">
+      <PopoverContent className="w-[calc(100vw-2rem)] sm:w-96 p-0 overflow-hidden shadow-xl border-border bg-popover animate-in fade-in zoom-in-95 duration-300" align="center" side="bottom" sideOffset={12} collisionPadding={16}>
+        <div className="bg-muted/50 p-4 border-b border-border flex items-center justify-between">
             <div className="flex items-center gap-3">
-                <div className={cn("p-2 rounded-lg bg-white/5", color)}>
+                <div className={cn("p-2 rounded-lg bg-muted", color)}>
                     <Icon className="w-4 h-4" />
                 </div>
                 <h4 className="font-black text-xs uppercase tracking-widest">{title} Analysis</h4>

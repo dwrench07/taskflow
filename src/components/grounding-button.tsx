@@ -63,7 +63,7 @@ export function GroundingButton() {
       {/* Floating button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-40 h-12 w-12 rounded-full bg-violet-600/90 hover:bg-violet-600 shadow-lg shadow-violet-500/20 backdrop-blur-sm flex items-center justify-center transition-all hover:scale-110 active:scale-95 group"
+        className="fixed bottom-6 right-6 z-40 h-12 w-12 rounded-full bg-violet-600 hover:bg-violet-700 shadow-lg flex items-center justify-center transition-all hover:scale-110 active:scale-95 group"
         title="Grounding & Calm"
       >
         <Shield className="h-5 w-5 text-white group-hover:scale-110 transition-transform" />
