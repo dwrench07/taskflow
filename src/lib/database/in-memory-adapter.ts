@@ -223,9 +223,10 @@ export class MemoryAdapter implements DatabaseAdapter {
 
     async finalizeOrphanedSessions(userId?: string | null): Promise<void> {
         const now = new Date().getTime();
+        const fourHoursGrace = 4 * 60 * 60 * 1000;
         for (const [id, session] of this.focusSessions.entries()) {
             if (session.status === 'active' && (!userId || session.userId === userId)) {
-                if (session.expectedEndTime && new Date(session.expectedEndTime).getTime() < now) {
+                if (session.expectedEndTime && new Date(session.expectedEndTime).getTime() + fourHoursGrace < now) {
                     const updatedSession = { ...session };
                     updatedSession.status = 'completed';
                     updatedSession.endTime = updatedSession.expectedEndTime;

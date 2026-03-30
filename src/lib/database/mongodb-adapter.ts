@@ -355,7 +355,11 @@ export class MongoDBAdapter implements DatabaseAdapter {
     async finalizeOrphanedSessions(userId?: string | null): Promise<void> {
         this.ensureConnected();
         try {
-            const query: any = { status: 'active', expectedEndTime: { $lt: new Date().toISOString() } };
+            const fourHoursAgo = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString();
+            const query: any = { 
+                status: 'active', 
+                expectedEndTime: { $lt: fourHoursAgo } 
+            };
             if (userId) query.userId = userId;
 
             // Find all orphaned and auto-close them.
