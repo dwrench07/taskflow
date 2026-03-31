@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { ListTodo, FileText, Calendar as CalendarIcon, Clock, PlusCircle, Edit, Trash2, Tag, ChevronDown, ClipboardList, ArrowUpDown, ArrowLeft, Search, XCircle, Save, Loader2, Timer, Check, ArrowUp, ArrowDown, Lock, Target, Play, AlarmClock, CheckCircle2 } from "lucide-react";
+import { ListTodo, FileText, Calendar as CalendarIcon, Clock, PlusCircle, Edit, Trash2, Tag, ChevronDown, ClipboardList, ArrowUpDown, ArrowLeft, Search, XCircle, Save, Loader2, Timer, Check, ArrowUp, ArrowDown, Lock, Target, Play, AlarmClock, CheckCircle2, Sparkles, Shield } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -54,6 +54,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useGamification } from "@/context/GamificationContext";
+import { isPast, addDays } from "date-fns";
+import { saveUserProgress } from "@/lib/data";
 
 
 const priorityStyles: Record<Priority, string> = {
@@ -271,7 +273,7 @@ function TasksPageContent() {
   const [editingSubtask, setEditingSubtask] = useState<Subtask | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const { celebrate, refreshGamification } = useGamification();
+  const { celebrate, refreshGamification, userProgress, refreshProgress } = useGamification();
   const [sortOption, setSortOption] = useState<SortOption>("priority");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<Status[]>([]);
@@ -319,6 +321,48 @@ function TasksPageContent() {
       isMounted = false;
     };
   }, [searchParams, isMobile]);
+
+
+
+  // Consumable logic
+  const handleUseFreshStart = async () => {
+    if (!selectedTask || !userProgress || userProgress.inventory.freshStartTokens <= 0) return;
+    
+    // deduct token
+    const newProgress = { ...userProgress };
+    newProgress.inventory.freshStartTokens -= 1;
+    await saveUserProgress(newProgress);
+    await refreshProgress();
+
+    // Use token - clear all overdue dates
+    const updatedTask = { ...selectedTask, doDate: undefined, endDate: undefined };
+    await handleUpdateTask(updatedTask);
+    
+    toast({
+      title: "Fresh Start Token Used",
+      description: "Deadlines cleared. Breathe, and start fresh.",
+    });
+  };
+
+  const handleUseComposureCoin = async () => {
+    if (!selectedTask || !userProgress || userProgress.inventory.composureCoins <= 0) return;
+    
+    // deduct token
+    const newProgress = { ...userProgress };
+    newProgress.inventory.composureCoins -= 1;
+    await saveUserProgress(newProgress);
+    await refreshProgress();
+
+    // Use token - push deadline by 1 day
+    const newDate = selectedTask.endDate ? addDays(new Date(selectedTask.endDate), 1) : addDays(new Date(), 1);
+    const updatedTask = { ...selectedTask, endDate: newDate.toISOString() };
+    await handleUpdateTask(updatedTask);
+    
+    toast({
+      title: "Composure Coin Used",
+      description: "Deadline respectfully snoozed by 24 hours.",
+    });
+  };
 
   useEffect(() => {
     // when task list changes, if a task was selected, refresh its data
@@ -871,6 +915,19 @@ function TasksPageContent() {
                             <p className="text-muted-foreground text-[15px] pt-4 w-full min-w-0 break-words whitespace-pre-wrap leading-relaxed">{selectedTask.description}</p>
                           </div>
                           <div className="flex flex-wrap items-center gap-2 shrink-0 border border-border/50 p-1.5 rounded-full bg-background/50 shadow-sm backdrop-blur-sm">
+                            
+                            {userProgress && userProgress.inventory.freshStartTokens > 0 && selectedTask.endDate && isPast(new Date(selectedTask.endDate)) && selectedTask.status !== 'done' && (
+                              <Button className="bg-green-500/10 hover:bg-green-500/20 text-green-500 border-green-500/20 shadow-sm transition-all rounded-full px-4" variant="outline" size="sm" onClick={handleUseFreshStart}>
+                                <Sparkles className="mr-2 h-4 w-4" /> Consume Fresh Start
+                              </Button>
+                            )}
+                            
+                            {userProgress && userProgress.inventory.composureCoins > 0 && selectedTask.status !== 'done' && (
+                              <Button className="bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-500 border-yellow-500/20 shadow-sm transition-all rounded-full px-4" variant="outline" size="sm" onClick={handleUseComposureCoin}>
+                                <Shield className="mr-2 h-4 w-4" /> Use Composure Coin
+                              </Button>
+                            )}
+
                             <Button className="bg-primary/10 hover:bg-primary/20 text-primary border-primary/20 shadow-sm transition-all rounded-full px-5" variant="outline" size="sm" onClick={() => router.push(`/focus?taskId=${selectedTask.id}`)}>
                               <Timer className="mr-2 h-4 w-4" /> Focus Session
                             </Button>

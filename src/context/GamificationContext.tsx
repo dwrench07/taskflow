@@ -1,8 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
-import { Task, FocusSession } from "@/lib/types";
-import { getAllTasks, getFocusSessions } from "@/lib/data";
+import { Task, FocusSession, UserProgress } from "@/lib/types";
+import { getAllTasks, getFocusSessions, getUserProgress } from "@/lib/data";
 import {
   calculateTotalXP,
   calculateTodayXP,
@@ -25,10 +25,12 @@ interface GamificationContextType {
   level: ReturnType<typeof getLevel>;
   badges: EarnedBadge[];
   dailyWins: DailyWins;
+  userProgress: UserProgress | null;
 
   // Actions
   celebrate: (event: CelebrationEvent) => void;
   refreshGamification: () => Promise<void>;
+  refreshProgress: () => Promise<void>;
 }
 
 const GamificationContext = createContext<GamificationContextType | null>(null);
@@ -43,14 +45,28 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
   const { user, isLoading: authLoading } = useAuth();
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [focusSessions, setFocusSessions] = useState<FocusSession[]>([]);
+  const [userProgress, setUserProgress] = useState<UserProgress | null>(null);
   const [confettiTrigger, setConfettiTrigger] = useState(0);
   const [confettiIntensity, setConfettiIntensity] = useState<'small' | 'medium' | 'big'>('medium');
 
-  const totalXP = calculateTotalXP(allTasks, focusSessions);
+  // Base XP calculated from tasks, then we can add bonus XP stored in UserProgress
+  const baseTotalXP = calculateTotalXP(allTasks, focusSessions);
+  const totalXP = baseTotalXP + (userProgress?.xp || 0);
+
   const todayXP = calculateTodayXP(allTasks, focusSessions);
   const level = getLevel(totalXP);
   const badges = checkBadges(allTasks, focusSessions);
   const dailyWins = calculateDailyWins(allTasks, focusSessions);
+
+  const refreshProgress = useCallback(async () => {
+    try {
+      if (!user) return;
+      const progress = await getUserProgress();
+      setUserProgress(progress);
+    } catch {
+        // silent fail
+    }
+  }, [user]);
 
   const refreshGamification = useCallback(async () => {
     try {
@@ -60,10 +76,11 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
       ]);
       setAllTasks(tasks || []);
       setFocusSessions(sessions || []);
+      await refreshProgress();
     } catch {
       // Silent fail — gamification is non-critical
     }
-  }, []);
+  }, [refreshProgress]);
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -104,8 +121,10 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
         level,
         badges,
         dailyWins,
+        userProgress,
         celebrate,
         refreshGamification,
+        refreshProgress,
       }}
     >
       {children}

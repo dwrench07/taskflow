@@ -2,7 +2,7 @@
  * Data service layer that uses the database abstraction
  */
 
-import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry, FocusReminders } from './types';
+import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry, FocusReminders, UserProgress } from './types';
 import type { DatabaseAdapter, DailyPlan } from './database/types';
 import { DatabaseFactory } from './database/factory';
 import { config, isServer } from './config';
@@ -130,6 +130,7 @@ const mockInterestConnections: InterestConnection[] = [];
 const mockBackOfMindItems: BackOfMindItem[] = [];
 const mockMistakeLogEntries: MistakeLogEntry[] = [];
 let mockFocusReminders: FocusReminders | null = null;
+let mockUserProgress: UserProgress | null = null;
 
 /**
  * Get all tasks
@@ -1106,5 +1107,30 @@ export async function upsertFocusRemindersAsync(reminders: FocusReminders, userI
         defaultLogger.warn('Failed to upsert focus reminders', error);
         mockFocusReminders = reminders;
         return reminders;
+    }
+}
+
+// === USER PROGRESS ===
+
+export async function getUserProgressAsync(userId: string): Promise<UserProgress | null> {
+    if (!isServer) return mockUserProgress;
+    try {
+        const db = await getDatabase();
+        return await db.getUserProgress(userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to get user progress', error);
+        return mockUserProgress;
+    }
+}
+
+export async function upsertUserProgressAsync(progress: UserProgress): Promise<UserProgress> {
+    if (!isServer) { mockUserProgress = progress; return progress; }
+    try {
+        const db = await getDatabase();
+        return await db.upsertUserProgress(progress);
+    } catch (error) {
+        defaultLogger.warn('Failed to upsert user progress', error);
+        mockUserProgress = progress;
+        return progress;
     }
 }

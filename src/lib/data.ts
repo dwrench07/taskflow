@@ -1,4 +1,4 @@
-import type { Task, TaskTemplate, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry, FocusReminders } from './types';
+import type { Task, TaskTemplate, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry, FocusReminders, UserProgress } from './types';
 
 // === API FUNCTIONS FOR CLIENT-SIDE USAGE ===
 // These functions make direct API calls and are used by React components
@@ -567,4 +567,27 @@ export async function saveFocusReminders(reminders: FocusReminders): Promise<Foc
   });
   if (response.ok) return await response.json();
   throw new Error(`Failed to save focus reminders: ${response.statusText}`);
+}
+
+// === USER PROGRESS ===
+
+export async function getUserProgress(): Promise<UserProgress | null> {
+  try {
+    const response = await fetch('/api/user/progress');
+    if (response.ok) return await response.json();
+    return null;
+  } catch (error) {
+    console.error('Failed to fetch user progress:', error);
+    return null;
+  }
+}
+
+export async function saveUserProgress(progress: UserProgress): Promise<UserProgress> {
+  const response = await fetch('/api/user/progress', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(progress),
+  });
+  if (response.ok) return await response.json();
+  throw new Error(`Failed to save user progress: ${response.statusText}`);
 }

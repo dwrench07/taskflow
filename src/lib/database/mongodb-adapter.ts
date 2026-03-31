@@ -25,6 +25,7 @@ export class MongoDBAdapter implements DatabaseAdapter {
     private backOfMindCollection: Collection<any> | null = null;
     private mistakeLogCollection: Collection<any> | null = null;
     private focusRemindersCollection: Collection<any> | null = null;
+    private userProgressCollection: Collection<any> | null = null;
 
     constructor(
         private config: DatabaseConfig,
@@ -66,6 +67,7 @@ export class MongoDBAdapter implements DatabaseAdapter {
             this.backOfMindCollection = this.db.collection(this.config.collections?.backOfMind || 'back_of_mind');
             this.mistakeLogCollection = this.db.collection(this.config.collections?.mistakeLog || 'mistake_log');
             this.focusRemindersCollection = this.db.collection(this.config.collections?.focusReminders || 'focus_reminders');
+            this.userProgressCollection = this.db.collection(this.config.collections?.userProgress || 'user_progress');
 
             // Create indexes for better performance
             await this.createIndexes();
@@ -1003,6 +1005,39 @@ export class MongoDBAdapter implements DatabaseAdapter {
         }
     }
 
+    // UserProgress operations
+    async getUserProgress(userId: string): Promise<any | null> {
+        this.ensureConnected();
+        try {
+            const item = await this.userProgressCollection!.findOne({ userId });
+            return item ? this.convertFromMongo(item) : null;
+        } catch (error) {
+            this.logger.error('Failed to get user progress', { userId, error });
+            throw new Error(`Failed to get user progress: ${error}`);
+        }
+    }
+
+    async upsertUserProgress(progress: any): Promise<any> {
+        this.ensureConnected();
+        try {
+            const userId = progress.userId;
+            if (!userId) throw new Error("userId is required for UserProgress");
+            
+            const toUpdate = this.convertToMongo(progress);
+            const { _id, ...updateData } = toUpdate;
+
+            await this.userProgressCollection!.updateOne(
+                { userId },
+                { $set: { ...updateData, updatedAt: new Date().toISOString() } },
+                { upsert: true }
+            );
+            return progress;
+        } catch (error) {
+            this.logger.error('Failed to upsert user progress', { progress, error });
+            throw new Error(`Failed to upsert user progress: ${error}`);
+        }
+    }
+
     // Helper methods
     private ensureConnected(): void {
         if (!this.isConnected()) {
@@ -1074,6 +1109,7 @@ export class MongoDBAdapter implements DatabaseAdapter {
             await this.backOfMindCollection!.createIndex({ relevanceScore: -1 });
             await this.mistakeLogCollection!.createIndex({ userId: 1 });
             await this.mistakeLogCollection!.createIndex({ status: 1 });
+            await this.userProgressCollection!.createIndex({ userId: 1 }, { unique: true });
 
             this.logger.info('Database indexes created successfully');
         } catch (error) {

@@ -100,6 +100,7 @@ export class MemoryAdapter implements DatabaseAdapter {
     private backOfMind: Map<string, any> = new Map();
     private mistakeLog: Map<string, any> = new Map();
     private focusReminders: Map<string, any> = new Map();
+    private userProgress: Map<string, any> = new Map();
     private connected = false;
 
     constructor(private logger: DatabaseLogger) { }
@@ -131,6 +132,8 @@ export class MemoryAdapter implements DatabaseAdapter {
         this.interestConnections.clear();
         this.backOfMind.clear();
         this.mistakeLog.clear();
+        this.focusReminders.clear();
+        this.userProgress.clear();
         this.logger.info('Disconnected from in-memory database');
     }
 
@@ -464,5 +467,17 @@ export class MemoryAdapter implements DatabaseAdapter {
     }
     async deleteMistakeLogEntry(id: string, userId?: string | null): Promise<boolean> {
         return this.mistakeLog.delete(id);
+    }
+
+    // UserProgress operations
+    async getUserProgress(userId: string): Promise<any | null> {
+        return this.userProgress.get(userId) || null;
+    }
+    
+    async upsertUserProgress(progress: any): Promise<any> {
+        const userId = progress.userId;
+        if (!userId) throw new Error("userId is required for UserProgress");
+        this.userProgress.set(userId, progress);
+        return progress;
     }
 }

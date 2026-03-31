@@ -71,6 +71,8 @@ export interface Task {
   pushHistory?: PushHistoryEntry[];
   timeLimit?: number; // Parkinson's Law timebox in minutes
   isFrog?: boolean;
+  shieldedDates?: string[]; // For streak shields
+  isPrivate?: boolean; // For Silent Architect
 }
 
 // New Template Types
@@ -166,6 +168,7 @@ export interface Goal {
   pillarId?: string; // Link to a life pillar
   stretchGoal?: string; // Ambitious version of this goal
   completedAt?: string; // ISO date when marked completed
+  isPrivate?: boolean; // For Silent Architect
 }
 
 export interface Pillar {
@@ -181,6 +184,7 @@ export interface Milestone extends Goal {
   // Inherits title, description, status, etc from Goal
   // We can add milestone specific fields here if they diverge later
   targetDate?: string;
+  stretchGoalCompleted?: boolean; // For Pinnacle Push
 }
 
 export interface Chore {
@@ -244,4 +248,42 @@ export interface MistakeLogEntry {
   status: 'open' | 'resolved';
   createdAt: string;
   userId?: string;
+}
+
+export interface ActiveBuff {
+  type: 'laserOverdrive' | 'zenMode' | 'momentumSurge' | 'brainFuel' | 'backlogLockdown' | 'energyInjection';
+  expiresAt: string; // ISO date string
+  metadata?: any;
+}
+
+export interface UserProgress {
+  userId: string;
+  xp: number;
+  level: number;
+  inventory: {
+    streakShields: number;
+    predictionCrystals: number;
+    freshStartTokens: number;
+    composureCoins: number;
+    anchorWeights: number;
+    stretchTokens: number;
+    timeBenderHourglasses: number;
+    dawnDiamonds: number;
+    goldenBookmarks: number;
+    embersOfContinuity: number;
+  };
+  activeBuffs: ActiveBuff[];
+  
+  // Phase 5: scaling mechanics
+  lastActiveDate?: string;     // ISO date string
+  seasonStartDate?: string;    // ISO date string
+  unlockedRelics?: string[];   // Array of relic IDs
+  legacyBadges?: string[];     // Array of earned legacy badge IDs
+
+  // Phase 5: The Digital Bonsai
+  bonsai?: {
+    level: number;
+    experience: number;
+    lastFed?: string; // ISO date
+  };
 }

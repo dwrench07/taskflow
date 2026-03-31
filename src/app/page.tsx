@@ -59,6 +59,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { isSameDay, parseISO, startOfDay, format } from "date-fns";
 import { getTodayEnergy } from "@/lib/energy";
 import { cn } from "@/lib/utils";
+import { useGamification } from "@/context/GamificationContext";
+import { InventoryDock } from "@/components/InventoryDock";
 
 import { DailyReviewModal } from "@/components/daily-review-modal";
 import { MorningLaunch } from "@/components/morning-launch";
@@ -83,6 +85,9 @@ export default function DashboardPage() {
   const [habitsOpen, setHabitsOpen] = useState(false);
   const [choresOpen, setChoresOpen] = useState(false);
   const [showMorningLaunch, setShowMorningLaunch] = useState(false);
+  
+  const { userProgress } = useGamification();
+  const isZenMode = userProgress?.activeBuffs.some(b => b.type === 'zenMode');
 
   useEffect(() => {
     // Show morning launch if before 10:30 AM and not dismissed this session
@@ -719,6 +724,7 @@ export default function DashboardPage() {
             <DashboardUpcomingDeadlines allTasks={allTasks} />
           </div>
 
+          {!isZenMode && (
           <Tabs defaultValue="overview" className="w-full space-y-6">
             <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto md:w-[600px] bg-muted/30 p-1">
               <TabsTrigger value="overview" className="py-2">Performance</TabsTrigger>
@@ -800,8 +806,10 @@ export default function DashboardPage() {
               </div>
             </TabsContent>
           </Tabs>
+          )}
         </div>
       )}
+      <InventoryDock />
     </div>
   );
 }
