@@ -488,12 +488,11 @@ export default function DashboardPage() {
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-400 space-y-5">
             {/* Phase 5.1: The Zen Garden (Digital Bonsai) */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-2 mt-4">
-              <div className="lg:col-span-1">
-                <BonsaiTree />
-              </div>
-              <div className="lg:col-span-2 hidden lg:block">
-                 {/* Placeholder for future top-row widgets or just space for the welcome banner to breathe */}
+              <div className="lg:col-span-2 order-1 lg:order-2">
                  {showMorningLaunch && <MorningLaunch allTasks={allTasks} onDismiss={handleDismissMorning} />}
+              </div>
+              <div className="lg:col-span-1 order-2 lg:order-1">
+                <BonsaiTree />
               </div>
             </div>
 
