@@ -37,6 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             seasonStartDate: new Date().toISOString(),
             unlockedRelics: [],
             legacyBadges: [],
+            bonsai: { level: 1, experience: 0 },
           };
           await upsertUserProgressAsync(progress);
         } else {
@@ -46,6 +47,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           if (!progress.seasonStartDate) { progress.seasonStartDate = new Date().toISOString(); needsUpdate = true; }
           if (!progress.unlockedRelics) { progress.unlockedRelics = []; needsUpdate = true; }
           if (!progress.legacyBadges) { progress.legacyBadges = []; needsUpdate = true; }
+          if (!progress.bonsai) {
+            progress.bonsai = { level: 1, experience: 0 };
+            needsUpdate = true;
+          }
           
           if (needsUpdate) {
             await upsertUserProgressAsync(progress);

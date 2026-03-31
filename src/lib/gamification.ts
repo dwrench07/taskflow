@@ -395,6 +395,76 @@ export function checkAndExecuteSeasonReset(progress: UserProgress, badges: Earne
   return false;
 }
 
+// === PHASE 5.1: THE DIGITAL BONSAI TREE ===
+
+export const BONSAI_GROWTH_XP: Record<string, number> = {
+  freshStartTokens: 25,
+  predictionCrystals: 20,
+  composureCoins: 15,
+  streakShields: 10,
+  anchorWeights: 15,
+  stretchTokens: 20,
+  timeBenderHourglasses: 15,
+  dawnDiamonds: 15,
+  goldenBookmarks: 10,
+  embersOfContinuity: 50,
+};
+
+export interface BonsaiStage {
+  emoji: string;
+  label: string;
+  minLevel: number;
+}
+
+export const BONSAI_STAGES: BonsaiStage[] = [
+  { emoji: '🌱', label: 'Seed', minLevel: 1 },
+  { emoji: '🌿', label: 'Sprout', minLevel: 2 },
+  { emoji: '🎋', label: 'Sapling', minLevel: 6 },
+  { emoji: '🌲', label: 'Small Tree', minLevel: 11 },
+  { emoji: '🌳', label: 'Mature Bonsai', minLevel: 21 },
+  { emoji: '✨🌳✨', label: 'Ancient Bonsai', minLevel: 50 },
+];
+
+export function getBonsaiStage(level: number): BonsaiStage {
+  return [...BONSAI_STAGES].reverse().find(s => level >= s.minLevel) || BONSAI_STAGES[0];
+}
+
+export function calculateBonsaiNextLevelXP(level: number): number {
+  return level * 100;
+}
+
+/**
+ * Feeds the bonsai with an item from inventory.
+ * Mutates the progress object.
+ */
+export function feedBonsai(progress: UserProgress, itemKey: keyof UserProgress['inventory']): string | null {
+  if (!progress.bonsai) {
+    progress.bonsai = { level: 1, experience: 0 };
+  }
+
+  const xpValue = BONSAI_GROWTH_XP[itemKey];
+  if (!xpValue) return null;
+
+  if (progress.inventory[itemKey] <= 0) return null;
+
+  // Deduct item
+  progress.inventory[itemKey]--;
+
+  // Add experience
+  progress.bonsai.experience += xpValue;
+  progress.bonsai.lastFed = new Date().toISOString();
+
+  // Check for level up
+  let leveledUp = false;
+  while (progress.bonsai.experience >= calculateBonsaiNextLevelXP(progress.bonsai.level)) {
+    progress.bonsai.experience -= calculateBonsaiNextLevelXP(progress.bonsai.level);
+    progress.bonsai.level++;
+    leveledUp = true;
+  }
+
+  return leveledUp ? `Level Up! Your tree is now Level ${progress.bonsai.level}.` : `Your tree grew! (+${xpValue} XP)`;
+}
+
 /**
  * Mutates the UserProgress object based on the latest action.
  * Returns an array of newly earned buffs or items for UI popups.

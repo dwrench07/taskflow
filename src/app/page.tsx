@@ -61,6 +61,7 @@ import { getTodayEnergy } from "@/lib/energy";
 import { cn } from "@/lib/utils";
 import { useGamification } from "@/context/GamificationContext";
 import { InventoryDock } from "@/components/InventoryDock";
+import { BonsaiTree } from "@/components/BonsaiTree";
 
 import { DailyReviewModal } from "@/components/daily-review-modal";
 import { MorningLaunch } from "@/components/morning-launch";
@@ -386,7 +387,7 @@ export default function DashboardPage() {
     setShowMorningLaunch(false);
   };
 
-  if (showMorningLaunch) {
+  if (showMorningLaunch && viewMode !== 'schedule') {
     return (
       <div className="flex flex-col gap-4 w-full max-w-xl mx-auto px-4 sm:px-8 py-2">
         <DailyReviewModal />
@@ -451,6 +452,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
+
+
       {viewMode === 'schedule' && (() => {
         const today = new Date();
         const habits = allTasks.filter(t => t.isHabit);
@@ -483,6 +486,17 @@ export default function DashboardPage() {
 
         return (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-400 space-y-5">
+            {/* Phase 5.1: The Zen Garden (Digital Bonsai) */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-2 mt-4">
+              <div className="lg:col-span-1">
+                <BonsaiTree />
+              </div>
+              <div className="lg:col-span-2 hidden lg:block">
+                 {/* Placeholder for future top-row widgets or just space for the welcome banner to breathe */}
+                 {showMorningLaunch && <MorningLaunch allTasks={allTasks} onDismiss={handleDismissMorning} />}
+              </div>
+            </div>
+
             {/* Stats strip */}
             <div className="flex items-center gap-4 text-xs text-muted-foreground pl-1">
               <span><span className="text-emerald-500 font-semibold">{stats.frogsRemaining}</span> frogs</span>
