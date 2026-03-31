@@ -86,7 +86,8 @@ export default function DashboardPage() {
   const [habitsOpen, setHabitsOpen] = useState(false);
   const [choresOpen, setChoresOpen] = useState(false);
   const [showMorningLaunch, setShowMorningLaunch] = useState(false);
-  
+  const SHOW_ZEN_GARDEN = false; // Toggle for Bonsai Tree feature
+
   const { userProgress } = useGamification();
   const isZenMode = userProgress?.activeBuffs.some(b => b.type === 'zenMode');
 
@@ -412,42 +413,44 @@ export default function DashboardPage() {
           <p className="text-muted-foreground text-sm font-medium pl-1.5">Focus on what matters. Ignore the rest.</p>
         </div>
 
-        <div className="bg-muted p-1 rounded-xl flex items-center shadow-sm border border-border">
+        <div className="bg-muted p-1 rounded-xl flex items-center shadow-sm border border-border w-fit max-w-full overflow-x-auto no-scrollbar">
           <Button
             variant={viewMode === 'schedule' ? 'secondary' : 'ghost'}
             size="sm"
             onClick={() => setViewMode('schedule')}
             className={cn(
-              "h-9 px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
+              "h-9 px-2 sm:px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex-shrink-0",
               viewMode === 'schedule' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <CalendarCheck className="w-3.5 h-3.5 mr-2" />
-            Schedule
+            <CalendarCheck className="w-3.5 h-3.5 sm:mr-2" />
+            <span className="hidden sm:inline">Schedule</span>
           </Button>
           <Button
             variant={viewMode === 'quick' ? 'secondary' : 'ghost'}
             size="sm"
             onClick={() => setViewMode('quick')}
             className={cn(
-              "h-9 px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
+              "h-9 px-2 sm:px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex-shrink-0",
               viewMode === 'quick' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <LayoutDashboard className="w-3.5 h-3.5 mr-2" />
-            Quick View
+            <LayoutDashboard className="w-3.5 h-3.5 sm:mr-2" />
+            <span className="hidden sm:inline">Quick View</span>
+            <span className="sm:hidden ml-1">Quick</span>
           </Button>
           <Button
             variant={viewMode === 'detailed' ? 'secondary' : 'ghost'}
             size="sm"
             onClick={() => setViewMode('detailed')}
             className={cn(
-              "h-9 px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
+              "h-9 px-2 sm:px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex-shrink-0",
               viewMode === 'detailed' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <BarChart3 className="w-3.5 h-3.5 mr-2" />
-            Deep Dive
+            <BarChart3 className="w-3.5 h-3.5 sm:mr-2" />
+            <span className="hidden sm:inline">Deep Dive</span>
+            <span className="sm:hidden ml-1">Dive</span>
           </Button>
         </div>
       </div>
@@ -486,27 +489,35 @@ export default function DashboardPage() {
 
         return (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-400 space-y-5">
-            {/* Phase 5.1: The Zen Garden (Digital Bonsai) */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-2 mt-4">
-              <div className="lg:col-span-2 order-1 lg:order-2">
-                 {showMorningLaunch && <MorningLaunch allTasks={allTasks} onDismiss={handleDismissMorning} />}
+            {/* Phase 5.1: The Zen Garden (Digital Bonsai) - Hidden for now */}
+            {SHOW_ZEN_GARDEN && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-2 mt-4">
+                <div className="lg:col-span-2 order-1 lg:order-2">
+                   {showMorningLaunch && <MorningLaunch allTasks={allTasks} onDismiss={handleDismissMorning} />}
+                </div>
+                <div className="lg:col-span-1 order-2 lg:order-1">
+                  <BonsaiTree />
+                </div>
               </div>
-              <div className="lg:col-span-1 order-2 lg:order-1">
-                <BonsaiTree />
+            )}
+
+            {!SHOW_ZEN_GARDEN && showMorningLaunch && (
+              <div className="max-w-3xl mx-auto w-full mt-4">
+                <MorningLaunch allTasks={allTasks} onDismiss={handleDismissMorning} />
               </div>
-            </div>
+            )}
 
             {/* Stats strip */}
-            <div className="flex items-center gap-4 text-xs text-muted-foreground pl-1">
-              <span><span className="text-emerald-500 font-semibold">{stats.frogsRemaining}</span> frogs</span>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] sm:text-xs text-muted-foreground pl-1">
+              <span className="whitespace-nowrap"><span className="text-emerald-500 font-semibold">{stats.frogsRemaining}</span> frogs</span>
               <span className="opacity-30">·</span>
-              <span><span className="text-red-400 font-semibold">{stats.criticalTasks}</span> urgent</span>
+              <span className="whitespace-nowrap"><span className="text-red-400 font-semibold">{stats.criticalTasks}</span> urgent</span>
               <span className="opacity-30">·</span>
-              <span><span className="text-green-400 font-semibold">{habitsDone}/{habits.length}</span> habits</span>
+              <span className="whitespace-nowrap"><span className="text-green-400 font-semibold">{habitsDone}/{habits.length}</span> habits</span>
               <span className="opacity-30">·</span>
-              <span><span className="text-blue-400 font-semibold">{choresDoneToday}/{todayChores.length}</span> chores</span>
+              <span className="whitespace-nowrap"><span className="text-blue-400 font-semibold">{choresDoneToday}/{todayChores.length}</span> chores</span>
               <span className="opacity-30">·</span>
-              <span>{format(today, 'EEE, MMM d')}</span>
+              <span className="whitespace-nowrap">{format(today, 'EEE, MMM d')}</span>
             </div>
 
             {/* Habits accordion */}

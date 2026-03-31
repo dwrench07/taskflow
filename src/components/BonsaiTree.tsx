@@ -129,7 +129,7 @@ export function BonsaiTree() {
           <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 mb-1">
             Feed your artifacts
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3">
             {feedableItems.map((item) => {
               const count = userProgress.inventory[item.key as keyof typeof userProgress.inventory] || 0;
               return (
@@ -138,17 +138,17 @@ export function BonsaiTree() {
                   variant="outline"
                   size="sm"
                   className={cn(
-                    "h-auto py-2 flex flex-col gap-1 items-center transition-all",
+                    "h-auto py-1.5 sm:py-2 px-1 flex flex-col gap-0.5 sm:gap-1 items-center transition-all overflow-hidden",
                     count > 0 ? "border-primary/20 hover:bg-primary/5 hover:border-primary/40" : "opacity-40 grayscale cursor-not-allowed"
                   )}
                   disabled={count <= 0 || isFeeding}
                   onClick={() => handleFeed(item.key as any)}
                 >
-                  <div className="flex items-center gap-1.5 font-bold text-[10px]">
-                    <span>{item.icon}</span>
-                    <span>{item.label}</span>
+                  <div className="flex items-center gap-1 sm:gap-1.5 font-bold text-[9px] sm:text-[10px]">
+                    <span className="shrink-0">{item.icon}</span>
+                    <span className="truncate">{item.label}</span>
                   </div>
-                  <div className="text-[9px] text-muted-foreground font-medium">
+                  <div className="text-[8px] sm:text-[9px] text-muted-foreground font-medium truncate">
                     {count} Available (+{item.xp} XP)
                   </div>
                 </Button>
