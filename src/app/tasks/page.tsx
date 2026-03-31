@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { ListTodo, FileText, Calendar as CalendarIcon, Clock, PlusCircle, Edit, Trash2, Tag, ChevronDown, ClipboardList, ArrowUpDown, ArrowLeft, Search, XCircle, Save, Loader2, Timer, Check, ArrowUp, ArrowDown, Lock, Target } from "lucide-react";
+import { ListTodo, FileText, Calendar as CalendarIcon, Clock, PlusCircle, Edit, Trash2, Tag, ChevronDown, ClipboardList, ArrowUpDown, ArrowLeft, Search, XCircle, Save, Loader2, Timer, Check, ArrowUp, ArrowDown, Lock, Target, Play, AlarmClock, CheckCircle2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -504,7 +504,11 @@ function TasksPageContent() {
   const handleSubtaskCompletion = async (subtaskId: string, completed: boolean) => {
     if (!selectedTask) return;
     const updatedSubtasks = selectedTask.subtasks.map(st =>
-      st.id === subtaskId ? { ...st, completed } : st
+      st.id === subtaskId ? { 
+        ...st, 
+        completed,
+        completedAt: completed ? new Date().toISOString() : undefined 
+      } : st
     );
     const updatedTask = { ...selectedTask, subtasks: updatedSubtasks };
     await handleUpdateTask(updatedTask);
@@ -1067,43 +1071,56 @@ function TasksPageContent() {
                                         </>
                                       )}
                                     </div>
-                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-2 py-1.5 px-3 bg-muted/10 rounded-lg border border-border/30 overflow-hidden">
-                                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                                        <div className="flex flex-wrap items-center gap-1 min-w-0 flex-1">
+                                    <div className="flex flex-col gap-2 mt-3 p-3 bg-muted/20 rounded-xl border border-border/40 overflow-hidden">
+                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div className="flex flex-col gap-1.5">
+                                          <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-1">
+                                            <Play className="w-2.5 h-2.5" /> Start
+                                          </span>
                                           <DateTimePicker
                                             date={subtask.startDate}
                                             setDate={(date) => handleSubtaskDateChange(subtask.id, 'startDate', date)}
-                                            triggerClassName="h-7 text-[10px] px-2 w-auto bg-transparent border-0 hover:bg-white/5 shadow-none"
-                                            label="Start..."
-                                            hideIcon={true}
+                                            triggerClassName="h-9 text-xs px-3 w-full bg-background border-border/50 hover:bg-muted/50 shadow-sm"
+                                            label="Set start time..."
                                           />
-                                          <span className="text-muted-foreground/30 text-[10px]">→</span>
-                                          <DateTimePicker
-                                            date={subtask.doDate}
-                                            setDate={(date) => handleSubtaskDateChange(subtask.id, 'doDate', date)}
-                                            label="Do..."
-                                            triggerClassName="h-7 text-[10px] px-2 w-auto text-primary font-bold bg-transparent border-0 hover:bg-white/5 shadow-none"
-                                            hideIcon={true}
-                                          />
-                                          <span className="text-muted-foreground/30 text-[10px]">→</span>
+                                        </div>
+
+                                        <div className="flex flex-col gap-1.5">
+                                          <span className="text-[9px] font-black uppercase tracking-widest text-primary/80 flex items-center gap-1">
+                                            <AlarmClock className="w-2.5 h-2.5" /> Deadline
+                                          </span>
                                           <DateTimePicker
                                             date={subtask.endDate}
                                             setDate={(date) => handleSubtaskDateChange(subtask.id, 'endDate', date)}
-                                            label="Done..."
-                                            triggerClassName="h-7 text-[10px] px-2 w-auto bg-transparent border-0 hover:bg-white/5 shadow-none"
-                                            hideIcon={true}
+                                            label="Set deadline..."
+                                            triggerClassName="h-9 text-xs px-3 w-full bg-background border-border/50 hover:bg-muted/50 shadow-sm text-primary font-bold"
                                           />
                                         </div>
                                       </div>
-                                      <div className="hidden sm:block h-4 w-[1px] bg-border/40 mx-1" />
-                                      <TagInput
-                                        tags={subtask.tags || []}
-                                        allTags={allTags}
-                                        onUpdateTags={(tags) => handleUpdateSubtaskTags(subtask.id, tags)}
-                                        placeholder="Tags..."
-                                        className="h-7 text-[10px] flex-1 max-w-[150px]"
-                                        hideTags
-                                      />
+
+                                      {subtask.completed && subtask.completedAt && (
+                                        <div className="flex flex-col gap-1.5 pt-2 border-t border-border/30">
+                                          <span className="text-[9px] font-black uppercase tracking-widest text-green-500/80 flex items-center gap-1">
+                                            <CheckCircle2 className="w-2.5 h-2.5" /> Resolved At
+                                          </span>
+                                          <div className="h-9 flex items-center px-3 text-xs font-medium text-green-500/90 bg-green-500/5 rounded-md border border-green-500/20">
+                                            {format(new Date(subtask.completedAt), "MMM d, h:mm a")}
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      <div className="flex flex-col gap-1.5 pt-2 border-t border-border/30">
+                                        <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-1">
+                                          <Tag className="w-2.5 h-2.5" /> Labels
+                                        </span>
+                                        <TagInput
+                                          tags={subtask.tags || []}
+                                          allTags={allTags}
+                                          onUpdateTags={(tags) => handleUpdateSubtaskTags(subtask.id, tags)}
+                                          placeholder="Add tags..."
+                                          className="h-9 text-xs flex-1 w-full"
+                                        />
+                                      </div>
                                     </div>
                                   </div>
 

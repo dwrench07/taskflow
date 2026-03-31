@@ -334,7 +334,11 @@ export default function DashboardPage() {
     } else if (item.isSubtask && item.parentId) {
       setAllTasks(prev => prev.map(t => {
         if (t.id !== item.parentId) return t;
-        return { ...t, subtasks: t.subtasks.map(st => st.id === item.id ? { ...st, completed: newCompleted } : st) };
+        return { ...t, subtasks: t.subtasks.map(st => st.id === item.id ? { 
+          ...st, 
+          completed: newCompleted,
+          completedAt: newCompleted ? new Date().toISOString() : undefined 
+        } : st) };
       }));
     } else {
       setAllTasks(prev => prev.map(t => t.id === item.id ? { ...t, status: newCompleted ? 'done' : 'in-progress' } : t));
@@ -356,7 +360,11 @@ export default function DashboardPage() {
       } else if (item.isSubtask && item.parentId) {
         const parent = allTasks.find(t => t.id === item.parentId);
         if (!parent) return;
-        const updatedSubtasks = parent.subtasks.map(st => st.id === item.id ? { ...st, completed: newCompleted } : st);
+        const updatedSubtasks = parent.subtasks.map(st => st.id === item.id ? { 
+          ...st, 
+          completed: newCompleted,
+          completedAt: newCompleted ? new Date().toISOString() : undefined 
+        } : st);
         await updateTask({ ...parent, subtasks: updatedSubtasks });
       } else {
         const task = allTasks.find(t => t.id === item.id);

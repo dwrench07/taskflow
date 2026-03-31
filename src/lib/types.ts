@@ -28,6 +28,7 @@ export interface Subtask {
   completed: boolean;
   startDate?: string;
   endDate?: string;
+  completedAt?: string; // New field tracking actual completion time
   tags?: string[];
   priority?: Priority;
   energyLevel?: EnergyLevel;
