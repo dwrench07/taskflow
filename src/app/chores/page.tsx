@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import type { Chore } from "@/lib/types";
-import { getAllChores, addChore, deleteChore } from "@/lib/data";
+import { getAllChores, addChore, deleteChore, updateChore } from "@/lib/data";
 
 export default function ChoresPage() {
   const [chores, setChores] = useState<Chore[]>([]);
@@ -61,16 +61,23 @@ export default function ChoresPage() {
   };
 
   const handleToggleChore = async (chore: Chore) => {
+    const isCompletedToday = chore.lastCompleted && new Date(chore.lastCompleted).toDateString() === new Date().toDateString();
+    const newCompletedState = isCompletedToday ? undefined : new Date().toISOString();
+    
+    // Optimistic update
+    const updatedChores = chores.map(c => 
+      c.id === chore.id ? { ...c, lastCompleted: newCompletedState } : c
+    );
+    setChores(updatedChores);
+
     try {
-      const isCompletedToday = chore.lastCompleted && new Date(chore.lastCompleted).toDateString() === new Date().toDateString();
-      const newCompletedState = isCompletedToday ? undefined : new Date().toISOString();
-      
-      const updatedChores = chores.map(c => 
-        c.id === chore.id ? { ...c, lastCompleted: newCompletedState } : c
-      );
-      setChores(updatedChores);
+      await updateChore({ ...chore, lastCompleted: newCompletedState });
     } catch (error) {
       console.error("Failed to toggle chore:", error);
+      // Rollback on failure
+      setChores(chores.map(c => 
+        c.id === chore.id ? chore : c
+      ));
     }
   };
 

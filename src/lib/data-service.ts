@@ -784,6 +784,17 @@ export async function getChoresAsync(userId?: string | null): Promise<Chore[]> {
     }
 }
 
+export async function getChoreAsync(id: string, userId?: string | null): Promise<Chore | null> {
+    if (!isServer) return mockChores.find(c => c.id === id) || null;
+    try {
+        const db = await getDatabase();
+        return await db.getChore(id, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to get chore', { id, error });
+        return mockChores.find(c => c.id === id) || null;
+    }
+}
+
 export async function addChoreAsync(chore: Omit<Chore, 'id'>, userId?: string | null): Promise<Chore> {
     const withId: Chore = { ...chore, id: `chore-${Date.now()}` } as Chore;
     if (!isServer) { mockChores.push(withId); return withId; }

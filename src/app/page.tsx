@@ -475,11 +475,14 @@ export default function DashboardPage() {
         const completedTasks = todayList.filter(i => i.completed && i.type !== 'habit');
 
         const TaskItem = ({ item }: { item: typeof todayList[0] }) => (
-          <div className={cn(
-            "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
-            item.completed ? "opacity-40" : "hover:bg-muted/50"
-          )}>
-            <Checkbox checked={item.completed} onCheckedChange={() => handleToggleTodayItem(item)} className="shrink-0" />
+          <div 
+            className={cn(
+              "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors cursor-pointer",
+              item.completed ? "opacity-40" : "hover:bg-muted/50"
+            )}
+            onClick={() => handleToggleTodayItem(item)}
+          >
+            <Checkbox checked={item.completed} onCheckedChange={() => {}} className="shrink-0" />
             <span className={cn("flex-1 text-sm font-medium leading-snug truncate", item.completed && "line-through")}>
               {item.title}
             </span>
@@ -539,10 +542,14 @@ export default function DashboardPage() {
                     {habits.map(habit => {
                       const doneToday = habit.completionHistory?.some(d => isSameDay(parseISO(d), today)) ?? false;
                       return (
-                        <div key={habit.id} className={cn("flex items-center gap-3 px-3 py-2 rounded-lg transition-colors", doneToday ? "opacity-40" : "hover:bg-muted/50")}>
+                        <div 
+                          key={habit.id} 
+                          className={cn("flex items-center gap-3 px-3 py-2 rounded-lg transition-colors cursor-pointer", doneToday ? "opacity-40" : "hover:bg-muted/50")}
+                          onClick={() => handleToggleTodayItem({ id: habit.id, title: habit.title, type: 'habit', isSubtask: false, completed: doneToday, priority: habit.priority })}
+                        >
                           <Checkbox
                             checked={doneToday}
-                            onCheckedChange={() => handleToggleTodayItem({ id: habit.id, title: habit.title, type: 'habit', isSubtask: false, completed: doneToday, priority: habit.priority })}
+                            onCheckedChange={() => {}}
                             className="shrink-0"
                           />
                           <span className={cn("flex-1 text-sm truncate", doneToday && "line-through")}>{habit.title}</span>
@@ -573,8 +580,12 @@ export default function DashboardPage() {
                     {todayChores.map(chore => {
                       const doneToday = chore.lastCompleted ? isSameDay(parseISO(chore.lastCompleted), today) : false;
                       return (
-                        <div key={chore.id} className={cn("flex items-center gap-3 px-3 py-2 rounded-lg transition-colors", doneToday ? "opacity-40" : "hover:bg-muted/50")}>
-                          <Checkbox checked={doneToday} onCheckedChange={() => handleToggleChore(chore)} className="shrink-0" />
+                        <div 
+                          key={chore.id} 
+                          className={cn("flex items-center gap-3 px-3 py-2 rounded-lg transition-colors cursor-pointer", doneToday ? "opacity-40" : "hover:bg-muted/50")}
+                          onClick={() => handleToggleChore(chore)}
+                        >
+                          <Checkbox checked={doneToday} onCheckedChange={() => {}} className="shrink-0" />
                           <span className={cn("flex-1 text-sm truncate", doneToday && "line-through")}>{chore.title}</span>
                         </div>
                       );
