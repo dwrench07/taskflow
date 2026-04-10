@@ -13,6 +13,7 @@ import {
   X, 
   Plus, 
   ChevronRight, 
+  ChevronLeft,
   BatteryLow, 
   BatteryMedium, 
   BatteryFull, 
@@ -22,7 +23,7 @@ import {
   Repeat,
   ShoppingBag
 } from "lucide-react";
-import { isSameDay, parseISO, isPast, isToday, format, differenceInCalendarDays, startOfToday } from "date-fns";
+import { isSameDay, parseISO, isPast, isToday, format, differenceInCalendarDays, startOfDay, addDays, subDays } from "date-fns";
 import { getTodayEnergy, getEnergyMatch } from "@/lib/energy";
 import { EnergyIndicator } from "@/components/energy-check-in";
 import {
@@ -164,10 +165,11 @@ export default function PlanPage() {
   const [approvedIds, setApprovedIds] = useState<string[]>([]);
   const [addedSuggestionIds, setAddedSuggestionIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   
   const currentEnergy = getTodayEnergy();
-  const today = new Date();
-  const todayStr = format(today, 'yyyy-MM-dd');
+  const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+  const isActualToday = isSameDay(selectedDate, new Date());
 
   // DND Sensors
   const sensors = useSensors(
@@ -182,7 +184,7 @@ export default function PlanPage() {
         const [tasks, chores, planIds] = await Promise.all([
           getAllTasks(), 
           getAllChores(),
-          getDailyPlan().catch(() => [])
+          getDailyPlan(selectedDateStr).catch(() => [])
         ]);
         
         setAllTasks(tasks || []);
@@ -194,13 +196,16 @@ export default function PlanPage() {
         if (ids.length > 0) {
           setApprovedIds(ids);
           setStep('done');
+        } else {
+          setApprovedIds([]);
+          setStep(1);
         }
       } finally {
         setLoading(false);
       }
     };
     load();
-  }, []);
+  }, [selectedDateStr]);
 
   // Unified items lookup
   const unifiedItemsMap = useMemo(() => {
@@ -225,20 +230,20 @@ export default function PlanPage() {
   // Non-negotiables
   const nonNegotiables = useMemo(() => {
     const committedTasks = allTasks.filter(t => {
-      if (t.status === 'done') return false;
+      if (t.status === 'done' || t.status === 'abandoned') return false;
       if (t.isHabit) return true; // habits are always daily suggestions
       
-      const doToday = t.doDate && isSameDay(parseISO(t.doDate), today);
-      const dueToday = t.endDate && isSameDay(parseISO(t.endDate), today);
-      const overdue = t.endDate && isPast(parseISO(t.endDate)) && !isToday(parseISO(t.endDate));
+      const doToday = t.doDate && isSameDay(parseISO(t.doDate), selectedDate);
+      const dueToday = t.endDate && isSameDay(parseISO(t.endDate), selectedDate);
+      const overdue = t.endDate && isPast(parseISO(t.endDate)) && !isSameDay(parseISO(t.endDate), selectedDate);
       return doToday || dueToday || overdue;
     });
 
     const committedChores = allChores.filter(c => {
       if (!c.lastCompleted) return true;
       const last = parseISO(c.lastCompleted);
-      const todayStart = startOfToday();
-      const diff = differenceInCalendarDays(todayStart, last);
+      const dateStart = startOfDay(selectedDate);
+      const diff = differenceInCalendarDays(dateStart, last);
       
       const isDue = (c.frequency === 'daily' && diff >= 1) ||
                     (c.frequency === 'weekly' && diff >= 7) ||
@@ -305,7 +310,7 @@ export default function PlanPage() {
   const handleFinalize = async () => {
     setSaving(true);
     try {
-      await updateDailyPlanAsync(approvedIds, todayStr);
+      await updateDailyPlanAsync(approvedIds, selectedDateStr);
       setDailyTaskIds(approvedIds);
       setStep('done');
     } finally {
@@ -316,7 +321,7 @@ export default function PlanPage() {
   const handleReset = async () => {
     setSaving(true);
     try {
-      await updateDailyPlanAsync([], todayStr);
+      await updateDailyPlanAsync([], selectedDateStr);
       setDailyTaskIds([]);
       setApprovedIds(nonNegotiables.map(t => t.id));
       setAddedSuggestionIds([]);
@@ -325,6 +330,20 @@ export default function PlanPage() {
       setSaving(false);
     }
   };
+
+  const renderDateSelector = () => (
+    <div className="flex items-center gap-2 mb-2 bg-muted/30 w-fit rounded-full p-1 border">
+      <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full text-muted-foreground" onClick={() => setSelectedDate(subDays(selectedDate, 1))}>
+        <ChevronLeft className="h-4 w-4" />
+      </Button>
+      <span className="text-sm font-semibold px-2 min-w-[100px] text-center">
+        {isActualToday ? "Today" : format(selectedDate, 'MMM d, yyyy')}
+      </span>
+      <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full text-muted-foreground" onClick={() => setSelectedDate(addDays(selectedDate, 1))}>
+        <ChevronRight className="h-4 w-4" />
+      </Button>
+    </div>
+  );
 
   if (loading) {
     return (
@@ -369,8 +388,9 @@ export default function PlanPage() {
     return (
       <div className="flex flex-col gap-6 max-w-xl animate-in fade-in slide-in-from-bottom-2">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Today's Agenda</h1>
-          <p className="text-muted-foreground text-sm mt-1">Your unified plan for {format(today, 'MMMM do')}.</p>
+          {renderDateSelector()}
+          <h1 className="text-3xl font-bold tracking-tight">Agenda Ready</h1>
+          <p className="text-muted-foreground text-sm mt-1">Your unified plan for {format(selectedDate, 'MMMM do')}.</p>
         </div>
 
         <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3">
@@ -399,6 +419,7 @@ export default function PlanPage() {
       <div className="flex flex-col gap-6 max-w-xl animate-in fade-in slide-in-from-right-2">
         <div className="flex items-start justify-between">
           <div>
+            {renderDateSelector()}
             <h1 className="text-3xl font-bold tracking-tight">Plan Your Day</h1>
             <p className="text-muted-foreground text-sm mt-1">Step 1: Organize your committed work</p>
           </div>
@@ -425,6 +446,7 @@ export default function PlanPage() {
   return (
     <div className="flex flex-col gap-6 max-w-xl animate-in fade-in slide-in-from-right-2">
       <div>
+        {renderDateSelector()}
         <h1 className="text-3xl font-bold tracking-tight">Enhance Plan</h1>
         <p className="text-muted-foreground text-sm mt-1">Step 2: Drag to prioritize and add extras.</p>
       </div>
