@@ -18,7 +18,8 @@ import {
   BookOpen,
   Zap,
   Trophy,
-  Brain
+  Brain,
+  HelpCircle
 } from "lucide-react";
 
 import {
@@ -127,7 +128,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   { href: "/back-of-mind", label: "Deep Store", icon: Brain },
                   { href: "/interests", label: "Interests", icon: Sparkles },
                   { href: "/achievements", label: "Wins", icon: Trophy },
-                  { href: "/logs", label: "Logs", icon: BookOpen },
+                  { href: "/guide", label: "Strategy Guide", icon: HelpCircle },
                   { href: "/profile", label: "Profile", icon: User },
                 ].map((item) => (
                   <SidebarMenuItem key={item.label}>

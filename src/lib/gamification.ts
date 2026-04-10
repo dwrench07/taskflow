@@ -1,4 +1,4 @@
-import { Task, FocusSession, UserProgress } from './types';
+import { Task, FocusSession, UserProgress, GameAction } from './types';
 import { isSameDay, parseISO, startOfToday, isToday, differenceInMinutes, getHours, differenceInDays } from 'date-fns';
 import { calculateStreak } from './habits';
 
@@ -345,12 +345,6 @@ export interface CelebrationEvent {
 
 // === ADVANCED GAMIFICATION MECHANICS (15 NEW RULES) ===
 
-export type GameAction = 
-  | { type: 'task-completed', task: Task, allTasksOnLoad: Task[] }
-  | { type: 'focus-completed', session: FocusSession, jotsLogged: number }
-  | { type: 'worry-resolved', accuracy: 'high' | 'low' }
-  | { type: 'mistake-logged' };
-
 // === PHASE 5: SCALING & MAINTENANCE MECHANICS ===
 
 export function getCampfireStatus(progress: UserProgress): 'burning' | 'frozen' {
@@ -618,7 +612,18 @@ export function evaluateGamificationTriggers(
       updates.push({ message: 'Mistake Mastery', detail: 'Growth mindset shown. Earned a Fresh Start token. +30 XP'});
   }
 
-  // 15th mechanic: Ember of Continuity - (Evaluated separately during Daily Wins accumulation)
+  if (action.type === 'perfect-day-review') {
+      progress.dailyWinStreak = (progress.dailyWinStreak || 0) + 1;
+      progress.xp += 50;
+      
+      if (progress.dailyWinStreak >= 7) {
+          progress.inventory.embersOfContinuity += 1;
+          progress.dailyWinStreak = 0; // reset streak after reward
+          updates.push({ message: 'Ember of Continuity', detail: '7-day perfect streak achieved! High-value item earned. +50 XP'});
+      } else {
+          updates.push({ message: 'Streak Maintained', detail: `Day ${progress.dailyWinStreak}/7 of your perfect win streak. +50 XP`});
+      }
+  }
 
   return updates;
 }

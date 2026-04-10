@@ -286,4 +286,12 @@ export interface UserProgress {
     experience: number;
     lastFed?: string; // ISO date
   };
+  dailyWinStreak?: number;
 }
+
+export type GameAction = 
+  | { type: 'task-completed', task: Task, allTasksOnLoad: Task[] }
+  | { type: 'focus-completed', session: FocusSession, jotsLogged: number }
+  | { type: 'worry-resolved', accuracy: 'high' | 'low' }
+  | { type: 'mistake-logged' }
+  | { type: 'perfect-day-review' };

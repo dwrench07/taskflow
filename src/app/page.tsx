@@ -85,6 +85,7 @@ export default function DashboardPage() {
   const [scheduleView, setScheduleView] = useState<'list' | 'eisenhower' | 'energy'>('list');
   const [habitsOpen, setHabitsOpen] = useState(false);
   const [choresOpen, setChoresOpen] = useState(false);
+  const [planOpen, setPlanOpen] = useState(true);
   const [showMorningLaunch, setShowMorningLaunch] = useState(false);
   const SHOW_ZEN_GARDEN = false; // Toggle for Bonsai Tree feature
 
@@ -233,43 +234,87 @@ export default function DashboardPage() {
       addedIds.add(stId);
     };
 
-    // 1. Frogs first
-    allTasks.filter(t => t.isFrog && !t.isHabit && t.status !== 'done').forEach(addTask);
-
-    // 2. Daily plan items (in plan order)
+    // 1. Daily plan items (In the exact order the user planned)
     dailyPlanIds.forEach(id => {
       if (addedIds.has(id)) return;
+      
+      // Try resolving as task/habit
+      const task = allTasks.find(t => t.id === id);
+      if (task) {
+        items.push({
+          id: task.id,
+          title: task.title,
+          type: task.isFrog ? 'frog' : (task.isHabit ? 'habit' : 'task'),
+          isSubtask: false,
+          completed: task.isHabit 
+            ? (task.completionHistory?.some(d => isSameDay(parseISO(d), today)) ?? false)
+            : task.status === 'done',
+          priority: task.priority,
+        });
+        addedIds.add(id);
+        return;
+      }
+
+      // Try resolving as subtask
       for (const t of allTasks) {
-        if (t.id === id) { addTask(t); break; }
-        if (t.subtasks?.some(s => s.id === id)) { addSubtask(t, id); break; }
+        const st = t.subtasks?.find(s => s.id === id);
+        if (st) {
+          items.push({
+            id: st.id,
+            title: `${st.title} — ${t.title}`,
+            type: t.isFrog ? 'frog' : 'task',
+            parentId: t.id,
+            isSubtask: true,
+            completed: st.completed,
+            priority: st.priority ?? t.priority,
+          });
+          addedIds.add(id);
+          return;
+        }
+      }
+
+      // Try resolving as chore
+      const chore = allChores.find(c => c.id === id);
+      if (chore) {
+        items.push({
+          id: chore.id,
+          title: chore.title,
+          type: 'task', // treat as task for list rendering
+          isSubtask: false,
+          completed: !!(chore.lastCompleted && isSameDay(parseISO(chore.lastCompleted), today)),
+          priority: chore.priority,
+        });
+        addedIds.add(id);
       }
     });
 
-    // 3. Tasks/subtasks with doDate = today, not already added
-    allTasks.filter(t => !t.isHabit && t.status !== 'done').forEach(t => {
-      if (t.doDate && isSameDay(parseISO(t.doDate), today)) {
-        addTask(t);
-      }
-      t.subtasks?.filter(st => !st.completed && st.doDate && isSameDay(parseISO(st.doDate), today))
-        .forEach(st => addSubtask(t, st.id));
-    });
-
-    // 4. Urgent tasks not yet listed
-    allTasks.filter(t => !t.isHabit && t.status !== 'done' && t.priority === 'urgent').forEach(addTask);
-
-    // 5. Habits (not completed today)
-    allTasks.filter(t => t.isHabit).forEach(t => {
-      if (addedIds.has(t.id)) return;
-      const doneToday = t.completionHistory?.some(d => isSameDay(parseISO(d), today)) ?? false;
+    // 2. Frogs that weren't in the plan (Auto-suggested)
+    allTasks.filter(t => t.isFrog && !t.isHabit && t.status !== 'done' && !addedIds.has(t.id)).forEach(t => {
       items.push({
         id: t.id,
         title: t.title,
-        type: 'habit',
+        type: 'frog',
         isSubtask: false,
-        completed: doneToday,
+        completed: false,
         priority: t.priority,
       });
       addedIds.add(t.id);
+    });
+
+    // 3. High priority chores not in plan
+    allChores.filter(c => (c.priority === 'urgent' || c.priority === 'high') && !addedIds.has(c.id)).forEach(c => {
+      const doneToday = !!(c.lastCompleted && isSameDay(parseISO(c.lastCompleted), today));
+      if (!doneToday) {
+        items.push({
+          id: c.id,
+          title: c.title,
+          type: 'task',
+          isSubtask: false,
+          completed: false,
+          priority: c.priority,
+        });
+        addedIds.add(c.id);
+      }
     });
 
     // Completed items sink to bottom
@@ -471,8 +516,8 @@ export default function DashboardPage() {
           return 'q4';
         };
 
-        const incompleteTasks = todayList.filter(i => !i.completed && i.type !== 'habit');
-        const completedTasks = todayList.filter(i => i.completed && i.type !== 'habit');
+        const incompleteTasks = todayList.filter(i => !i.completed && i.type !== 'habit' && !dailyPlanIds.includes(i.id));
+        const completedTasks = todayList.filter(i => i.completed && i.type !== 'habit' && !dailyPlanIds.includes(i.id));
 
         const TaskItem = ({ item }: { item: typeof todayList[0] }) => (
           <div 
@@ -521,6 +566,51 @@ export default function DashboardPage() {
               <span className="whitespace-nowrap"><span className="text-blue-400 font-semibold">{choresDoneToday}/{todayChores.length}</span> chores</span>
               <span className="opacity-30">·</span>
               <span className="whitespace-nowrap">{format(today, 'EEE, MMM d')}</span>
+            </div>
+
+            {/* Today's To-Do List Dropdown (Master Plan) */}
+            <div className={cn(
+              "border rounded-xl overflow-hidden transition-all",
+              dailyPlanIds.length > 0 ? "bg-primary/5 border-primary/20 shadow-sm" : "bg-muted/10 border-border border-dashed"
+            )}>
+              <button
+                onClick={() => setPlanOpen(o => !o)}
+                className={cn(
+                  "w-full flex items-center justify-between px-4 py-3 transition-colors text-sm font-bold",
+                  dailyPlanIds.length > 0 ? "bg-primary/10 hover:bg-primary/20 text-primary" : "hover:bg-muted/20 text-muted-foreground"
+                )}
+              >
+                <span className="flex items-center gap-2">
+                  <CalendarCheck className="h-4 w-4" />
+                  Today's To-Do List
+                  {dailyPlanIds.length > 0 && (
+                    <span className="text-xs font-normal opacity-70">
+                      {todayList.filter(i => i.completed && dailyPlanIds.includes(i.id)).length}/{dailyPlanIds.length} done
+                    </span>
+                  )}
+                </span>
+                <div className="flex items-center gap-2">
+                  {dailyPlanIds.length === 0 && <span className="text-[10px] font-normal uppercase tracking-wider bg-muted-foreground/10 px-1.5 py-0.5 rounded">Empty</span>}
+                  <ChevronDown className={cn("h-4 w-4 transition-transform", planOpen && "rotate-180")} />
+                </div>
+              </button>
+              {planOpen && (
+                <div className="px-2 py-2 space-y-0.5 bg-background/40">
+                  {dailyPlanIds.length > 0 ? (
+                    todayList
+                      .filter(item => dailyPlanIds.includes(item.id))
+                      .sort((a, b) => dailyPlanIds.indexOf(a.id) - dailyPlanIds.indexOf(b.id))
+                      .map(item => <TaskItem key={item.id} item={item} />)
+                  ) : (
+                    <div className="py-6 px-4 text-center">
+                      <p className="text-xs text-muted-foreground mb-3 font-medium">Your plan is empty for today.</p>
+                      <Button variant="outline" size="sm" asChild className="h-8 text-[10px] font-bold uppercase tracking-widest">
+                        <a href="/plan">Set up your day →</a>
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Habits accordion */}

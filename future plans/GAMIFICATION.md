@@ -130,3 +130,11 @@ To ensure the gamification system remains permanently engaging and doesn't suffe
 ### 3. Progressive Item Acquisition Rates (Loot Scaling)
 * [ ] **Diminishing Returns**: To prevent farming, if a user resolves 10 worries in one day, the drop rate for *Prediction Crystals* decreases drastically until the following day.
 * [ ] **Level-Gated Rarities**: As the user's total level increases, introduce advanced composite tokens (e.g., combining 3 *Composure Coins* + 1 *Streak Shield* into a *Titanium Will* token).
+### 4. Neurochemical Trigger Optimization
+* [ ] **Bonsai Visual Evolution (Dopamine)**: Link physical tree growth stages to task-specific chemistry (e.g., "Frog" completion grows flowers).
+* [ ] **"The Spotlight" Focus Mode (Acetylcholine)**: A UI state that completely hides the dashboard and sidebar, showing only the current task title and timer to bridge focus.
+* [ ] **"Surf the Urge" Timer (GABA)**: A 90-second delay button for impulse control when the user feels the need to check social media or terminate a session.
+* [ ] **Shadow Preview (Melatonin)**: Automate a "Wind-Down" UI shift at a set bedtime that hides upcoming stressors and prompts a "Brain Dump" to prep for sleep.
+* [ ] **Daily Win Log (Serotonin)**: A non-numeric retrospective at the end of each day to capture identity-affirming successes independent of XP.
+* [ ] **Efficiency Pattern Visualization (Glutamate)**: A dashboard widget showing exactly which hours of the day yield the highest focus scores ("Flow Windows").
+* [ ] **"Scary Bonus" Scaling (Endorphins)**: Double all XP and item drop rates for tasks tagged with "Dread" or "Anxiety" during the pre-task check-in.

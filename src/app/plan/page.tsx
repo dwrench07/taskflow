@@ -3,14 +3,45 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { getAllTasks, getDailyPlan, updateDailyPlanAsync } from "@/lib/data";
-import { Task, Priority, EnergyLevel } from "@/lib/types";
+import { getAllTasks, getDailyPlan, updateDailyPlanAsync, getAllChores } from "@/lib/data";
+import { Task, Priority, EnergyLevel, Chore } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Loader2, X, Plus, ChevronRight, BatteryLow, BatteryMedium, BatteryFull, Zap, CalendarCheck } from "lucide-react";
-import { isSameDay, parseISO, isPast, isToday } from "date-fns";
+import { 
+  CheckCircle2, 
+  Loader2, 
+  X, 
+  Plus, 
+  ChevronRight, 
+  BatteryLow, 
+  BatteryMedium, 
+  BatteryFull, 
+  Zap, 
+  CalendarCheck,
+  GripVertical,
+  Repeat,
+  ShoppingBag
+} from "lucide-react";
+import { isSameDay, parseISO, isPast, isToday, format } from "date-fns";
 import { getTodayEnergy, getEnergyMatch } from "@/lib/energy";
 import { EnergyIndicator } from "@/components/energy-check-in";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 const priorityStyles: Record<Priority, string> = {
   urgent: "bg-red-600/20 text-red-400 border-red-600/40",
@@ -26,19 +57,43 @@ const energyIcon = (level: EnergyLevel | null) => {
   return null;
 };
 
-function TaskRow({
-  task,
+type UnifiedItem = {
+  id: string;
+  title: string;
+  priority: Priority;
+  energyLevel?: EnergyLevel;
+  type: 'task' | 'habit' | 'chore';
+};
+
+function SortableTaskRow({
+  item,
   onRemove,
   onAdd,
   mode,
   energyMatch,
 }: {
-  task: Task;
+  item: UnifiedItem;
   onRemove?: () => void;
   onAdd?: () => void;
   mode: 'approved' | 'suggestion';
   energyMatch?: 'match' | 'slight-mismatch' | 'mismatch' | null;
 }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: item.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : undefined,
+    opacity: isDragging ? 0.5 : undefined,
+  };
+
   const renderTitle = (title: string) => {
     const match = title.match(/^(.*)\s*—\s*(.*)$/);
     if (match) return (
@@ -48,26 +103,44 @@ function TaskRow({
   };
 
   return (
-    <div className={cn(
-      "flex items-center gap-3 px-4 py-3 rounded-xl border transition-all",
-      mode === 'approved' ? "bg-muted/30 border-border" : "bg-muted/10 border-border/50",
-      energyMatch === 'match' && "border-green-500/30",
-      energyMatch === 'mismatch' && "opacity-50",
-    )}>
+    <div 
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "flex items-center gap-3 px-4 py-3 rounded-xl border transition-all group",
+        mode === 'approved' ? "bg-card border-border shadow-sm" : "bg-muted/10 border-border/50",
+        energyMatch === 'match' && "border-green-500/30",
+        energyMatch === 'mismatch' && "opacity-50",
+        isDragging && "shadow-lg border-primary/50"
+      )}
+    >
+      {mode === 'approved' && (
+        <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing p-1 -ml-2 text-muted-foreground opacity-30 group-hover:opacity-100 transition-opacity">
+          <GripVertical className="h-4 w-4" />
+        </div>
+      )}
+      
+      <div className="flex-shrink-0">
+        {item.type === 'habit' && <Repeat className="h-4 w-4 text-primary/70" />}
+        {item.type === 'chore' && <ShoppingBag className="h-4 w-4 text-orange-400/70" />}
+        {item.type === 'task' && <CheckCircle2 className="h-4 w-4 text-muted-foreground/50" />}
+      </div>
+
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{renderTitle(task.title)}</p>
+        <p className="text-sm font-medium truncate">{renderTitle(item.title)}</p>
         <div className="flex items-center gap-1.5 mt-1">
-          <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 capitalize", priorityStyles[task.priority])}>
-            {task.priority}
+          <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 capitalize", priorityStyles[item.priority])}>
+            {item.priority}
           </Badge>
-          {task.energyLevel && (
+          {item.energyLevel && (
             <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
-              {energyIcon(task.energyLevel as EnergyLevel)}
-              {task.energyLevel}
+              {energyIcon(item.energyLevel)}
+              {item.energyLevel}
             </span>
           )}
         </div>
       </div>
+      
       {mode === 'approved' && onRemove && (
         <Button size="icon" variant="ghost" className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive" onClick={onRemove}>
           <X className="h-4 w-4" />
@@ -84,24 +157,40 @@ function TaskRow({
 
 export default function PlanPage() {
   const [allTasks, setAllTasks] = useState<Task[]>([]);
+  const [allChores, setAllChores] = useState<Chore[]>([]);
   const [dailyTaskIds, setDailyTaskIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [step, setStep] = useState<1 | 2 | 'done'>(1);
   const [approvedIds, setApprovedIds] = useState<string[]>([]);
   const [addedSuggestionIds, setAddedSuggestionIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
+  
   const currentEnergy = getTodayEnergy();
   const today = new Date();
-  const todayStr = today.toISOString().split('T')[0];
+  const todayStr = format(today, 'yyyy-MM-dd');
+
+  // DND Sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       try {
-        const [tasks, planIds] = await Promise.all([getAllTasks(), getDailyPlan().catch(() => [])]);
+        const [tasks, chores, planIds] = await Promise.all([
+          getAllTasks(), 
+          getAllChores(),
+          getDailyPlan().catch(() => [])
+        ]);
+        
         setAllTasks(tasks || []);
+        setAllChores(chores || []);
+        
         const ids = Array.isArray(planIds) ? planIds : [];
         setDailyTaskIds(ids);
+        
         if (ids.length > 0) {
           setApprovedIds(ids);
           setStep('done');
@@ -113,50 +202,97 @@ export default function PlanPage() {
     load();
   }, []);
 
-  // Non-negotiables: doDate=today, endDate=today, overdue incomplete
+  // Unified items lookup
+  const unifiedItemsMap = useMemo(() => {
+    const map = new Map<string, UnifiedItem>();
+    allTasks.forEach(t => map.set(t.id, { 
+      id: t.id, 
+      title: t.title, 
+      priority: t.priority, 
+      energyLevel: t.energyLevel,
+      type: t.isHabit ? 'habit' : 'task' 
+    }));
+    allChores.forEach(c => map.set(c.id, { 
+      id: c.id, 
+      title: c.title, 
+      priority: c.priority, 
+      energyLevel: c.energyLevel,
+      type: 'chore' 
+    }));
+    return map;
+  }, [allTasks, allChores]);
+
+  // Non-negotiables
   const nonNegotiables = useMemo(() => {
-    return allTasks.filter(t => {
-      if (t.isHabit || t.status === 'done') return false;
+    const committedTasks = allTasks.filter(t => {
+      if (t.status === 'done') return false;
+      if (t.isHabit) return true; // habits are always daily suggestions
+      
       const doToday = t.doDate && isSameDay(parseISO(t.doDate), today);
       const dueToday = t.endDate && isSameDay(parseISO(t.endDate), today);
       const overdue = t.endDate && isPast(parseISO(t.endDate)) && !isToday(parseISO(t.endDate));
       return doToday || dueToday || overdue;
     });
-  }, [allTasks]);
 
-  // Suggestions: backlog tasks not in non-negotiables, sorted by energy match + priority
+    const committedChores = allChores.filter(c => {
+      // Logic for chores due today based on frequency would go here
+      // For now, let's include high priority chores as suggestions
+      return c.priority === 'urgent' || c.priority === 'high';
+    });
+
+    return [
+      ...committedTasks.map(t => unifiedItemsMap.get(t.id)),
+      ...committedChores.map(c => unifiedItemsMap.get(c.id))
+    ].filter(Boolean) as UnifiedItem[];
+  }, [allTasks, allChores, unifiedItemsMap]);
+
+  // Suggestions pool
   const suggestions = useMemo(() => {
+    const approvedSet = new Set(approvedIds);
     const nonNegIds = new Set(nonNegotiables.map(t => t.id));
-    const priorityOrder: Record<Priority, number> = { urgent: 0, high: 1, medium: 2, low: 3 };
-    return allTasks
-      .filter(t => !t.isHabit && t.status !== 'done' && !nonNegIds.has(t.id) && !t.doDate && !t.endDate)
+    
+    return Array.from(unifiedItemsMap.values())
+      .filter(item => !approvedSet.has(item.id) && !nonNegIds.has(item.id))
       .sort((a, b) => {
         const aMatch = currentEnergy ? getEnergyMatch(a.energyLevel, currentEnergy) : 'slight-mismatch';
         const bMatch = currentEnergy ? getEnergyMatch(b.energyLevel, currentEnergy) : 'slight-mismatch';
         const matchOrder = { match: 0, 'slight-mismatch': 1, mismatch: 2 };
         const matchDiff = matchOrder[aMatch] - matchOrder[bMatch];
         if (matchDiff !== 0) return matchDiff;
+        
+        const priorityOrder: Record<Priority, number> = { urgent: 0, high: 1, medium: 2, low: 3 };
         return priorityOrder[a.priority] - priorityOrder[b.priority];
       })
-      .slice(0, 3);
-  }, [allTasks, nonNegotiables, currentEnergy]);
+      .slice(0, 5);
+  }, [unifiedItemsMap, approvedIds, nonNegotiables, currentEnergy]);
 
-  // Step 1: init approved from non-negotiables
+  // Initial populate
   useEffect(() => {
     if (!loading && step === 1 && dailyTaskIds.length === 0) {
       setApprovedIds(nonNegotiables.map(t => t.id));
     }
   }, [loading, nonNegotiables]);
 
-  const approvedTasks = useMemo(() =>
-    approvedIds.map(id => allTasks.find(t => t.id === id)).filter(Boolean) as Task[],
-    [approvedIds, allTasks]
+  const approvedItemsList = useMemo(() =>
+    approvedIds.map(id => unifiedItemsMap.get(id)).filter(Boolean) as UnifiedItem[],
+    [approvedIds, unifiedItemsMap]
   );
 
   const handleRemove = (id: string) => setApprovedIds(prev => prev.filter(x => x !== id));
   const handleAddSuggestion = (id: string) => {
     setApprovedIds(prev => [...prev, id]);
     setAddedSuggestionIds(prev => [...prev, id]);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      setApprovedIds((items) => {
+        const oldIndex = items.indexOf(active.id as string);
+        const newIndex = items.indexOf(over.id as string);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
   };
 
   const handleFinalize = async () => {
@@ -191,69 +327,86 @@ export default function PlanPage() {
     );
   }
 
+  const renderActivePlan = () => (
+    <div className="space-y-3">
+      <DndContext 
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext 
+          items={approvedIds}
+          strategy={verticalListSortingStrategy}
+        >
+          {approvedItemsList.map(item => (
+            <SortableTaskRow 
+              key={item.id} 
+              item={item} 
+              mode="approved" 
+              onRemove={step !== 'done' ? () => handleRemove(item.id) : undefined}
+            />
+          ))}
+        </SortableContext>
+      </DndContext>
+      
+      {approvedItemsList.length === 0 && (
+        <div className="text-center py-10 text-muted-foreground text-sm border border-dashed rounded-xl">
+          Nothing in the plan. Add items below or proceed to suggestions.
+        </div>
+      )}
+    </div>
+  );
+
   // Already planned today
   if (step === 'done') {
     return (
-      <div className="flex flex-col gap-6 max-w-xl">
+      <div className="flex flex-col gap-6 max-w-xl animate-in fade-in slide-in-from-bottom-2">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Plan Your Day</h1>
-          <p className="text-muted-foreground text-sm mt-1">Today's plan is set. Head to the dashboard to execute.</p>
+          <h1 className="text-3xl font-bold tracking-tight">Today's Agenda</h1>
+          <p className="text-muted-foreground text-sm mt-1">Your unified plan for {format(today, 'MMMM do')}.</p>
         </div>
 
         <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3">
-          <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-          <span className="text-sm font-medium text-green-400">{approvedIds.length} task{approvedIds.length !== 1 ? 's' : ''} on today's plan</span>
+          <Zap className="h-4 w-4 text-green-500 shrink-0" />
+          <span className="text-sm font-medium text-green-400">{approvedIds.length} items optimized and ready</span>
         </div>
 
-        <div className="space-y-2">
-          {approvedTasks.map(task => (
-            <TaskRow key={task.id} task={task} mode="approved" />
-          ))}
-        </div>
+        {renderActivePlan()}
 
-        <Button variant="outline" size="sm" className="self-start" onClick={handleReset} disabled={saving}>
-          {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-          Replan today
-        </Button>
+        <div className="flex flex-col gap-3">
+          <Button variant="outline" size="sm" className="self-start" onClick={handleReset} disabled={saving}>
+            {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+            Full Replan
+          </Button>
+          <Button variant="ghost" size="sm" className="self-start text-muted-foreground" onClick={() => setStep(2)}>
+            Add More Items
+          </Button>
+        </div>
       </div>
     );
   }
 
-  // Step 1: Non-negotiables review
+  // Step 1: Commit Review
   if (step === 1) {
     return (
-      <div className="flex flex-col gap-6 max-w-xl">
+      <div className="flex flex-col gap-6 max-w-xl animate-in fade-in slide-in-from-right-2">
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Plan Your Day</h1>
-            <p className="text-muted-foreground text-sm mt-1">Step 1 of 2 — Review today's committed work</p>
+            <p className="text-muted-foreground text-sm mt-1">Step 1: Organize your committed work</p>
           </div>
           <EnergyIndicator />
         </div>
 
-        {approvedTasks.length === 0 ? (
-          <div className="text-center py-10 text-muted-foreground text-sm border border-dashed rounded-xl">
-            Nothing scheduled for today. Add tasks via search or proceed to suggestions.
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {approvedTasks.map(task => (
-              <TaskRow
-                key={task.id}
-                task={task}
-                mode="approved"
-                onRemove={() => handleRemove(task.id)}
-              />
-            ))}
-          </div>
-        )}
+        {renderActivePlan()}
 
         <div className="flex items-center gap-3 pt-2">
           <Button
-            className="flex-1"
+            className="flex-1 h-12 text-base"
             onClick={() => setStep(2)}
+            disabled={approvedItemsList.length === 0}
           >
-            Looks good ({approvedTasks.length} items)
+            Organize & Enhance
             <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
         </div>
@@ -261,67 +414,53 @@ export default function PlanPage() {
     );
   }
 
-  // Step 2: Suggestions
-  const remainingSuggestions = suggestions.filter(s => !addedSuggestionIds.includes(s.id));
-
+  // Step 2: Suggestions & Refinement
   return (
-    <div className="flex flex-col gap-6 max-w-xl">
+    <div className="flex flex-col gap-6 max-w-xl animate-in fade-in slide-in-from-right-2">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Plan Your Day</h1>
-        <p className="text-muted-foreground text-sm mt-1">Step 2 of 2 — Want to add anything else?</p>
+        <h1 className="text-3xl font-bold tracking-tight">Enhance Plan</h1>
+        <p className="text-muted-foreground text-sm mt-1">Step 2: Drag to prioritize and add extras.</p>
       </div>
 
-      {remainingSuggestions.length > 0 ? (
-        <div className="space-y-2">
-          {remainingSuggestions.map(task => {
-            const match = currentEnergy ? getEnergyMatch(task.energyLevel, currentEnergy) : null;
-            return (
-              <TaskRow
-                key={task.id}
-                task={task}
-                mode="suggestion"
-                energyMatch={match}
-                onAdd={() => handleAddSuggestion(task.id)}
-              />
-            );
-          })}
-        </div>
-      ) : (
-        <div className="text-center py-8 text-muted-foreground text-sm border border-dashed rounded-xl">
-          No additional suggestions.
+      <div className="space-y-4">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground pl-1">Active Plan (Drag to reorder)</h3>
+        {renderActivePlan()}
+      </div>
+
+      {suggestions.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground pl-1">Suggestions</h3>
+          <div className="space-y-2">
+            {suggestions.map(item => {
+              const match = currentEnergy ? getEnergyMatch(item.energyLevel, currentEnergy) : null;
+              return (
+                <SortableTaskRow
+                  key={item.id}
+                  item={item}
+                  mode="suggestion"
+                  energyMatch={match}
+                  onAdd={() => handleAddSuggestion(item.id)}
+                />
+              );
+            })}
+          </div>
         </div>
       )}
 
-      {addedSuggestionIds.length > 0 && (
-        <p className="text-xs text-muted-foreground pl-1">
-          {addedSuggestionIds.length} suggestion{addedSuggestionIds.length !== 1 ? 's' : ''} added
-        </p>
-      )}
-
-      <div className="flex items-center gap-3 pt-2">
-        <Button variant="outline" className="flex-1" onClick={handleFinalize} disabled={saving}>
-          {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-          Skip, I'm ready
+      <div className="flex flex-col gap-3 pt-4 border-t">
+        <Button 
+          size="lg" 
+          className="w-full h-14 text-lg font-bold shadow-lg shadow-primary/20" 
+          onClick={handleFinalize} 
+          disabled={saving}
+        >
+          {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CalendarCheck className="h-4 w-4 mr-2" />}
+          Lock In Plan ({approvedIds.length} items)
         </Button>
-        {remainingSuggestions.length > 0 && (
-          <Button className="flex-1" onClick={() => {
-            remainingSuggestions.forEach(s => handleAddSuggestion(s.id));
-          }}>
-            <Zap className="h-4 w-4 mr-1.5" />
-            Add all suggestions
-          </Button>
-        )}
+        <Button variant="ghost" onClick={() => setStep(1)}>
+          Back to commitment review
+        </Button>
       </div>
-
-      <Button
-        size="lg"
-        className="w-full"
-        onClick={handleFinalize}
-        disabled={saving}
-      >
-        {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CalendarCheck className="h-4 w-4 mr-2" />}
-        Finalize plan ({approvedIds.length} tasks)
-      </Button>
     </div>
   );
 }

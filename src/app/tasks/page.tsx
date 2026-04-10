@@ -628,7 +628,8 @@ function TasksPageContent() {
 
   const handleStatusChange = async (status: Status) => {
     if (selectedTask) {
-      await handleUpdateTask({ ...selectedTask, status });
+      const updatedTask = { ...selectedTask, status };
+      await handleUpdateTask(updatedTask);
 
       if (status === 'done') {
         const isFrog = selectedTask.isFrog ||
@@ -640,6 +641,34 @@ function TasksPageContent() {
         } else {
           celebrate({ reason: 'task-complete', title: 'Task done!', description: selectedTask.title, intensity: 'medium' });
         }
+        
+        // Loot Drop Evaluation
+        if (userProgress) {
+          import("@/lib/gamification").then(async ({ evaluateGamificationTriggers }) => {
+            const tempProgress = JSON.parse(JSON.stringify(userProgress));
+            const updates = evaluateGamificationTriggers(
+              { type: 'task-completed', task: updatedTask, allTasksOnLoad: allTasks },
+              tempProgress
+            );
+
+            if (updates.length > 0) {
+              await saveUserProgress(tempProgress);
+              await refreshProgress();
+              
+              // Cascade toasts for that "loot drop" feel
+              updates.forEach((u, idx) => {
+                setTimeout(() => {
+                  toast({
+                    title: `🎁 ${u.message}`,
+                    description: u.detail,
+                    variant: "default",
+                  });
+                }, idx * 1500);
+              });
+            }
+          });
+        }
+
         refreshGamification();
       }
     }

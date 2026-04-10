@@ -11,6 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/AuthContext";
 import { cn } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea";
+import { useGamification } from "@/context/GamificationContext";
 
 const PUSH_REASONS: { value: PushReason; label: string; icon: React.ReactNode; description: string }[] = [
   { value: 'too-scary', label: 'Too Scary', icon: <AlertTriangle className="h-4 w-4" />, description: 'Feels overwhelming or anxiety-inducing' },
@@ -28,12 +30,14 @@ export function DailyReviewModal() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showReasonPicker, setShowReasonPicker] = useState(false);
   const [selectedReason, setSelectedReason] = useState<PushReason | null>(null);
+  const [reflectionNote, setReflectionNote] = useState("");
   const { toast } = useToast();
+  const { userProgress, saveUserProgress, refreshProgress } = useGamification();
 
   useEffect(() => {
     const checkTasks = async () => {
       if (isLoading || !user) return;
-      // Basic check to see if we already reviewed today (can store in localStorage)
+      
       const lastReview = localStorage.getItem("lastDailyReview");
       const todayStr = startOfDay(new Date()).toISOString();
       if (lastReview === todayStr) return;
@@ -51,7 +55,6 @@ export function DailyReviewModal() {
 
         if (!targetDate) return false;
 
-        // If targetDate is strictly before today, it was avoided.
         return isBefore(targetDate, today) && !isSameDay(targetDate, today);
       });
 
@@ -63,7 +66,6 @@ export function DailyReviewModal() {
       }
     };
 
-    // Slight delay to not interrupt initial render
     const timer = setTimeout(checkTasks, 2000);
     return () => clearTimeout(timer);
   }, [user, isLoading]);
@@ -73,13 +75,30 @@ export function DailyReviewModal() {
       setCurrentIndex(prev => prev + 1);
       setShowReasonPicker(false);
       setSelectedReason(null);
+      setReflectionNote("");
     } else {
       setIsOpen(false);
       setShowReasonPicker(false);
       setSelectedReason(null);
+      setReflectionNote("");
       localStorage.setItem("lastDailyReview", startOfDay(new Date()).toISOString());
+      
+      // Gamification: Perfect Day Review trigger
+      if (userProgress) {
+        import("@/lib/gamification").then(async ({ evaluateGamificationTriggers }) => {
+          const tempProgress = JSON.parse(JSON.stringify(userProgress));
+          const updates = evaluateGamificationTriggers({ type: 'perfect-day-review' }, tempProgress);
+          if (updates.length > 0) {
+            await saveUserProgress(tempProgress);
+            await refreshProgress();
+            updates.forEach(u => toast({ title: `🎁 ${u.message}`, description: u.detail }));
+          }
+        });
+      }
     }
   };
+
+  const currentTask = avoidedTasks[currentIndex];
 
   const handleAction = async (action: 'move' | 'push' | 'drop', task: Task, reason?: PushReason) => {
     try {
@@ -97,13 +116,16 @@ export function DailyReviewModal() {
           if (updatedTask.endDate) updatedTask.endDate = tomorrowStr;
           updatedTask.pushCount = (updatedTask.pushCount || 0) + 1;
 
-          // Add push reason to history
           if (reason) {
             const entry: PushHistoryEntry = {
               date: todayStr,
               reason,
             };
             updatedTask.pushHistory = [...(updatedTask.pushHistory || []), entry];
+            
+            if (reflectionNote.trim()) {
+              updatedTask.notes = [...(updatedTask.notes || []), `Reflection (${reason}): ${reflectionNote.trim()}`];
+            }
           }
           break;
         }
@@ -113,12 +135,7 @@ export function DailyReviewModal() {
       }
 
       await updateTask(updatedTask);
-
-      toast({
-        title: "Task Updated",
-        description: `Successfully handled "${task.title}".`,
-      });
-
+      toast({ title: "Task Updated", description: `Successfully handled "${task.title}".` });
       advanceOrClose();
     } catch (error) {
        console.error("Failed to update task", error);
@@ -129,10 +146,11 @@ export function DailyReviewModal() {
   const handlePushClick = () => {
     setShowReasonPicker(true);
     setSelectedReason(null);
+    setReflectionNote("");
   };
 
   const handleConfirmPush = () => {
-    if (selectedReason) {
+    if (selectedReason && currentTask) {
       handleAction('push', currentTask, selectedReason);
     }
   };
@@ -141,14 +159,11 @@ export function DailyReviewModal() {
       setIsOpen(false);
       setShowReasonPicker(false);
       setSelectedReason(null);
-      // Don't save to localStorage so it prompts again next time they open
+      setReflectionNote("");
   }
 
-  if (avoidedTasks.length === 0) return null;
+  if (avoidedTasks.length === 0 || !currentTask) return null;
 
-  const currentTask = avoidedTasks[currentIndex];
-
-  // Get the most common push reason for this task from history
   const pushReasonSummary = (() => {
     const history = currentTask.pushHistory || [];
     if (history.length === 0) return null;
@@ -169,7 +184,7 @@ export function DailyReviewModal() {
             Daily Review
           </DialogTitle>
           <DialogDescription>
-            You have {avoidedTasks.length} unfinished tasks from the past. Let&apos;s decide what to do with them.
+            You have {avoidedTasks.length} unfinished tasks from the past. Decide their fate.
           </DialogDescription>
         </DialogHeader>
 
@@ -188,7 +203,6 @@ export function DailyReviewModal() {
               ) : null}
            </div>
 
-           {/* Push history insight */}
            {pushReasonSummary && (
              <div className="text-xs text-muted-foreground bg-muted/50 rounded-lg px-3 py-2 mt-1">
                Pattern: pushed as &quot;{PUSH_REASONS.find(r => r.value === pushReasonSummary.reason)?.label}&quot; {pushReasonSummary.count}/{pushReasonSummary.total} times
@@ -200,7 +214,6 @@ export function DailyReviewModal() {
            </p>
         </div>
 
-        {/* Reason picker (shown after clicking Push) */}
         {showReasonPicker ? (
           <div className="space-y-3 pb-4">
             <p className="text-sm font-medium text-center text-muted-foreground">Why are you pushing this?</p>
@@ -221,6 +234,21 @@ export function DailyReviewModal() {
                 </button>
               ))}
             </div>
+
+            {selectedReason && (
+              <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
+                  Commitment Reflection (Mandatory)
+                </p>
+                <Textarea 
+                  placeholder="Why is tomorrow truly better? What will be different?"
+                  value={reflectionNote}
+                  onChange={(e) => setReflectionNote(e.target.value)}
+                  className="min-h-[80px] text-sm resize-none"
+                />
+              </div>
+            )}
+
             <div className="flex gap-2 mt-3">
               <Button
                 variant="ghost"
@@ -233,27 +261,25 @@ export function DailyReviewModal() {
               <Button
                 size="sm"
                 className="flex-1 bg-orange-600 hover:bg-orange-700"
-                disabled={!selectedReason}
+                disabled={!selectedReason || reflectionNote.trim().length < 5}
                 onClick={handleConfirmPush}
               >
                 Push to Tomorrow
               </Button>
             </div>
-
-            {/* Smart intervention hint based on selected reason */}
+            
             {selectedReason && (
               <div className="text-xs text-muted-foreground bg-blue-500/5 border border-blue-500/20 rounded-lg px-3 py-2 mt-2">
-                {selectedReason === 'too-scary' && "Tip: Try breaking this into a tiny 2-minute first step. Fear shrinks when you start small."}
-                {selectedReason === 'too-vague' && "Tip: Spend 5 minutes just defining the first concrete step. Clarity kills procrastination."}
-                {selectedReason === 'too-big' && "Tip: Can you break this into subtasks? The task might need to be split."}
-                {selectedReason === 'too-boring' && "Tip: Try pairing this with music or batching it with other boring tasks."}
-                {selectedReason === 'ran-out-of-time' && "Consider: Is your daily plan too ambitious? You might be overloading."}
-                {selectedReason === 'deprioritized' && "That's a valid reason. Make sure the priority level on this task still reflects reality."}
+                {selectedReason === 'too-scary' && "Tip: Try breaking this into a tiny 2-minute first step."}
+                {selectedReason === 'too-vague' && "Tip: Spend 5 minutes just defining the first concrete step."}
+                {selectedReason === 'too-big' && "Tip: Can you break this into subtasks?"}
+                {selectedReason === 'too-boring' && "Tip: Try pairing this with music."}
+                {selectedReason === 'ran-out-of-time' && "Consider: Is your daily plan too ambitious?"}
+                {selectedReason === 'deprioritized' && "Does the priority level still reflect reality?"}
               </div>
             )}
           </div>
         ) : (
-          /* Default action buttons */
           <div className="grid grid-cols-2 gap-3 pb-4">
             <Button
               variant="default"

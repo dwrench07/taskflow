@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Flame, Repeat, Zap, PlusCircle, Edit, Trash2, Trophy, Undo2, ArrowLeft, X, CalendarIcon, Save, MoreVertical, Smile, Frown, Meh, BarChart, Loader2, Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { isToday, parseISO, startOfToday, format, subDays, startOfDay, isEqual } from 'date-fns';
+import { isToday, parseISO, startOfToday, format, subDays, startOfDay, isEqual, differenceInDays, getHours } from 'date-fns';
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
@@ -153,7 +153,7 @@ function HabitForm({ habit, onSubmit, onOpenChange }: { habit?: Task; onSubmit: 
 }
 
 
-function HabitCompletionGrid({ habit }: { habit: Task }) {
+function HabitCompletionGrid({ habit, onToggleDate }: { habit: Task, onToggleDate: (dateISO: string) => void }) {
     const today = startOfToday();
     const dates = Array.from({ length: 30 }).map((_, i) => subDays(today, 29 - i));
 
@@ -174,34 +174,44 @@ function HabitCompletionGrid({ habit }: { habit: Task }) {
         <TooltipProvider>
             <div className="grid grid-cols-10 gap-1.5">
                 {dates.map(date => {
+                    const dateISO = date.toISOString();
                     const dateString = format(date, 'yyyy-MM-dd');
                     const isCompleted = completedSet.has(dateString);
                     const dayStatus = statusMap.get(dateString) || 'not recorded';
 
                     let tooltipText = "Not Completed";
                     let content: React.ReactNode = null;
-                    let bgColor = "bg-muted/50";
+                    let bgColor = "bg-muted/50 hover:bg-muted";
 
                     if (isCompleted) {
                         tooltipText = statusText[dayStatus];
                         if (dayStatus !== 'not recorded') {
                             content = pageStatusIcons[dayStatus];
-                            bgColor = "bg-muted"; // a neutral bg to make icon visible
+                            bgColor = "bg-muted border-primary/30 hover:bg-muted/80"; // a neutral bg to make icon visible
                         } else {
-                            bgColor = "bg-primary";
+                            bgColor = "bg-primary hover:bg-primary/80";
                         }
                     }
 
                     return (
-                        <Tooltip key={dateString}>
+                        <Tooltip key={dateISO}>
                             <TooltipTrigger asChild>
-                                <div className={cn("h-6 w-6 rounded-sm border flex items-center justify-center", bgColor)}>
+                                <button 
+                                    className={cn("h-6 w-6 rounded-sm border flex items-center justify-center transition-all hover:scale-110 cursor-pointer", bgColor)}
+                                    onClick={(e) => { 
+                                        e.preventDefault();
+                                        e.stopPropagation(); 
+                                        console.log('Grid click:', dateISO);
+                                        onToggleDate(dateISO); 
+                                    }}
+                                    type="button"
+                                >
                                     {content}
-                                </div>
+                                </button>
                             </TooltipTrigger>
-                            <TooltipContent>
+                            <TooltipContent side="top">
                                 <p className="font-semibold">{format(date, 'MMM d, yyyy')}</p>
-                                <p>{tooltipText}</p>
+                                <p>{tooltipText} (Click to toggle)</p>
                             </TooltipContent>
                         </Tooltip>
                     );
@@ -210,6 +220,8 @@ function HabitCompletionGrid({ habit }: { habit: Task }) {
         </TooltipProvider>
     );
 }
+
+import { Snowflake, AlertCircle } from "lucide-react";
 
 
 function HabitsPageContent() {
@@ -223,6 +235,22 @@ function HabitsPageContent() {
     const [newNote, setNewNote] = useState("");
     const isMobile = useIsMobile();
     const router = useRouter();
+    const { userProgress } = useGamification();
+
+    const isFrozen = (habit: Task) => {
+        if (!userProgress?.lastActiveDate) return false;
+        const diffDays = differenceInDays(new Date(), new Date(userProgress.lastActiveDate));
+        return diffDays >= 3;
+    };
+
+    const isAtRisk = (habit: Task) => {
+        if (!habit.completionHistory || habit.completionHistory.length === 0) return false;
+        const hasDoneToday = habit.completionHistory.some(d => isToday(parseISO(d)));
+        if (hasDoneToday) return false;
+        
+        // At risk if it's after 6 PM and not done
+        return getHours(new Date()) >= 18;
+    };
 
     const searchParams = useSearchParams();
 
@@ -279,42 +307,63 @@ function HabitsPageContent() {
         return statusEntry?.status || 'not recorded';
     }
 
-    const handleToggleCompletion = async (habitId: string) => {
+    const handleToggleCompletion = async (habitId: string, dateStr?: string) => {
+        console.log('handleToggleCompletion called:', { habitId, dateStr });
         const habit = habits.find(h => h.id === habitId);
-        if (!habit) return;
-
-        const today = startOfToday();
-        const completedToday = hasCompletedToday(habit);
-        let newCompletionHistory = [...(habit.completionHistory || [])];
-        let toastMessage = {};
-        let newLastCompletedDate = habit.lastCompletedDate;
-
-        if (completedToday) {
-            newCompletionHistory = newCompletionHistory.filter(d => !isEqual(startOfDay(parseISO(d)), today));
-            const sortedHistory = newCompletionHistory.map(d => parseISO(d)).sort((a, b) => b.getTime() - a.getTime());
-            newLastCompletedDate = sortedHistory.length > 0 ? sortedHistory[0].toISOString() : undefined;
-            toastMessage = { title: "Habit undone.", description: `Completion for "${habit.title}" has been removed.` };
-        } else {
-            newCompletionHistory.push(today.toISOString());
-            newLastCompletedDate = today.toISOString();
-            toastMessage = { title: "Habit complete!", description: `Great job on "${habit.title}" today!` };
+        if (!habit) {
+            console.error('Habit not found:', habitId);
+            return;
         }
 
-        const updatedHabit = { ...habit, completionHistory: newCompletionHistory, lastCompletedDate: newLastCompletedDate };
-        await updateTask(updatedHabit);
+        const targetDate = dateStr ? startOfDay(parseISO(dateStr)) : startOfToday();
+        console.log('Target date normalized:', targetDate.toISOString());
+        
+        const hasCompletedOnDate = (h: Task, qDate: Date): boolean => {
+            if (!h.completionHistory) return false;
+            return h.completionHistory.some(d => isEqual(startOfDay(parseISO(d)), qDate));
+        }
 
-        refreshHabits();
-        toast(toastMessage);
+        const completedTarget = hasCompletedOnDate(habit, targetDate);
+        let newCompletionHistory = [...(habit.completionHistory || [])];
+        let toastMessage = { title: "", description: "" };
+        let newLastCompletedDate = habit.lastCompletedDate;
 
-        // Celebration on completion (not on undo)
-        if (!completedToday) {
-            const streak = calculateStreak(updatedHabit);
-            if (streak > 0 && streak % 7 === 0) {
-                celebrate({ reason: 'streak-milestone', title: `${streak}-day streak!`, description: habit.title, intensity: 'big' });
-            } else {
-                celebrate({ reason: 'habit-complete', title: 'Habit done!', description: habit.title, intensity: 'small' });
+        if (completedTarget) {
+            newCompletionHistory = newCompletionHistory.filter(d => !isEqual(startOfDay(parseISO(d)), targetDate));
+            const sortedHistory = newCompletionHistory.map(d => parseISO(d)).sort((a, b) => b.getTime() - a.getTime());
+            newLastCompletedDate = sortedHistory.length > 0 ? sortedHistory[0].toISOString() : undefined;
+            toastMessage = { title: "Habit undone.", description: `Completion for "${habit.title}" on ${format(targetDate, 'MMM d')} has been removed.` };
+        } else {
+            newCompletionHistory.push(targetDate.toISOString());
+            const sortedHistory = newCompletionHistory.map(d => parseISO(d)).sort((a, b) => b.getTime() - a.getTime());
+            newLastCompletedDate = sortedHistory.length > 0 ? sortedHistory[0].toISOString() : undefined;
+            toastMessage = { title: "Habit complete!", description: `Great job on "${habit.title}" for ${format(targetDate, 'MMM d')}!` };
+        }
+
+        try {
+            const updatedHabit = { ...habit, completionHistory: newCompletionHistory, lastCompletedDate: newLastCompletedDate };
+            await updateTask(updatedHabit);
+            console.log('Habit updated in DB');
+
+            await refreshHabits();
+            console.log('Habits refreshed');
+            
+            toast(toastMessage);
+
+            const isTodayTarget = isEqual(targetDate, startOfToday());
+            // Celebration on completion (not on undo)
+            if (!completedTarget && isTodayTarget) {
+                const streak = calculateStreak(updatedHabit);
+                if (streak > 0 && streak % 7 === 0) {
+                    celebrate({ reason: 'streak-milestone', title: `${streak}-day streak!`, description: habit.title, intensity: 'big' });
+                } else {
+                    celebrate({ reason: 'habit-complete', title: 'Habit done!', description: habit.title, intensity: 'small' });
+                }
+                refreshGamification();
             }
-            refreshGamification();
+        } catch (err: any) {
+            console.error('Failed to toggle completion:', err);
+            toast({ title: "Error", description: `Could not update habit record: ${err.message || 'Unknown error'}`, variant: "destructive" });
         }
     };
 
@@ -470,13 +519,25 @@ function HabitsPageContent() {
                                 <Card
                                     key={habit.id}
                                     className={cn(
-                                        "flex flex-col cursor-pointer transition-all duration-300 ease-in-out animate-fade-in shadow-sm hover:shadow-md max-w-full min-w-0",
+                                        "flex flex-col cursor-pointer transition-all duration-300 ease-in-out animate-fade-in shadow-sm hover:shadow-md max-w-full min-w-0 relative",
                                         selectedHabit?.id === habit.id ? 'border-primary ring-1 ring-primary scale-[1.02]' : 'hover:border-primary/50 hover:scale-[1.03]',
                                         dailyStatusStyles[todaysStatus],
-                                        goalMet && "border-green-500/50"
+                                        goalMet && "border-green-500/50",
+                                        isAtRisk(habit) && "border-orange-500 shadow-orange-500/20 animate-pulse-subtle",
+                                        isFrozen(habit) && "border-blue-400 opacity-80"
                                     )}
                                     onClick={() => handleSelectHabit(habit)}
                                 >
+                                    {isFrozen(habit) && (
+                                        <div className="absolute -top-2 -right-2 bg-blue-500 text-white p-1.5 rounded-full shadow-lg z-10 animate-bounce">
+                                            <Snowflake className="h-4 w-4" />
+                                        </div>
+                                    )}
+                                    {isAtRisk(habit) && !isFrozen(habit) && (
+                                        <div className="absolute -top-2 -right-2 bg-orange-600 text-white p-1.5 rounded-full shadow-lg z-10">
+                                            <Flame className="h-4 w-4 animate-pulse" />
+                                        </div>
+                                    )}
                                     <CardHeader className="p-3 pb-0 sm:p-4 sm:pb-0">
                                         <div className="flex justify-between items-start gap-1 sm:gap-3 w-full min-w-0">
                                             <TooltipProvider delayDuration={300}>
@@ -490,9 +551,9 @@ function HabitsPageContent() {
                                                 </Tooltip>
                                             </TooltipProvider>
                                             <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                                                <Badge variant={streak > 0 ? "default" : "secondary"} className="flex items-center gap-1 sm:gap-1.5 px-1.5 py-0 h-5 sm:h-auto sm:px-2 sm:py-0.5 text-[10px] sm:text-xs whitespace-nowrap">
-                                                    <Flame className={cn("h-3 w-3 sm:h-4 sm:w-4", streak > 0 ? "text-orange-300" : "text-muted-foreground")} />
-                                                    {streak} <span className="hidden sm:inline sm:ml-1">Day{streak !== 1 && 's'}</span>
+                                                <Badge variant={streak > 0 ? "default" : "secondary"} className={cn("flex items-center gap-1 sm:gap-1.5 px-1.5 py-0 h-5 sm:h-auto sm:px-2 sm:py-0.5 text-[10px] sm:text-xs whitespace-nowrap", isAtRisk(habit) && "bg-orange-600", isFrozen(habit) && "bg-blue-400")}>
+                                                    <Flame className={cn("h-3 w-3 sm:h-4 sm:w-4", streak > 0 ? "text-orange-300" : "text-muted-foreground", isAtRisk(habit) && "text-white animate-bounce")} />
+                                                    {isFrozen(habit) ? "FROZEN" : `${streak} Day${streak !== 1 ? 's' : ''}`}
                                                 </Badge>
                                                 <AlertDialog>
                                                     <AlertDialogTrigger asChild>
@@ -685,7 +746,7 @@ function HabitsPageContent() {
 
                                             <div>
                                                 <h4 className="font-semibold mb-3">Last 30 Days Completion</h4>
-                                                <HabitCompletionGrid habit={selectedHabit} />
+                                                <HabitCompletionGrid habit={selectedHabit} onToggleDate={(d) => handleToggleCompletion(selectedHabit.id, d)} />
                                             </div>
 
                                             <Separator />
