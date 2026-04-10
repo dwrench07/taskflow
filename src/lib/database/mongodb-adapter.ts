@@ -267,11 +267,12 @@ export class MongoDBAdapter implements DatabaseAdapter {
         this.ensureConnected();
         try {
             const planToUpdate = this.convertToMongo(plan);
+            const { _id, ...planFields } = planToUpdate;
             const result = await this.dailyPlansCollection!.updateOne(
                 { date: plan.date, userId },
                 {
                     $set: {
-                        ...planToUpdate,
+                        ...planFields,
                         userId,
                         updatedAt: new Date().toISOString()
                     }
