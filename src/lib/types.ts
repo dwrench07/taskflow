@@ -293,7 +293,7 @@ export interface UserProgress {
 
 export type GameAction = 
   | { type: 'task-completed', task: Task, allTasksOnLoad: Task[] }
-  | { type: 'focus-completed', session: FocusSession, jotsLogged: number, startedQuickly: boolean }
+  | { type: 'focus-completed', session: FocusSession, jotsLogged: number, startedQuickly: boolean, preEmotion?: EmotionCheckIn }
   | { type: 'worry-resolved', accuracy: 'high' | 'low' }
   | { type: 'mistake-logged' }
   | { type: 'perfect-day-review' }

@@ -602,6 +602,21 @@ export function evaluateGamificationTriggers(
         progress.xp += 50;
         updates.push({ message: 'Poker Face Composure', detail: 'Started a tough task under pressure. Earned a Composure Coin. +50 XP' });
     }
+
+    // 6. Scary Bonus — double XP + item drop when pre-task emotion was dread or anxiety
+    const scaryEmotion = action.preEmotion?.emotion;
+    if (scaryEmotion === 'dread' || scaryEmotion === 'anxiety') {
+        const bonusXP = Math.floor(session.duration * 2); // 2x the per-minute rate
+        progress.xp += bonusXP;
+        // Random item drop: 50% composure coin, 50% stretch token
+        const drop = Math.random() < 0.5 ? 'composureCoins' : 'stretchTokens';
+        progress.inventory[drop] += 1;
+        const dropName = drop === 'composureCoins' ? 'Composure Coin' : 'Stretch Token';
+        updates.push({
+            message: 'Scary Bonus!',
+            detail: `You pushed through ${scaryEmotion}. Double focus XP earned + ${dropName} dropped. +${bonusXP} XP`
+        });
+    }
   }
 
   if (action.type === 'worry-resolved') {

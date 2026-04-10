@@ -412,7 +412,7 @@ export default function FocusPage() {
                     import("@/lib/gamification").then(async ({ evaluateGamificationTriggers }) => {
                         const tempProgress = JSON.parse(JSON.stringify(userProgress));
                         const updates = evaluateGamificationTriggers(
-                            { type: 'focus-completed', session: savedSession, jotsLogged: ideaJots, startedQuickly },
+                            { type: 'focus-completed', session: savedSession, jotsLogged: ideaJots, startedQuickly, preEmotion: preEmotion ?? undefined },
                             tempProgress
                         );
                         if (updates.length > 0) {

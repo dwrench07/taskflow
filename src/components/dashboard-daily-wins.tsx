@@ -3,18 +3,71 @@
 import { useGamification } from "@/context/GamificationContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, CheckCircle2, Flame, Trophy, Brain, Zap, Layers } from "lucide-react";
+import { Sparkles, CheckCircle2, Flame, Trophy, Brain, Zap, Layers, PenLine, Send } from "lucide-react";
 import { getLevel } from "@/lib/gamification";
 import { Progress } from "@/components/ui/progress";
+import { useState, useEffect, useRef } from "react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+
+const PROMPTS = [
+  "What's one thing you did today that your past self would be proud of?",
+  "Finish this: Today I showed up as someone who…",
+  "What resistance did you push through today?",
+  "In one sentence — what kind of person did today's actions reflect?",
+  "What small thing did you do today that actually mattered?",
+];
+
+const STORAGE_KEY = "daily-win-log";
+
+interface WinEntry {
+  date: string; // yyyy-MM-dd
+  text: string;
+}
+
+function getTodayKey() {
+  return format(new Date(), "yyyy-MM-dd");
+}
 
 export function DashboardDailyWins() {
   const { dailyWins, todayXP, totalXP, level } = useGamification();
+  const [winText, setWinText] = useState("");
+  const [saved, setSaved] = useState(false);
+  const [existingEntry, setExistingEntry] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  const todayKey = getTodayKey();
+  const prompt = PROMPTS[new Date().getDay() % PROMPTS.length];
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const entry: WinEntry = JSON.parse(raw);
+        if (entry.date === todayKey) {
+          setExistingEntry(entry.text);
+          setSaved(true);
+        }
+      }
+    } catch {}
+  }, [todayKey]);
+
+  const handleSave = () => {
+    const text = winText.trim();
+    if (!text) return;
+    const entry: WinEntry = { date: todayKey, text };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entry));
+    setExistingEntry(text);
+    setSaved(true);
+    setEditing(false);
+    setWinText("");
+  };
 
   const hasActivity = dailyWins.tasksCompleted > 0 || dailyWins.habitsCompleted > 0 ||
-                      dailyWins.focusMinutes > 0 || dailyWins.subtasksCompleted > 0;
+    dailyWins.focusMinutes > 0 || dailyWins.subtasksCompleted > 0;
 
   const wins: { icon: React.ReactNode; text: string }[] = [];
-
   if (dailyWins.tasksCompleted > 0)
     wins.push({ icon: <CheckCircle2 className="h-3.5 w-3.5 text-green-400" />, text: `Completed ${dailyWins.tasksCompleted} task${dailyWins.tasksCompleted > 1 ? 's' : ''}` });
   if (dailyWins.subtasksCompleted > 0)
@@ -42,21 +95,65 @@ export function DashboardDailyWins() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Activity wins */}
         {!hasActivity ? (
           <p className="text-xs text-muted-foreground">No wins yet today. You got this.</p>
         ) : (
-          <>
-            {/* Positive-only framing */}
-            <div className="space-y-2">
-              {wins.map((win, i) => (
-                <div key={i} className="flex items-center gap-2 text-xs">
-                  {win.icon}
-                  <span className="text-foreground/80">{win.text}</span>
-                </div>
-              ))}
-            </div>
-          </>
+          <div className="space-y-2">
+            {wins.map((win, i) => (
+              <div key={i} className="flex items-center gap-2 text-xs">
+                {win.icon}
+                <span className="text-foreground/80">{win.text}</span>
+              </div>
+            ))}
+          </div>
         )}
+
+        {/* Daily Win Log — identity-affirming reflection */}
+        <div className="pt-3 border-t border-border/40 space-y-2">
+          <div className="flex items-center gap-1.5">
+            <PenLine className="h-3.5 w-3.5 text-primary/70" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Daily Win Log</span>
+          </div>
+
+          {saved && existingEntry && !editing ? (
+            <div
+              className="text-xs text-foreground/80 italic bg-primary/5 border border-primary/15 rounded-lg px-3 py-2.5 leading-relaxed cursor-pointer hover:border-primary/30 transition-colors"
+              onClick={() => { setEditing(true); setWinText(existingEntry); setTimeout(() => inputRef.current?.focus(), 50); }}
+              title="Click to edit"
+            >
+              &ldquo;{existingEntry}&rdquo;
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-[11px] text-muted-foreground/80 italic leading-snug">{prompt}</p>
+              <textarea
+                ref={inputRef}
+                value={winText}
+                onChange={e => setWinText(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSave(); } }}
+                placeholder="Write one sentence…"
+                rows={2}
+                className={cn(
+                  "w-full text-xs bg-muted/30 border border-border/50 rounded-lg px-3 py-2 resize-none",
+                  "placeholder:text-muted-foreground/40 focus:outline-none focus:border-primary/40 focus:bg-primary/5 transition-colors"
+                )}
+              />
+              <button
+                onClick={handleSave}
+                disabled={!winText.trim()}
+                className={cn(
+                  "flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg transition-all",
+                  winText.trim()
+                    ? "bg-primary/10 text-primary hover:bg-primary/20"
+                    : "text-muted-foreground/40 cursor-not-allowed"
+                )}
+              >
+                <Send className="h-3 w-3" /> Save Win
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* XP / Level bar */}
         <div className="pt-2 border-t border-border/50 space-y-1.5">
