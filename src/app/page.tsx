@@ -494,6 +494,7 @@ export default function DashboardPage() {
           >
             <CalendarCheck className="w-3.5 h-3.5 sm:mr-2" />
             <span className="hidden sm:inline">Schedule</span>
+            <span className="sm:hidden ml-1">Schedule</span>
           </Button>
           <Button
             variant={viewMode === 'quick' ? 'secondary' : 'ghost'}
