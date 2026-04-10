@@ -102,10 +102,11 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const loadData = async () => {
+      const todayStr = format(new Date(), 'yyyy-MM-dd');
       const [tasks, sessions, planIds, chores] = await Promise.all([
         getAllTasks(),
         getFocusSessions(),
-        getDailyPlan().catch(() => []),
+        getDailyPlan(todayStr).catch(() => []),
         getAllChores().catch(() => []),
       ]);
       setAllTasks(tasks);
@@ -319,12 +320,13 @@ export default function DashboardPage() {
 
     // Completed items sink to bottom
     return [...items.filter(i => !i.completed), ...items.filter(i => i.completed)];
-  }, [allTasks, dailyPlanIds]);
+  }, [allTasks, allChores, dailyPlanIds]);
 
   const refreshScheduleData = async () => {
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
     const [tasks, planIds, chores] = await Promise.all([
       getAllTasks(),
-      getDailyPlan().catch(() => []),
+      getDailyPlan(todayStr).catch(() => []),
       getAllChores().catch(() => []),
     ]);
     setAllTasks(tasks);
