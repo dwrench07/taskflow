@@ -287,11 +287,14 @@ export interface UserProgress {
     lastFed?: string; // ISO date
   };
   dailyWinStreak?: number;
+  windDownStreak?: number;       // consecutive nights Wind Down completed before 11:30 PM
+  lastWindDownDate?: string;     // ISO date string of last qualifying Wind Down completion
 }
 
 export type GameAction = 
   | { type: 'task-completed', task: Task, allTasksOnLoad: Task[] }
-  | { type: 'focus-completed', session: FocusSession, jotsLogged: number }
+  | { type: 'focus-completed', session: FocusSession, jotsLogged: number, startedQuickly: boolean }
   | { type: 'worry-resolved', accuracy: 'high' | 'low' }
   | { type: 'mistake-logged' }
-  | { type: 'perfect-day-review' };
+  | { type: 'perfect-day-review' }
+  | { type: 'wind-down-completed' };

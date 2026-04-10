@@ -479,14 +479,20 @@ export function evaluateGamificationTriggers(
   if (action.type === 'task-completed') {
     const task = action.task;
 
+    // Check for active Laser Overdrive buff (2x XP multiplier)
+    const hasLaserOverdrive = progress.activeBuffs.some(b => b.type === 'laserOverdrive' && new Date(b.expiresAt) > now);
+    const xpMultiplier = hasLaserOverdrive ? 2 : 1;
+
     // 1. Morning Lark (Zen Mode)
     // First task completed before 9:30 AM
     if (getHours(now) < 9 || (getHours(now) === 9 && now.getMinutes() <= 30)) {
-        // give Zen mode for 3 hours
         const expiresAt = new Date(now.getTime() + 3 * 60 * 60 * 1000).toISOString();
-        progress.activeBuffs.push({ type: 'zenMode', expiresAt });
-        progress.xp += 50;
-        updates.push({ message: 'Morning Lark Buff!', detail: 'Zen Mode activated for 3 hours. +50 XP' });
+        const alreadyActive = progress.activeBuffs.some(b => b.type === 'zenMode');
+        if (!alreadyActive) {
+            progress.activeBuffs.push({ type: 'zenMode', expiresAt });
+            progress.xp += 50 * xpMultiplier;
+            updates.push({ message: 'Morning Lark Buff!', detail: `Zen Mode activated for 3 hours. +${50 * xpMultiplier} XP` });
+        }
     }
 
     // 2. The Closer
@@ -494,17 +500,17 @@ export function evaluateGamificationTriggers(
     if (task.subtasks && task.subtasks.length > 0) {
       const allSubsDone = task.subtasks.every(s => s.completed);
       if (allSubsDone) {
-        progress.xp += 50; // 5x XP boost artificially
+        const xp = 50 * xpMultiplier;
+        progress.xp += xp;
         const expiresAt = new Date(now.getTime() + 4 * 60 * 60 * 1000).toISOString();
         progress.activeBuffs.push({ type: 'momentumSurge', expiresAt });
-        updates.push({ message: 'The Closer', detail: '5x XP + Momentum Surge buff applied. +50 XP' });
+        updates.push({ message: 'The Closer', detail: `Task fully closed! Momentum Surge active. +${xp} XP` });
       }
     }
 
     // 3. The Anchor
-    // Checking oldest pending tasks
     if (action.allTasksOnLoad && action.allTasksOnLoad.length > 0) {
-      const oldTasks = action.allTasksOnLoad.filter(t => t.status !== 'done').sort((a,b) => {
+      const oldTasks = action.allTasksOnLoad.filter(t => t.status !== 'done').sort((a, b) => {
           const aTime = a.id.startsWith('task-') ? parseInt(a.id.split('-')[1]) || 0 : 0;
           const bTime = b.id.startsWith('task-') ? parseInt(b.id.split('-')[1]) || 0 : 0;
           return aTime - bTime;
@@ -512,37 +518,39 @@ export function evaluateGamificationTriggers(
       if (oldTasks.length >= 3) {
         const top3 = oldTasks.slice(0, 3).map(t => t.id);
         if (top3.includes(task.id)) {
-           // We'll trust this simplified check gives them an Anchor
            progress.inventory.anchorWeights += 1;
-           progress.xp += 75;
-           updates.push({ message: 'Anchor Earned', detail: 'You cleared an old backlog task. +75 XP' });
+           const xp = 75 * xpMultiplier;
+           progress.xp += xp;
+           updates.push({ message: 'Anchor Earned', detail: `Cleared an old backlog task. +${xp} XP` });
         }
       }
     }
 
     // 4. The Pinnacle Push (Stretch Goal)
-    // Evaluated via milestone manual completion, assumed 'L' or 'XL' done perfectly.
     if (task.tShirtSize === 'L' || task.tShirtSize === 'XL') {
       if (!task.pushCount || task.pushCount === 0) {
         progress.inventory.stretchTokens += 1;
-        progress.xp += 100;
-        updates.push({ message: 'Pinnacle Push', detail: 'You finished a major task without pushing. +100 XP'});
+        const xp = 100 * xpMultiplier;
+        progress.xp += xp;
+        updates.push({ message: 'Pinnacle Push', detail: `Major task finished without pushing. +${xp} XP` });
       }
     }
 
     // 5. Silent Architect
     if (task.isPrivate) {
-      progress.xp += 30; // bonus XP
-      updates.push({ message: 'Silent Architect', detail: 'High execution completed in private. +30 XP'});
+      const xp = 30 * xpMultiplier;
+      progress.xp += xp;
+      updates.push({ message: 'Silent Architect', detail: `Private execution rewarded. +${xp} XP` });
     }
 
-    // 6. Habit Streak Shield check
+    // 6. Habit Streak Shield
     if (task.isHabit && task.completionHistory) {
       const streak = calculateStreak(task);
-      if (streak % 10 === 0 && streak > 0) { // every 10 days
+      if (streak % 10 === 0 && streak > 0) {
         progress.inventory.streakShields += 1;
-        progress.xp += 50;
-        updates.push({ message: 'Streak Shield Earned', detail: '10 days consistent! Added a shield to inventory. +50 XP' });
+        const xp = 50 * xpMultiplier;
+        progress.xp += xp;
+        updates.push({ message: 'Streak Shield Earned', detail: `${streak}-day streak! Shield added to inventory. +${xp} XP` });
       }
     }
   }
@@ -586,15 +594,13 @@ export function evaluateGamificationTriggers(
     }
 
     // 5. Poker Face Composure
-    // Fast start check (simulated if duration>30 and started recently)
-    // Usually checked on START, but we award on completion to ensure they actually did work
-    if (session.duration >= 30) {
-       // Just a simple probabilistic grant for demo
-       if (Math.random() > 0.5) {
-         progress.inventory.composureCoins += 1;
-         progress.xp += 50;
-         updates.push({ message: 'Poker Face Composure', detail: 'Started under pressure. Earned a coin. +50 XP'});
-       }
+    // Award when the user completes a focus session on a high/urgent priority task
+    // AND started it quickly (within 5 minutes of the session start hour being early in the day
+    // or within 5 minutes of session creation — detected via startTime vs now delta on short sessions)
+    if (action.startedQuickly && session.duration >= 25) {
+        progress.inventory.composureCoins += 1;
+        progress.xp += 50;
+        updates.push({ message: 'Poker Face Composure', detail: 'Started a tough task under pressure. Earned a Composure Coin. +50 XP' });
     }
   }
 
@@ -610,6 +616,41 @@ export function evaluateGamificationTriggers(
       progress.inventory.freshStartTokens += 1;
       progress.xp += 30;
       updates.push({ message: 'Mistake Mastery', detail: 'Growth mindset shown. Earned a Fresh Start token. +30 XP'});
+  }
+
+  if (action.type === 'wind-down-completed') {
+    const hour = getHours(now);
+    const minute = now.getMinutes();
+    const beforeCurfew = hour < 23 || (hour === 23 && minute <= 30); // before 11:30 PM
+
+    if (beforeCurfew) {
+      const todayStr = now.toISOString().split('T')[0];
+      const lastDate = progress.lastWindDownDate;
+
+      // Check if last completion was yesterday (consecutive)
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+      const isConsecutive = lastDate === yesterdayStr;
+      progress.windDownStreak = isConsecutive ? (progress.windDownStreak || 0) + 1 : 1;
+      progress.lastWindDownDate = todayStr;
+
+      if (progress.windDownStreak >= 3) {
+        progress.inventory.dawnDiamonds += 1;
+        progress.windDownStreak = 0; // reset after reward
+
+        // Grant Energy Injection buff for the next morning (expires in 12 hours)
+        const expiresAt = new Date(now.getTime() + 12 * 60 * 60 * 1000).toISOString();
+        progress.activeBuffs.push({ type: 'energyInjection', expiresAt });
+
+        progress.xp += 75;
+        updates.push({ message: '🌙 Twilight Lock!', detail: '3 nights of early Wind Down. Dawn Diamond earned + Energy Injection tomorrow. +75 XP' });
+      } else {
+        progress.xp += 15;
+        updates.push({ message: 'Wind Down Logged', detail: `Night ${progress.windDownStreak}/3 of early bedtime. Keep it up! +15 XP` });
+      }
+    }
   }
 
   if (action.type === 'perfect-day-review') {

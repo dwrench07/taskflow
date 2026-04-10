@@ -42,7 +42,7 @@ import { SubtaskDetail } from "@/components/dashboard-summary-subtasks";
 import { CriticalDetail } from "@/components/dashboard-summary-critical";
 import { DashboardUpcomingDeadlines } from "@/components/dashboard-upcoming-deadlines-v2";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getAllTasks, getFocusSessions, getDailyPlan, updateTask, getAllChores, updateChore } from "@/lib/data";
+import { getAllTasks, getFocusSessions, getDailyPlan, updateTask, getAllChores, updateChore, getUserProgress, saveUserProgress } from "@/lib/data";
 import { useEffect, useState, useMemo } from "react";
 import { Task, FocusSession, Priority, EnergyLevel, Chore } from "@/lib/types";
 import {
@@ -62,12 +62,14 @@ import { cn } from "@/lib/utils";
 import { useGamification } from "@/context/GamificationContext";
 import { InventoryDock } from "@/components/InventoryDock";
 import { BonsaiTree } from "@/components/BonsaiTree";
+import { DailyProgressMeter } from "@/components/DailyProgressMeter";
 
 import { DailyReviewModal } from "@/components/daily-review-modal";
 import { MorningLaunch } from "@/components/morning-launch";
 import { EnergyCheckIn } from "@/components/energy-check-in";
 import { scheduleNotifications } from "@/lib/notifications";
 import { NotificationSettings } from "@/components/notification-settings";
+import { useToast } from "@/hooks/use-toast";
 
 
 function isMorningTime(): boolean {
@@ -77,6 +79,7 @@ function isMorningTime(): boolean {
 }
 
 export default function DashboardPage() {
+  const { toast } = useToast();
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [allChores, setAllChores] = useState<Chore[]>([]);
   const [focusSessions, setFocusSessions] = useState<FocusSession[]>([]);
@@ -337,10 +340,27 @@ export default function DashboardPage() {
   const handleToggleChore = async (chore: Chore) => {
     const today = new Date();
     const isCompletedToday = chore.lastCompleted && isSameDay(parseISO(chore.lastCompleted), today);
+    const completing = !isCompletedToday;
     const updated = { ...chore, lastCompleted: isCompletedToday ? undefined : today.toISOString() };
     setAllChores(prev => prev.map(c => c.id === chore.id ? updated : c));
     try {
       await updateChore(updated);
+
+      if (completing && chore.title.toLowerCase().includes('wind down')) {
+        const progress = await getUserProgress();
+        if (progress) {
+          import("@/lib/gamification").then(async ({ evaluateGamificationTriggers }) => {
+            const tempProgress = JSON.parse(JSON.stringify(progress));
+            const updates = evaluateGamificationTriggers({ type: 'wind-down-completed' }, tempProgress);
+            if (updates.length > 0) {
+              await saveUserProgress(tempProgress);
+              updates.forEach((u, idx) => {
+                setTimeout(() => toast({ title: `🎁 ${u.message}`, description: u.detail }), idx * 1500);
+              });
+            }
+          });
+        }
+      }
     } catch {
       setAllChores(prev => prev.map(c => c.id === chore.id ? chore : c));
     }
@@ -558,6 +578,13 @@ export default function DashboardPage() {
                 <MorningLaunch allTasks={allTasks} allChores={allChores} onDismiss={handleDismissMorning} />
               </div>
             )}
+
+            {/* Daily Progress Meter */}
+            {(() => {
+              const meterTotal = todayList.length + todayChores.length;
+              const meterDone = todayList.filter(i => i.completed).length + choresDoneToday;
+              return <DailyProgressMeter totalItems={meterTotal} completedItems={meterDone} />;
+            })()}
 
             {/* Stats strip */}
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] sm:text-xs text-muted-foreground pl-1">

@@ -10,12 +10,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import type { Chore } from "@/lib/types";
-import { getAllChores, addChore, deleteChore, updateChore } from "@/lib/data";
+import { getAllChores, addChore, deleteChore, updateChore, getUserProgress, saveUserProgress } from "@/lib/data";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ChoresPage() {
   const [chores, setChores] = useState<Chore[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const { toast } = useToast();
 
   const [newChore, setNewChore] = useState({
     title: "",
@@ -63,21 +65,36 @@ export default function ChoresPage() {
   const handleToggleChore = async (chore: Chore) => {
     const isCompletedToday = chore.lastCompleted && new Date(chore.lastCompleted).toDateString() === new Date().toDateString();
     const newCompletedState = isCompletedToday ? undefined : new Date().toISOString();
-    
+    const completing = !isCompletedToday;
+
     // Optimistic update
-    const updatedChores = chores.map(c => 
+    const updatedChores = chores.map(c =>
       c.id === chore.id ? { ...c, lastCompleted: newCompletedState } : c
     );
     setChores(updatedChores);
 
     try {
       await updateChore({ ...chore, lastCompleted: newCompletedState });
+
+      // Twilight Lock: trigger if "Wind Down" chore is being completed
+      if (completing && chore.title.toLowerCase().includes('wind down')) {
+        const progress = await getUserProgress();
+        if (progress) {
+          import("@/lib/gamification").then(async ({ evaluateGamificationTriggers }) => {
+            const tempProgress = JSON.parse(JSON.stringify(progress));
+            const updates = evaluateGamificationTriggers({ type: 'wind-down-completed' }, tempProgress);
+            if (updates.length > 0) {
+              await saveUserProgress(tempProgress);
+              updates.forEach((u, idx) => {
+                setTimeout(() => toast({ title: `🎁 ${u.message}`, description: u.detail }), idx * 1500);
+              });
+            }
+          });
+        }
+      }
     } catch (error) {
       console.error("Failed to toggle chore:", error);
-      // Rollback on failure
-      setChores(chores.map(c => 
-        c.id === chore.id ? chore : c
-      ));
+      setChores(chores.map(c => c.id === chore.id ? chore : c));
     }
   };
 

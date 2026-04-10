@@ -11,7 +11,7 @@ import {
     EmotionCheckIn as EmotionCheckInType
 } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { getFocusSessions, addFocusSession, getAllTasks, getActiveFocusSession, startFocusSession, updateActiveFocusSession, updateFocusSession, getFocusReminders, saveFocusReminders } from "@/lib/data";
+import { getFocusSessions, addFocusSession, getAllTasks, getActiveFocusSession, startFocusSession, updateActiveFocusSession, updateFocusSession, getFocusReminders, saveFocusReminders, saveUserProgress } from "@/lib/data";
 import type { FocusReminders } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,7 +35,7 @@ export default function FocusPage() {
     const searchParams = useSearchParams();
     const initialTaskId = searchParams?.get('taskId');
     const { toast } = useToast();
-    const { celebrate, refreshGamification } = useGamification();
+    const { celebrate, refreshGamification, userProgress, refreshProgress } = useGamification();
 
     const [tasks, setTasks] = useState<Task[]>([]);
     const [sessions, setSessions] = useState<FocusSession[]>([]);
@@ -397,6 +397,37 @@ export default function FocusPage() {
 
             toast({ title: "Session Saved!", description: "Great job focusing!" });
             celebrate({ reason: 'focus-complete', title: 'Focus session complete!', intensity: elapsedTime >= 30 * 60 ? 'medium' : 'small' });
+
+            // Gamification: evaluate focus-completed triggers
+            if (userProgress) {
+                const completedSessions = await getFocusSessions();
+                const savedSession = completedSessions[0]; // most recent
+                if (savedSession) {
+                    const ideaJots = distractions.filter(d => d.includes('{category:idea}')).length;
+                    // Poker Face: high/urgent task started within 5 min of session start
+                    const taskForSession = tasks.find(t => t.id === targetTaskId);
+                    const isHighPriority = taskForSession?.priority === 'urgent' || taskForSession?.priority === 'high';
+                    const sessionAgeMinutes = sessionStartTime ? (Date.now() - sessionStartTime.getTime()) / 60000 : 999;
+                    const startedQuickly = isHighPriority && sessionAgeMinutes <= (elapsedTime / 60 + 5);
+                    import("@/lib/gamification").then(async ({ evaluateGamificationTriggers }) => {
+                        const tempProgress = JSON.parse(JSON.stringify(userProgress));
+                        const updates = evaluateGamificationTriggers(
+                            { type: 'focus-completed', session: savedSession, jotsLogged: ideaJots, startedQuickly },
+                            tempProgress
+                        );
+                        if (updates.length > 0) {
+                            await saveUserProgress(tempProgress);
+                            await refreshProgress();
+                            updates.forEach((u, idx) => {
+                                setTimeout(() => {
+                                    toast({ title: `🎁 ${u.message}`, description: u.detail });
+                                }, idx * 1500);
+                            });
+                        }
+                    });
+                }
+            }
+
             refreshGamification();
 
             // Re-fetch to update charts (later)

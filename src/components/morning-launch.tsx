@@ -19,7 +19,7 @@ interface MorningLaunchProps {
   onDismiss: () => void;
 }
 
-export function MorningLaunch({ allTasks, allChores, onDismiss }: MorningLaunchProps) {
+export function MorningLaunch({ allTasks, allChores = [], onDismiss }: MorningLaunchProps) {
   const today = startOfToday();
   const currentEnergy = getTodayEnergy();
 

@@ -7,22 +7,25 @@ import { getAllTasks, getDailyPlan, updateDailyPlanAsync, getAllChores } from "@
 import { Task, Priority, EnergyLevel, Chore } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { 
-  CheckCircle2, 
-  Loader2, 
-  X, 
-  Plus, 
-  ChevronRight, 
+import {
+  CheckCircle2,
+  Loader2,
+  X,
+  Plus,
+  ChevronRight,
   ChevronLeft,
-  BatteryLow, 
-  BatteryMedium, 
-  BatteryFull, 
-  Zap, 
+  BatteryLow,
+  BatteryMedium,
+  BatteryFull,
+  Zap,
   CalendarCheck,
   GripVertical,
   Repeat,
-  ShoppingBag
+  ShoppingBag,
+  CalendarDays,
 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { isSameDay, parseISO, isPast, isToday, format, differenceInCalendarDays, startOfDay, addDays, subDays } from "date-fns";
 import { getTodayEnergy, getEnergyMatch } from "@/lib/energy";
 import { EnergyIndicator } from "@/components/energy-check-in";
@@ -166,6 +169,7 @@ export default function PlanPage() {
   const [addedSuggestionIds, setAddedSuggestionIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [calendarOpen, setCalendarOpen] = useState(false);
   
   const currentEnergy = getTodayEnergy();
   const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
@@ -336,9 +340,29 @@ export default function PlanPage() {
       <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full text-muted-foreground" onClick={() => setSelectedDate(subDays(selectedDate, 1))}>
         <ChevronLeft className="h-4 w-4" />
       </Button>
-      <span className="text-sm font-semibold px-2 min-w-[100px] text-center">
-        {isActualToday ? "Today" : format(selectedDate, 'MMM d, yyyy')}
-      </span>
+
+      <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+        <PopoverTrigger asChild>
+          <button className="flex items-center gap-1.5 text-sm font-semibold px-2 min-w-[100px] text-center hover:text-primary transition-colors">
+            <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
+            {isActualToday ? "Today" : format(selectedDate, 'MMM d, yyyy')}
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="center">
+          <Calendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={(date) => {
+              if (date) {
+                setSelectedDate(date);
+                setCalendarOpen(false);
+              }
+            }}
+            initialFocus
+          />
+        </PopoverContent>
+      </Popover>
+
       <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full text-muted-foreground" onClick={() => setSelectedDate(addDays(selectedDate, 1))}>
         <ChevronRight className="h-4 w-4" />
       </Button>

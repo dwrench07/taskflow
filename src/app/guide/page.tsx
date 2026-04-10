@@ -26,17 +26,19 @@ const GAME_RULES = {
     { name: "Hourglasses", icon: Clock, color: "text-cyan-400", desc: "Perfect for time-bending growth.", earn: "Earned by finishing a focus session within 5 minutes of your expected time limit." },
     { name: "Dawn Diamonds", icon: Sun, color: "text-orange-400", desc: "Rare energy gems.", earn: "Earned by completing high-energy tasks before 10 AM." },
     { name: "Golden Bookmarks", icon: Bookmark, color: "text-yellow-400", desc: "Represents synthesized knowledge.", earn: "Earned by logging Jots (ideas) during a Pomodoro focus session." },
-    { name: "Embers of Continuity", icon: FlameKindling, color: "text-orange-600", desc: "Huge Bonsai XP. Keeps the fire burning.", earn: "Rare drop during the Daily Review for maintaining perfect attendance." },
+    { name: "Embers of Continuity", icon: FlameKindling, color: "text-orange-600", desc: "The rarest reward in the system. Represents unbroken daily consistency over a full week.", earn: "Earned by completing 7 consecutive Daily Wins — showing up and finishing something every day for a week straight." },
   ],
   buffs: [
     { name: "Zen Mode", icon: Ghost, color: "text-cyan-400", effect: "Silences all non-essential UI and increases focus XP gains.", trigger: "Complete your first task of the day before 9:30 AM." },
     { name: "Laser Overdrive", icon: Zap, color: "text-yellow-400", effect: "Double XP multiplier for all focus sessions and tasks.", trigger: "Complete a 50+ minute focus session with 0 distractions." },
     { name: "Momentum Surge", icon: ArrowUpCircle, color: "text-emerald-400", effect: "XP boost and smoother task transitions.", trigger: "Complete the final subtask of a complex task." },
     { name: "Brain Fuel", icon: Sparkles, color: "text-pink-400", effect: "Reduces fatigue penalty and increases clarity.", trigger: "Complete a focus session longer than 60 minutes." },
+    { name: "Energy Injection", icon: Sun, color: "text-orange-400", effect: "Carries forward momentum from a strong evening wind-down into the next morning. Pairs with early task completion for compound XP.", trigger: "Earn the Twilight Lock reward by completing your Wind Down chore before 11:30 PM for 3 nights in a row." },
   ],
   status: [
     { name: "Frozen State", icon: Snowflake, color: "text-blue-300", desc: "If you don't log in for 3 days, your 'Campfire' freezes. XP gains are reduced until you log a win.", fix: "Log into the app and complete any task or habit." },
     { name: "Seasonal Reset", icon: RefreshCw, color: "text-slate-400", desc: "Every 30 days, your XP and Level reset to 1. Your top-tier badges are archived as Legacy Relics.", why: "Prevents numbers from getting too large and keeps the growth feeling fresh." },
+    { name: "Twilight Lock", icon: Sunrise, color: "text-indigo-400", desc: "A nightly ritual mechanic. Complete your Wind Down chore before 11:30 PM for 3 nights in a row to earn a Dawn Diamond and the Energy Injection buff. Each qualifying night also earns +15 XP. The streak resets if you miss a night or complete Wind Down after 11:30 PM.", why: "Sleep consistency is the highest-leverage health habit. Twilight Lock creates a nightly accountability loop — the late-night reward (unlocking Dawn Diamonds) motivates early wind-down rather than late-night scrolling." },
   ]
 };
 
@@ -281,8 +283,8 @@ const WORKFLOWS: Workflow[] = [
   },
 ];
 
-function WorkflowCard({ workflow }: { workflow: Workflow }) {
-  const [isOpen, setIsOpen] = useState(false);
+function WorkflowCard({ workflow, defaultOpen = false }: { workflow: Workflow; defaultOpen?: boolean }) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
     <Card className={cn(
@@ -651,14 +653,23 @@ export default function GuidePage() {
         </TabsList>
 
         <TabsContent value="playbook" className="space-y-4">
-          <div className="p-4 rounded-xl bg-muted/30 border border-border/50 mb-6">
+          {/* Start Here callout */}
+          <div className="p-4 rounded-xl bg-primary/8 border border-primary/20 flex items-start gap-3">
+            <ArrowRight className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-bold text-foreground">New here? Start with The Morning Routine below.</p>
+              <p className="text-xs text-muted-foreground mt-0.5">It's the spine of the entire system — every other workflow plugs into it. Read it first, then follow the daily rhythm it describes for a week before exploring the rest.</p>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-xl bg-muted/30 border border-border/50">
             <p className="text-sm text-foreground/80 leading-relaxed">
-              <span className="font-bold text-foreground">Your operational manual.</span> Each section below is a complete workflow — tap to expand. Follow these patterns daily to get the most out of Taskflow.
+              <span className="font-bold text-foreground">Your operational manual.</span> Each section below is a complete workflow — tap to expand. The <span className="font-semibold text-foreground">Daily Progress Meter</span> on the dashboard tracks your combined task + chore completion as a single percentage, celebrating when you hit 100% for the day.
             </p>
           </div>
           <div className="space-y-3">
-            {WORKFLOWS.map(w => (
-              <WorkflowCard key={w.id} workflow={w} />
+            {WORKFLOWS.map((w, i) => (
+              <WorkflowCard key={w.id} workflow={w} defaultOpen={i === 0} />
             ))}
           </div>
 
