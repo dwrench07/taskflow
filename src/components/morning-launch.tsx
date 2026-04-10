@@ -1,11 +1,11 @@
 "use client";
 
 import { useMemo } from "react";
-import { Task } from "@/lib/types";
+import { Chore, Task } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Sunrise, Play, CheckCircle2, Flame, ChevronRight } from "lucide-react";
+import { Sunrise, Play, CheckCircle2, Flame, ChevronRight, ShoppingBag } from "lucide-react";
 import { isSameDay, parseISO, startOfToday } from "date-fns";
 import { cn } from "@/lib/utils";
 import { EnergyIndicator } from "@/components/energy-check-in";
@@ -15,14 +15,15 @@ import Link from "next/link";
 
 interface MorningLaunchProps {
   allTasks: Task[];
+  allChores: Chore[];
   onDismiss: () => void;
 }
 
-export function MorningLaunch({ allTasks, onDismiss }: MorningLaunchProps) {
+export function MorningLaunch({ allTasks, allChores, onDismiss }: MorningLaunchProps) {
   const today = startOfToday();
   const currentEnergy = getTodayEnergy();
 
-  const { topTasks, habitsDue, warmupTask } = useMemo(() => {
+  const { topTasks, habitsDue, choresDue, warmupTask } = useMemo(() => {
     // Get today's tasks (scheduled for today via doDate or endDate)
     const todayTasks = allTasks.filter(t =>
       !t.isHabit && t.status !== 'done' && t.status !== 'abandoned' &&
@@ -56,14 +57,25 @@ export function MorningLaunch({ allTasks, onDismiss }: MorningLaunchProps) {
       !t.completionHistory?.some(d => isSameDay(parseISO(d), today))
     );
 
+    // Chores due today
+    const chores = allChores.filter(c => {
+      if (!c.lastCompleted) return true;
+      const last = parseISO(c.lastCompleted);
+      const diff = (today.getTime() - last.getTime()) / (1000 * 60 * 60 * 24);
+      return (c.frequency === 'daily' && diff >= 0.9) || 
+             (c.frequency === 'weekly' && diff >= 7) || 
+             (c.frequency === 'monthly' && diff >= 30);
+    });
+
     return {
       topTasks: sorted.slice(0, 3),
       habitsDue: habits.slice(0, 5),
+      choresDue: chores.slice(0, 5),
       warmupTask: warmup,
     };
-  }, [allTasks, today, currentEnergy]);
+  }, [allTasks, allChores, today, currentEnergy]);
 
-  const totalItems = topTasks.length + habitsDue.length;
+  const totalItems = topTasks.length + habitsDue.length + choresDue.length;
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-6 duration-700 space-y-6">
@@ -76,7 +88,7 @@ export function MorningLaunch({ allTasks, onDismiss }: MorningLaunchProps) {
         <p className="text-muted-foreground text-sm max-w-md mx-auto">
           {totalItems === 0
             ? "Nothing scheduled for today. Enjoy the calm."
-            : `${topTasks.length} task${topTasks.length !== 1 ? 's' : ''} and ${habitsDue.length} habit${habitsDue.length !== 1 ? 's' : ''} for today. Start simple.`
+            : `${topTasks.length} task${topTasks.length !== 1 ? 's' : ''}, ${habitsDue.length} habit${habitsDue.length !== 1 ? 's' : ''}, and ${choresDue.length} chore${choresDue.length !== 1 ? 's' : ''}.`
           }
         </p>
         <EnergyIndicator />
@@ -149,26 +161,19 @@ export function MorningLaunch({ allTasks, onDismiss }: MorningLaunchProps) {
         </div>
       )}
 
-      {/* Habits due */}
-      {habitsDue.length > 0 && (
+      {/* Chores due */}
+      {choresDue.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">Habits Due</h3>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">Chores to Tackle</h3>
           <Card>
             <CardContent className="p-4 space-y-2">
-              {habitsDue.map(habit => {
-                const streak = calculateStreak(habit);
-                return (
-                  <div key={habit.id} className="flex items-center gap-3 py-1">
-                    <CheckCircle2 className="h-4 w-4 text-muted-foreground/40" />
-                    <Link href={`/tasks?taskId=${habit.id}`} className="text-sm flex-1 hover:text-primary transition-colors">{habit.title}</Link>
-                    {streak > 0 && (
-                      <span className="text-xs text-orange-400 flex items-center gap-1">
-                        <Flame className="h-3 w-3" /> {streak}d
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
+              {choresDue.map(chore => (
+                <div key={chore.id} className="flex items-center gap-3 py-1">
+                  <ShoppingBag className="h-4 w-4 text-orange-400 opacity-60" />
+                  <Link href="/chores" className="text-sm flex-1 hover:text-primary transition-colors">{chore.title}</Link>
+                  <Badge variant="outline" className="text-[10px] opacity-70 uppercase tracking-widest">{chore.frequency}</Badge>
+                </div>
+              ))}
             </CardContent>
           </Card>
         </div>

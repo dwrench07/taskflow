@@ -374,19 +374,22 @@ function TasksPageContent() {
 
 
   const sortedAndFilteredTasks = useMemo(() => {
-    console.log("Recomputing sorted and filtered tasks", allTasks);
-    console.log("^^^^^^^^^^||||||^^^^^^^", typeof allTasks)
     let sorted = typeof allTasks === 'object' ? allTasks?.filter(t => !t.isHabit) : [];
-    const priorityOrder = { urgent: 0, high: 1, medium: 2, low: 3 };
+    const priorityOrder: Record<string, number> = { urgent: 0, high: 1, medium: 2, low: 3 };
     const statusOrder: Record<Status, number> = { todo: 1, "in-progress": 2, done: 3, abandoned: 4 };
 
     let filtered = sorted;
     if (searchQuery) {
       filtered = filtered.filter(task => task.title.toLowerCase().includes(searchQuery.toLowerCase()));
     }
+    
     if (statusFilter.length > 0) {
       filtered = filtered.filter(task => statusFilter.includes(task.status));
+    } else {
+      // Default: hide completed tasks, but keep abandoned (dropped) tasks in view
+      filtered = filtered.filter(task => task.status !== 'done');
     }
+
     if (priorityFilter.length > 0) {
       filtered = filtered.filter(task => priorityFilter.includes(task.priority));
     }

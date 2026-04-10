@@ -237,7 +237,7 @@ export default function DashboardPage() {
     // 1. Daily plan items (In the exact order the user planned)
     dailyPlanIds.forEach(id => {
       if (addedIds.has(id)) return;
-      
+
       // Try resolving as task/habit
       const task = allTasks.find(t => t.id === id);
       if (task) {
@@ -246,7 +246,7 @@ export default function DashboardPage() {
           title: task.title,
           type: task.isFrog ? 'frog' : (task.isHabit ? 'habit' : 'task'),
           isSubtask: false,
-          completed: task.isHabit 
+          completed: task.isHabit
             ? (task.completionHistory?.some(d => isSameDay(parseISO(d), today)) ?? false)
             : task.status === 'done',
           priority: task.priority,
@@ -386,11 +386,13 @@ export default function DashboardPage() {
     } else if (item.isSubtask && item.parentId) {
       setAllTasks(prev => prev.map(t => {
         if (t.id !== item.parentId) return t;
-        return { ...t, subtasks: t.subtasks.map(st => st.id === item.id ? { 
-          ...st, 
-          completed: newCompleted,
-          completedAt: newCompleted ? new Date().toISOString() : undefined 
-        } : st) };
+        return {
+          ...t, subtasks: t.subtasks.map(st => st.id === item.id ? {
+            ...st,
+            completed: newCompleted,
+            completedAt: newCompleted ? new Date().toISOString() : undefined
+          } : st)
+        };
       }));
     } else {
       setAllTasks(prev => prev.map(t => t.id === item.id ? { ...t, status: newCompleted ? 'done' : 'in-progress' } : t));
@@ -412,10 +414,10 @@ export default function DashboardPage() {
       } else if (item.isSubtask && item.parentId) {
         const parent = allTasks.find(t => t.id === item.parentId);
         if (!parent) return;
-        const updatedSubtasks = parent.subtasks.map(st => st.id === item.id ? { 
-          ...st, 
+        const updatedSubtasks = parent.subtasks.map(st => st.id === item.id ? {
+          ...st,
           completed: newCompleted,
-          completedAt: newCompleted ? new Date().toISOString() : undefined 
+          completedAt: newCompleted ? new Date().toISOString() : undefined
         } : st);
         await updateTask({ ...parent, subtasks: updatedSubtasks });
       } else {
@@ -520,14 +522,14 @@ export default function DashboardPage() {
         const completedTasks = todayList.filter(i => i.completed && i.type !== 'habit' && !dailyPlanIds.includes(i.id));
 
         const TaskItem = ({ item }: { item: typeof todayList[0] }) => (
-          <div 
+          <div
             className={cn(
               "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors cursor-pointer",
               item.completed ? "opacity-40" : "hover:bg-muted/50"
             )}
             onClick={() => handleToggleTodayItem(item)}
           >
-            <Checkbox checked={item.completed} onCheckedChange={() => {}} className="shrink-0" />
+            <Checkbox checked={item.completed} onCheckedChange={() => { }} className="shrink-0" />
             <span className={cn("flex-1 text-sm font-medium leading-snug truncate", item.completed && "line-through")}>
               {item.title}
             </span>
@@ -541,7 +543,7 @@ export default function DashboardPage() {
             {SHOW_ZEN_GARDEN && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-2 mt-4">
                 <div className="lg:col-span-2 order-1 lg:order-2">
-                   {showMorningLaunch && <MorningLaunch allTasks={allTasks} onDismiss={handleDismissMorning} />}
+                  {showMorningLaunch && <MorningLaunch allTasks={allTasks} onDismiss={handleDismissMorning} />}
                 </div>
                 <div className="lg:col-span-1 order-2 lg:order-1">
                   <BonsaiTree />
@@ -551,7 +553,7 @@ export default function DashboardPage() {
 
             {!SHOW_ZEN_GARDEN && showMorningLaunch && (
               <div className="max-w-3xl mx-auto w-full mt-4">
-                <MorningLaunch allTasks={allTasks} onDismiss={handleDismissMorning} />
+                <MorningLaunch allTasks={allTasks} allChores={allChores} onDismiss={handleDismissMorning} />
               </div>
             )}
 
@@ -632,14 +634,14 @@ export default function DashboardPage() {
                     {habits.map(habit => {
                       const doneToday = habit.completionHistory?.some(d => isSameDay(parseISO(d), today)) ?? false;
                       return (
-                        <div 
-                          key={habit.id} 
+                        <div
+                          key={habit.id}
                           className={cn("flex items-center gap-3 px-3 py-2 rounded-lg transition-colors cursor-pointer", doneToday ? "opacity-40" : "hover:bg-muted/50")}
                           onClick={() => handleToggleTodayItem({ id: habit.id, title: habit.title, type: 'habit', isSubtask: false, completed: doneToday, priority: habit.priority })}
                         >
                           <Checkbox
                             checked={doneToday}
-                            onCheckedChange={() => {}}
+                            onCheckedChange={() => { }}
                             className="shrink-0"
                           />
                           <span className={cn("flex-1 text-sm truncate", doneToday && "line-through")}>{habit.title}</span>
@@ -670,12 +672,12 @@ export default function DashboardPage() {
                     {todayChores.map(chore => {
                       const doneToday = chore.lastCompleted ? isSameDay(parseISO(chore.lastCompleted), today) : false;
                       return (
-                        <div 
-                          key={chore.id} 
+                        <div
+                          key={chore.id}
                           className={cn("flex items-center gap-3 px-3 py-2 rounded-lg transition-colors cursor-pointer", doneToday ? "opacity-40" : "hover:bg-muted/50")}
                           onClick={() => handleToggleChore(chore)}
                         >
-                          <Checkbox checked={doneToday} onCheckedChange={() => {}} className="shrink-0" />
+                          <Checkbox checked={doneToday} onCheckedChange={() => { }} className="shrink-0" />
                           <span className={cn("flex-1 text-sm truncate", doneToday && "line-through")}>{chore.title}</span>
                         </div>
                       );
@@ -850,87 +852,87 @@ export default function DashboardPage() {
           </div>
 
           {!isZenMode && (
-          <Tabs defaultValue="overview" className="w-full space-y-6">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto md:w-[600px] bg-muted/30 p-1">
-              <TabsTrigger value="overview" className="py-2">Performance</TabsTrigger>
-              <TabsTrigger value="deep-work" className="py-2">Deep Work</TabsTrigger>
-              <TabsTrigger value="strategic" className="py-2">Strategic</TabsTrigger>
-              <TabsTrigger value="velocity" className="py-2">Velocity</TabsTrigger>
-              <TabsTrigger value="settings" className="py-2">Settings</TabsTrigger>
-            </TabsList>
+            <Tabs defaultValue="overview" className="w-full space-y-6">
+              <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto md:w-[600px] bg-muted/30 p-1">
+                <TabsTrigger value="overview" className="py-2">Performance</TabsTrigger>
+                <TabsTrigger value="deep-work" className="py-2">Deep Work</TabsTrigger>
+                <TabsTrigger value="strategic" className="py-2">Strategic</TabsTrigger>
+                <TabsTrigger value="velocity" className="py-2">Velocity</TabsTrigger>
+                <TabsTrigger value="settings" className="py-2">Settings</TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="overview" className="space-y-6 animate-fade-in">
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-                <div className="col-span-full xl:col-span-4 space-y-6">
-                  <DashboardCompletionChart allTasks={allTasks} />
-                  <div className="grid gap-6 sm:grid-cols-2">
-                    <DashboardPriorityChart allTasks={allTasks} />
-                    <DashboardStatusChart allTasks={allTasks} />
+              <TabsContent value="overview" className="space-y-6 animate-fade-in">
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+                  <div className="col-span-full xl:col-span-4 space-y-6">
+                    <DashboardCompletionChart allTasks={allTasks} />
+                    <div className="grid gap-6 sm:grid-cols-2">
+                      <DashboardPriorityChart allTasks={allTasks} />
+                      <DashboardStatusChart allTasks={allTasks} />
+                    </div>
+                  </div>
+                  <div className="col-span-full xl:col-span-3 space-y-6">
+                    <DashboardWeeklyReport allTasks={allTasks} focusSessions={focusSessions} />
+                    <DashboardDailyWins />
+                    <DashboardPointOfNoReturn allTasks={allTasks} />
+                    <DashboardOverdueRisk allTasks={allTasks} />
+                    <DashboardAlmostDone allTasks={allTasks} />
+                    <DashboardPushAnalytics allTasks={allTasks} />
+                    <DashboardApproachScore allTasks={allTasks} focusSessions={focusSessions} />
+                    <DashboardFrogCompletion allTasks={allTasks} />
+                    <DashboardBlockerInsights allTasks={allTasks} />
+                    <DashboardTShirtAccuracy allTasks={allTasks} />
+                    <DashboardPushFunnel allTasks={allTasks} />
+                    <DashboardHabitHeatmap allTasks={allTasks} />
+                    <DashboardStats allTasks={allTasks} />
                   </div>
                 </div>
-                <div className="col-span-full xl:col-span-3 space-y-6">
-                  <DashboardWeeklyReport allTasks={allTasks} focusSessions={focusSessions} />
-                  <DashboardDailyWins />
-                  <DashboardPointOfNoReturn allTasks={allTasks} />
-                  <DashboardOverdueRisk allTasks={allTasks} />
-                  <DashboardAlmostDone allTasks={allTasks} />
-                  <DashboardPushAnalytics allTasks={allTasks} />
-                  <DashboardApproachScore allTasks={allTasks} focusSessions={focusSessions} />
-                  <DashboardFrogCompletion allTasks={allTasks} />
-                  <DashboardBlockerInsights allTasks={allTasks} />
-                  <DashboardTShirtAccuracy allTasks={allTasks} />
-                  <DashboardPushFunnel allTasks={allTasks} />
-                  <DashboardHabitHeatmap allTasks={allTasks} />
-                  <DashboardStats allTasks={allTasks} />
+              </TabsContent>
+
+              <TabsContent value="deep-work" className="space-y-6 animate-fade-in">
+                <div className="grid gap-6 md:grid-cols-2">
+                  <DashboardFocusDistribution allTasks={allTasks} focusSessions={focusSessions} />
+                  <DashboardDistractionScore focusSessions={focusSessions} />
                 </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="deep-work" className="space-y-6 animate-fade-in">
-              <div className="grid gap-6 md:grid-cols-2">
-                <DashboardFocusDistribution allTasks={allTasks} focusSessions={focusSessions} />
-                <DashboardDistractionScore focusSessions={focusSessions} />
-              </div>
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <DashboardPeakHours focusSessions={focusSessions} />
-                <DashboardEnergyMatrix focusSessions={focusSessions} />
-                <DashboardWorryTracker focusSessions={focusSessions} allTasks={allTasks} />
-              </div>
-              <div className="grid gap-6 md:grid-cols-2">
-                <DashboardEmotionProductivity focusSessions={focusSessions} />
-                <DashboardTimeLimitAdherence allTasks={allTasks} focusSessions={focusSessions} />
-              </div>
-            </TabsContent>
-
-            <TabsContent value="strategic" className="space-y-6 animate-fade-in">
-              <div className="grid gap-6 lg:grid-cols-7">
-                <div className="col-span-full xl:col-span-4 space-y-6">
-                  <DashboardGoalVelocity />
-                  <DashboardPillarBalance allTasks={allTasks} focusSessions={focusSessions} />
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  <DashboardPeakHours focusSessions={focusSessions} />
+                  <DashboardEnergyMatrix focusSessions={focusSessions} />
+                  <DashboardWorryTracker focusSessions={focusSessions} allTasks={allTasks} />
                 </div>
-                <div className="col-span-full xl:col-span-3 space-y-6">
-                  <DashboardGoals />
-                  <DashboardGoalCoverage allTasks={allTasks} />
+                <div className="grid gap-6 md:grid-cols-2">
+                  <DashboardEmotionProductivity focusSessions={focusSessions} />
+                  <DashboardTimeLimitAdherence allTasks={allTasks} focusSessions={focusSessions} />
                 </div>
-              </div>
-            </TabsContent>
+              </TabsContent>
 
-            <TabsContent value="velocity" className="space-y-6 animate-fade-in">
-              <div className="grid gap-6 md:grid-cols-2">
-                <DashboardTaskVelocity allTasks={allTasks} />
-                <DashboardTagHeatmap allTasks={allTasks} />
-              </div>
-              <div className="grid gap-6 md:grid-cols-2">
-                <DashboardHabitResilience allTasks={allTasks} />
-              </div>
-            </TabsContent>
+              <TabsContent value="strategic" className="space-y-6 animate-fade-in">
+                <div className="grid gap-6 lg:grid-cols-7">
+                  <div className="col-span-full xl:col-span-4 space-y-6">
+                    <DashboardGoalVelocity />
+                    <DashboardPillarBalance allTasks={allTasks} focusSessions={focusSessions} />
+                  </div>
+                  <div className="col-span-full xl:col-span-3 space-y-6">
+                    <DashboardGoals />
+                    <DashboardGoalCoverage allTasks={allTasks} />
+                  </div>
+                </div>
+              </TabsContent>
 
-            <TabsContent value="settings" className="space-y-6 animate-fade-in">
-              <div className="max-w-md mx-auto">
-                <NotificationSettings />
-              </div>
-            </TabsContent>
-          </Tabs>
+              <TabsContent value="velocity" className="space-y-6 animate-fade-in">
+                <div className="grid gap-6 md:grid-cols-2">
+                  <DashboardTaskVelocity allTasks={allTasks} />
+                  <DashboardTagHeatmap allTasks={allTasks} />
+                </div>
+                <div className="grid gap-6 md:grid-cols-2">
+                  <DashboardHabitResilience allTasks={allTasks} />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="settings" className="space-y-6 animate-fade-in">
+                <div className="max-w-md mx-auto">
+                  <NotificationSettings />
+                </div>
+              </TabsContent>
+            </Tabs>
           )}
         </div>
       )}

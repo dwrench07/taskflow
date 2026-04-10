@@ -22,7 +22,7 @@ import {
   Repeat,
   ShoppingBag
 } from "lucide-react";
-import { isSameDay, parseISO, isPast, isToday, format } from "date-fns";
+import { isSameDay, parseISO, isPast, isToday, format, differenceInCalendarDays, startOfToday } from "date-fns";
 import { getTodayEnergy, getEnergyMatch } from "@/lib/energy";
 import { EnergyIndicator } from "@/components/energy-check-in";
 import {
@@ -235,9 +235,16 @@ export default function PlanPage() {
     });
 
     const committedChores = allChores.filter(c => {
-      // Logic for chores due today based on frequency would go here
-      // For now, let's include high priority chores as suggestions
-      return c.priority === 'urgent' || c.priority === 'high';
+      if (!c.lastCompleted) return true;
+      const last = parseISO(c.lastCompleted);
+      const todayStart = startOfToday();
+      const diff = differenceInCalendarDays(todayStart, last);
+      
+      const isDue = (c.frequency === 'daily' && diff >= 1) ||
+                    (c.frequency === 'weekly' && diff >= 7) ||
+                    (c.frequency === 'monthly' && diff >= 30);
+                    
+      return isDue || c.priority === 'urgent' || c.priority === 'high';
     });
 
     return [
