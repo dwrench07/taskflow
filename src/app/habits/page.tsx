@@ -543,9 +543,9 @@ function HabitsPageContent() {
                                             <TooltipProvider delayDuration={300}>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
-                                                        <CardTitle className="flex-1 line-clamp-2 text-left min-w-0 text-base sm:text-lg leading-tight cursor-help">{habit.title}</CardTitle>
+                                                        <CardTitle className="flex-1 line-clamp-2 text-left min-w-0 text-base sm:text-lg leading-snug break-words cursor-help">{habit.title}</CardTitle>
                                                     </TooltipTrigger>
-                                                    <TooltipContent side="top" className="max-w-[250px] break-words z-50">
+                                                    <TooltipContent side="bottom" className="max-w-[250px] break-words z-50">
                                                         <p>{habit.title}</p>
                                                     </TooltipContent>
                                                 </Tooltip>

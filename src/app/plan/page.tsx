@@ -132,7 +132,7 @@ function SortableTaskRow({
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{renderTitle(item.title)}</p>
+        <p className="text-sm font-medium line-clamp-2 leading-snug">{renderTitle(item.title)}</p>
         <div className="flex items-center gap-1.5 mt-1">
           <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 capitalize", priorityStyles[item.priority])}>
             {item.priority}

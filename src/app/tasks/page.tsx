@@ -92,11 +92,11 @@ function TaskListItem({ task, allTasks, goals, onSelect, isSelected }: { task: T
       : task.status === "done" ? 100 : 0;
 
   return (
-    <button onClick={onSelect} disabled={isBlocked} className={cn(
+    <button onClick={onSelect} className={cn(
       "w-full block text-left p-4 rounded-xl border transition-all duration-300 ease-in-out animate-fade-in shadow-sm hover:shadow-md outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 overflow-hidden max-w-full min-w-0 relative",
       isSelected ? 'bg-primary/10 border-primary scale-[1.01]' : 'bg-card hover:bg-muted/50 hover:scale-[1.02] hover:border-primary/50',
       task.status === 'done' && 'border-green-500/20 opacity-80',
-      isBlocked && 'opacity-50 grayscale select-none pointer-events-none hover:scale-100 hover:bg-card'
+      isBlocked && 'opacity-60 grayscale hover:scale-100 hover:bg-card'
     )}>
       {isBlocked && (
         <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-muted text-red-500 px-2 py-1 rounded-md border border-red-500/30 shadow-sm z-10">
@@ -719,15 +719,12 @@ function TasksPageContent() {
           </Button>
         )}
       </div>
-      <div className={cn(
-        "w-full min-w-0 h-[calc(100vh-theme(spacing.48))] md:h-[calc(100vh-theme(spacing.36))]"
-      )}>
-        <Card className={cn(
-          "flex flex-col h-full overflow-hidden min-h-0 min-w-0 border-border shadow-sm w-full"
-        )}>
-          <CardHeader className="flex flex-col gap-4 flex-none pb-4">
+      <div className="w-full min-w-0">
+        <Card className="min-w-0 border-border shadow-sm w-full">
+          <CardHeader className="flex flex-col gap-4 pb-4">
             <div className="flex flex-row items-center justify-between">
               <CardTitle>All Tasks</CardTitle>
+              <div className="flex items-center gap-2">
               <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
                 <Dialog open={isTemplateDialogOpen} onOpenChange={setIsTemplateDialogOpen}>
                   <DropdownMenu>
@@ -794,6 +791,7 @@ function TasksPageContent() {
                 >
                   <LayoutGrid className="h-4 w-4" />
                 </Button>
+              </div>
               </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
@@ -873,7 +871,7 @@ function TasksPageContent() {
               </div>
             </div>
           </CardHeader>
-          <div className="flex-1 p-3 overflow-y-auto overflow-x-hidden min-h-0">
+          <div className="p-3">
             {viewMode === 'list' ? (
               <div className="grid gap-6 pb-8 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
                 {loading ? (
@@ -892,8 +890,8 @@ function TasksPageContent() {
                 ))}
               </div>
             ) : (
-              <div className="h-full pb-8">
-                <EisenhowerMatrix 
+              <div className="pb-8">
+                <EisenhowerMatrix
                   tasks={sortedAndFilteredTasks} 
                   goals={goals}
                   onSelectTask={handleSelectTask} 
@@ -905,6 +903,7 @@ function TasksPageContent() {
 
         <Sheet open={!!selectedTask} onOpenChange={handleCloseSheet}>
           <SheetContent side="right" className="w-full sm:max-w-[75vw] overflow-y-auto p-4 sm:p-6 lg:p-8">
+            <SheetTitle className="sr-only">{selectedTask?.title ?? "Task Details"}</SheetTitle>
             {selectedTask && (
               <div className="flex-1 flex flex-col overflow-hidden min-w-0">
                 <div className="flex-1 pr-4 overflow-y-auto overflow-x-hidden">
@@ -924,7 +923,15 @@ function TasksPageContent() {
                                 <DropdownMenuContent>
                                   <DropdownMenuRadioGroup value={selectedTask.status} onValueChange={(value) => handleStatusChange(value as Status)}>
                                     <DropdownMenuRadioItem value="todo">To-Do</DropdownMenuRadioItem>
-                                    <DropdownMenuRadioItem value="in-progress">In Progress</DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem
+                                      value="in-progress"
+                                      disabled={selectedTask.status !== "done" && selectedTask.blockedBy && selectedTask.blockedBy.some(blockerId => {
+                                        const blocker = allTasks.find(t => t.id === blockerId);
+                                        return blocker && blocker.status !== "done";
+                                      })}
+                                    >
+                                      In Progress
+                                    </DropdownMenuRadioItem>
                                     <DropdownMenuRadioItem value="done">Done</DropdownMenuRadioItem>
                                   </DropdownMenuRadioGroup>
                                 </DropdownMenuContent>
