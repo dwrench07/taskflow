@@ -529,12 +529,12 @@ function HabitsPageContent() {
                                     onClick={() => handleSelectHabit(habit)}
                                 >
                                     {isFrozen(habit) && (
-                                        <div className="absolute -top-2 -right-2 bg-blue-500 text-white p-1.5 rounded-full shadow-lg z-10 animate-bounce">
+                                        <div className="absolute top-2 right-2 bg-blue-500 text-white p-1.5 rounded-full shadow-lg z-10 animate-bounce">
                                             <Snowflake className="h-4 w-4" />
                                         </div>
                                     )}
                                     {isAtRisk(habit) && !isFrozen(habit) && (
-                                        <div className="absolute -top-2 -right-2 bg-orange-600 text-white p-1.5 rounded-full shadow-lg z-10">
+                                        <div className="absolute top-2 right-2 bg-orange-600 text-white p-1.5 rounded-full shadow-lg z-10">
                                             <Flame className="h-4 w-4 animate-pulse" />
                                         </div>
                                     )}

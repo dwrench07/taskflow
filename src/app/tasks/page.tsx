@@ -51,6 +51,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useGamification } from "@/context/GamificationContext";
@@ -82,10 +83,10 @@ function calculateGoalProgress(goalId: string, allTasks: Task[]) {
 }
 
 function TaskListItem({ task, allTasks, goals, onSelect, isSelected }: { task: Task; allTasks: Task[]; goals: Goal[]; onSelect: () => void; isSelected: boolean }) {
-  const isBlocked = task.status !== "done" && task.blockedBy && task.blockedBy.some(blockerId => {
-    const blocker = allTasks.find(t => t.id === blockerId);
-    return blocker && blocker.status !== "done";
-  });
+  const activeBlockers = task.status !== "done" && task.blockedBy
+    ? task.blockedBy.map(id => allTasks.find(t => t.id === id)).filter((t): t is Task => !!t && t.status !== "done")
+    : [];
+  const isBlocked = activeBlockers.length > 0;
   const completionPercentage =
     task?.subtasks?.length > 0
       ? (task.subtasks.filter((st) => st.completed).length / task.subtasks.length) * 100
@@ -99,10 +100,24 @@ function TaskListItem({ task, allTasks, goals, onSelect, isSelected }: { task: T
       isBlocked && 'opacity-60 grayscale hover:scale-100 hover:bg-card'
     )}>
       {isBlocked && (
-        <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-muted text-red-500 px-2 py-1 rounded-md border border-red-500/30 shadow-sm z-10">
-          <Lock className="w-3.5 h-3.5" />
-          <span className="text-xs font-semibold tracking-wide">LOCKED</span>
-        </div>
+        <TooltipProvider delayDuration={200}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="absolute top-2 right-2 flex items-center gap-1.5 bg-muted text-red-500 px-2 py-1 rounded-md border border-red-500/30 shadow-sm z-10 cursor-help">
+                <Lock className="w-3.5 h-3.5" />
+                <span className="text-xs font-semibold tracking-wide">LOCKED</span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="left" className="max-w-[220px] z-50">
+              <p className="text-xs font-semibold mb-1">Blocked by:</p>
+              <ul className="space-y-0.5">
+                {activeBlockers.map(b => (
+                  <li key={b.id} className="text-xs truncate">• {b.title}</li>
+                ))}
+              </ul>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
       <div className="flex justify-between items-start gap-2 w-full">
         <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -952,6 +967,26 @@ function TasksPageContent() {
                               </div>
                             )}
                             <p className="text-muted-foreground text-[15px] pt-4 w-full min-w-0 break-words whitespace-pre-wrap leading-relaxed">{selectedTask.description}</p>
+                            {(() => {
+                              const blockers = (selectedTask.blockedBy || [])
+                                .map(id => allTasks.find(t => t.id === id))
+                                .filter((t): t is Task => !!t && t.status !== "done");
+                              if (blockers.length === 0) return null;
+                              return (
+                                <div className="mt-4 flex flex-col gap-1.5">
+                                  <span className="text-xs font-semibold text-red-500 flex items-center gap-1.5">
+                                    <Lock className="w-3.5 h-3.5" /> Blocked by
+                                  </span>
+                                  <div className="flex flex-wrap gap-2">
+                                    {blockers.map(b => (
+                                      <Badge key={b.id} variant="outline" className="text-xs border-red-500/30 text-red-500 bg-red-500/5">
+                                        {b.title}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            })()}
                           </div>
                           <div className="flex flex-wrap items-center gap-2 shrink-0 border border-border/50 p-1.5 rounded-full bg-background/50 shadow-sm backdrop-blur-sm">
                             

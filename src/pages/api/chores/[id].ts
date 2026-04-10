@@ -28,12 +28,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'PUT') {
       const choreData = req.body as Partial<Chore>;
       
-      // Safe Merge: Protect against wiping fields
-      const safelyMergedChore: Chore = {
-        ...existingChore,
-        ...choreData,
-        id // Preserve the ID
-      };
+      // Safe Merge: Protect against wiping fields.
+      // Explicitly null fields are intentional clears (undefined is dropped by JSON.stringify).
+      const merged: any = { ...existingChore, ...choreData, id };
+      for (const key of Object.keys(merged)) {
+        if (merged[key] === null) delete merged[key];
+      }
+      const safelyMergedChore: Chore = merged;
 
       const updated = await updateChoreAsync(safelyMergedChore, userId);
       return res.status(200).json(updated);

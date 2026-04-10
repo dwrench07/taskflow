@@ -216,12 +216,12 @@ export default function PlanPage() {
   // Unified items lookup
   const unifiedItemsMap = useMemo(() => {
     const map = new Map<string, UnifiedItem>();
-    allTasks.forEach(t => map.set(t.id, { 
-      id: t.id, 
-      title: t.title, 
-      priority: t.priority, 
+    allTasks.filter(t => t.status !== 'done' && t.status !== 'abandoned').forEach(t => map.set(t.id, {
+      id: t.id,
+      title: t.title,
+      priority: t.priority,
       energyLevel: t.energyLevel,
-      type: t.isHabit ? 'habit' : 'task' 
+      type: t.isHabit ? 'habit' : 'task'
     }));
     allChores.forEach(c => map.set(c.id, { 
       id: c.id, 

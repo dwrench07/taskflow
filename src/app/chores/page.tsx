@@ -74,7 +74,8 @@ export default function ChoresPage() {
     setChores(updatedChores);
 
     try {
-      await updateChore({ ...chore, lastCompleted: newCompletedState });
+      // Use null explicitly when clearing so JSON.stringify doesn't drop the field
+      await updateChore({ ...chore, lastCompleted: newCompletedState ?? null } as any);
 
       // Twilight Lock: trigger if "Wind Down" chore is being completed
       if (completing && chore.title.toLowerCase().includes('wind down')) {
