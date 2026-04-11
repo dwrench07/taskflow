@@ -120,8 +120,8 @@ function SortableTaskRow({
       )}
     >
       {mode === 'approved' && (
-        <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing p-1 -ml-2 text-muted-foreground opacity-30 group-hover:opacity-100 transition-opacity">
-          <GripVertical className="h-4 w-4" />
+        <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing p-2 -ml-2 text-muted-foreground opacity-40 group-hover:opacity-100 touch:opacity-70 transition-opacity">
+          <GripVertical className="h-5 w-5" />
         </div>
       )}
       
@@ -179,7 +179,7 @@ export default function PlanPage() {
   // DND Sensors
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 10 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
