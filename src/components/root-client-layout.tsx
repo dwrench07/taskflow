@@ -13,13 +13,19 @@ import { RefreshProvider, useRefresh } from '@/context/RefreshContext';
 function VisibilityRefresh() {
   const { triggerRefresh } = useRefresh();
   useEffect(() => {
-    const onVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        triggerRefresh();
-      }
+    // visibilitychange is the standard event but unreliable in some Capacitor WebViews
+    // window 'focus' fires more consistently when the app returns to foreground on Android
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') triggerRefresh();
     };
-    document.addEventListener('visibilitychange', onVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+    const onFocus = () => triggerRefresh();
+
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onFocus);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onFocus);
+    };
   }, [triggerRefresh]);
   return null;
 }
