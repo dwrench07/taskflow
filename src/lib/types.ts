@@ -2,6 +2,7 @@ export type Priority = "low" | "medium" | "high" | "urgent";
 export type EnergyLevel = 'high' | 'medium' | 'low';
 export type Status = "todo" | "in-progress" | "done" | "abandoned";
 export type HabitFrequency = "daily" | "weekly" | "monthly";
+export type ChoreFrequency = "once" | "daily" | "weekly" | "custom";
 export type PushReason = 'too-scary' | 'too-vague' | 'too-big' | 'too-boring' | 'ran-out-of-time' | 'deprioritized';
 export type EmotionLabel = 'dread' | 'anxiety' | 'resistance' | 'overwhelm' | 'calm' | 'neutral' | 'excited';
 
@@ -191,8 +192,10 @@ export interface Chore {
   id: string;
   title: string;
   description: string;
-  frequency: HabitFrequency;
+  frequency: ChoreFrequency;
+  intervalDays?: number;
   lastCompleted?: string;
+  completedOnce?: boolean;
   priority: Priority;
   energyLevel: EnergyLevel;
   userId?: string;

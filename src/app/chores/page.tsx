@@ -1,15 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Trash2, CheckCircle2, Circle } from "lucide-react";
-import { format } from "date-fns";
+import { Plus, Trash2, CheckCircle2, Circle, RefreshCw } from "lucide-react";
+import { format, differenceInCalendarDays, parseISO } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import type { Chore } from "@/lib/types";
+import { Badge } from "@/components/ui/badge";
+import type { Chore, ChoreFrequency } from "@/lib/types";
 import { getAllChores, addChore, deleteChore, updateChore, getUserProgress, saveUserProgress } from "@/lib/data";
 import { useRefresh } from "@/context/RefreshContext";
 import { useToast } from "@/hooks/use-toast";
@@ -21,9 +22,16 @@ export default function ChoresPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  const [newChore, setNewChore] = useState({
+  const [newChore, setNewChore] = useState<{
+    title: string;
+    description: string;
+    frequency: ChoreFrequency;
+    intervalDays: number;
+  }>({
     title: "",
     description: "",
+    frequency: "weekly",
+    intervalDays: 7,
   });
 
   useEffect(() => {
@@ -52,12 +60,13 @@ export default function ChoresPage() {
         description: newChore.description.trim(),
         priority: "medium",
         energyLevel: "medium",
-        frequency: "daily",
+        frequency: newChore.frequency,
+        intervalDays: newChore.frequency === "custom" ? newChore.intervalDays : undefined,
       };
 
       const addedChore = await addChore(choreData);
       setChores([...chores, addedChore]);
-      setNewChore({ title: "", description: "" });
+      setNewChore({ title: "", description: "", frequency: "weekly", intervalDays: 7 });
       setIsAddDialogOpen(false);
     } catch (error) {
       console.error("Failed to add chore:", error);
@@ -65,6 +74,18 @@ export default function ChoresPage() {
   };
 
   const handleToggleChore = async (chore: Chore) => {
+    // One-time chores: mark permanently done, no toggle back
+    if (chore.frequency === 'once') {
+      if (chore.completedOnce) return;
+      setChores(chores.map(c => c.id === chore.id ? { ...c, completedOnce: true, lastCompleted: new Date().toISOString() } : c));
+      try {
+        await updateChore({ ...chore, completedOnce: true, lastCompleted: new Date().toISOString() });
+      } catch {
+        setChores(chores.map(c => c.id === chore.id ? chore : c));
+      }
+      return;
+    }
+
     const isCompletedToday = chore.lastCompleted && new Date(chore.lastCompleted).toDateString() === new Date().toDateString();
     const newCompletedState = isCompletedToday ? undefined : new Date().toISOString();
     const completing = !isCompletedToday;
@@ -150,6 +171,60 @@ export default function ChoresPage() {
                   onChange={(e) => setNewChore({ ...newChore, description: e.target.value })}
                 />
               </div>
+              <div className="space-y-2">
+                <Label>Frequency</Label>
+                <div className="flex gap-2 flex-wrap">
+                  {([
+                    { value: "once", label: "Once" },
+                    { value: "daily", label: "Daily" },
+                    { value: "weekly", label: "Weekly" },
+                    { value: "custom", label: "Custom" },
+                  ] as { value: ChoreFrequency; label: string }[]).map(opt => (
+                    <Button
+                      key={opt.value}
+                      type="button"
+                      size="sm"
+                      variant={newChore.frequency === opt.value ? "default" : "outline"}
+                      onClick={() => setNewChore({ ...newChore, frequency: opt.value, intervalDays: opt.value === "custom" ? 30 : newChore.intervalDays })}
+                    >
+                      {opt.label}
+                    </Button>
+                  ))}
+                </div>
+                {newChore.frequency === "custom" && (
+                  <div className="space-y-2 pt-1">
+                    <div className="flex gap-2 flex-wrap">
+                      {[
+                        { label: "Monthly", days: 30 },
+                        { label: "Quarterly", days: 90 },
+                        { label: "Every 6mo", days: 180 },
+                        { label: "Yearly", days: 365 },
+                      ].map(preset => (
+                        <Button
+                          key={preset.days}
+                          type="button"
+                          size="sm"
+                          variant={newChore.intervalDays === preset.days ? "secondary" : "ghost"}
+                          className="text-xs h-7"
+                          onClick={() => setNewChore({ ...newChore, intervalDays: preset.days })}
+                        >
+                          {preset.label}
+                        </Button>
+                      ))}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        min={1}
+                        className="w-24"
+                        value={newChore.intervalDays}
+                        onChange={(e) => setNewChore({ ...newChore, intervalDays: Math.max(1, parseInt(e.target.value) || 1) })}
+                      />
+                      <span className="text-sm text-muted-foreground">days</span>
+                    </div>
+                  </div>
+                )}
+              </div>
               <Button className="w-full" onClick={handleAddChore} disabled={!newChore.title.trim()}>
                 Save Chore
               </Button>
@@ -172,56 +247,94 @@ export default function ChoresPage() {
             <Plus className="h-4 w-4 mr-2" /> Create First Chore
           </Button>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {chores.map((chore) => (
-            <Card 
-              key={chore.id} 
-              className="group hover:border-primary/50 transition-colors cursor-pointer"
-              onClick={() => handleToggleChore(chore)}
-            >
-              <CardContent className="p-5 flex items-start gap-4">
-                <button 
-                  className="mt-0.5 text-muted-foreground hover:text-primary transition-colors flex-shrink-0"
-                >
-                  {chore.lastCompleted && new Date(chore.lastCompleted).toDateString() === new Date().toDateString() ? (
-                    <CheckCircle2 className="h-6 w-6 text-green-500" />
-                  ) : (
-                    <Circle className="h-6 w-6" />
-                  )}
-                </button>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-start">
-                    <h3 className="font-medium truncate pr-4">{chore.title}</h3>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 -mt-1 -mr-2 hover:text-destructive shrink-0"
-                      onClick={(e) => handleDeleteChore(chore.id, e)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  {chore.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                      {chore.description}
-                    </p>
-                  )}
-                  <div className="text-xs text-muted-foreground mt-3 flex items-center gap-2">
-                    {chore.lastCompleted ? (
-                      <span>
-                        Last done: <span className="font-medium">{format(new Date(chore.lastCompleted), "MMM d, h:mm a")}</span>
-                      </span>
-                    ) : (
-                      <span className="italic">Never completed</span>
-                    )}
-                  </div>
+      ) : (() => {
+        const activeChores = chores.filter(c => !(c.frequency === 'once' && c.completedOnce));
+        const archivedChores = chores.filter(c => c.frequency === 'once' && c.completedOnce);
+
+        const frequencyLabel = (c: Chore) => {
+          if (c.frequency === 'once') return 'One-time';
+          if (c.frequency === 'daily') return 'Daily';
+          if (c.frequency === 'weekly') return 'Weekly';
+          const days = c.intervalDays ?? 30;
+          if (days === 30) return 'Monthly';
+          if (days === 90) return 'Quarterly';
+          if (days === 180) return 'Every 6mo';
+          if (days === 365) return 'Yearly';
+          return `Every ${days}d`;
+        };
+
+        const isDueLabel = (c: Chore) => {
+          if (!c.lastCompleted || c.frequency === 'once') return null;
+          const days = c.frequency === 'daily' ? 1 : c.frequency === 'weekly' ? 7 : (c.intervalDays ?? 30);
+          const diff = differenceInCalendarDays(new Date(), parseISO(c.lastCompleted));
+          const remaining = days - diff;
+          if (remaining <= 0) return <span className="text-orange-400 font-medium">Due now</span>;
+          if (remaining === 1) return <span className="text-muted-foreground">Due tomorrow</span>;
+          return <span className="text-muted-foreground">Due in {remaining}d</span>;
+        };
+
+        const renderChoreCard = (chore: Chore, archived = false) => (
+          <Card
+            key={chore.id}
+            className={`group transition-colors ${archived ? 'opacity-50' : 'hover:border-primary/50 cursor-pointer'}`}
+            onClick={archived ? undefined : () => handleToggleChore(chore)}
+          >
+            <CardContent className="p-5 flex items-start gap-4">
+              <button className="mt-0.5 flex-shrink-0 text-muted-foreground hover:text-primary transition-colors">
+                {archived || (chore.frequency !== 'once' && chore.lastCompleted && new Date(chore.lastCompleted).toDateString() === new Date().toDateString()) ? (
+                  <CheckCircle2 className="h-6 w-6 text-green-500" />
+                ) : (
+                  <Circle className="h-6 w-6" />
+                )}
+              </button>
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-start gap-2">
+                  <h3 className={`font-medium truncate ${archived ? 'line-through text-muted-foreground' : ''}`}>{chore.title}</h3>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 -mt-1 -mr-2 hover:text-destructive"
+                    onClick={(e) => handleDeleteChore(chore.id, e)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+                {chore.description && (
+                  <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{chore.description}</p>
+                )}
+                <div className="text-xs mt-3 flex items-center gap-3 flex-wrap">
+                  <Badge variant="outline" className="text-xs font-normal gap-1 py-0">
+                    {chore.frequency !== 'once' && <RefreshCw className="h-2.5 w-2.5" />}
+                    {frequencyLabel(chore)}
+                  </Badge>
+                  {chore.lastCompleted ? (
+                    <span className="text-muted-foreground">Last: {format(new Date(chore.lastCompleted), "MMM d")}</span>
+                  ) : (
+                    <span className="text-muted-foreground italic">Never done</span>
+                  )}
+                  {isDueLabel(chore)}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        );
+
+        return (
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {activeChores.map(c => renderChoreCard(c))}
+            </div>
+            {archivedChores.length > 0 && (
+              <div className="space-y-3">
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground/60">Completed One-time</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {archivedChores.map(c => renderChoreCard(c, true))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 }

@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { isSameDay, parseISO, isPast, isToday, format, differenceInCalendarDays, startOfDay, addDays, subDays } from "date-fns";
+import { isSameDay, isSameWeek, isSameMonth, parseISO, isPast, isToday, format, differenceInCalendarDays, startOfDay, addDays, subDays } from "date-fns";
 import { getTodayEnergy, getEnergyMatch } from "@/lib/energy";
 import { EnergyIndicator } from "@/components/energy-check-in";
 import {
@@ -221,14 +221,19 @@ export default function PlanPage() {
   // Unified items lookup
   const unifiedItemsMap = useMemo(() => {
     const map = new Map<string, UnifiedItem>();
-    allTasks.filter(t => t.status !== 'abandoned').forEach(t => map.set(t.id, {
-      id: t.id,
-      title: t.title,
-      priority: t.priority,
-      energyLevel: t.energyLevel,
-      type: t.isHabit ? 'habit' : 'task',
-      completed: t.status === 'done',
-    }));
+    allTasks.filter(t => t.status !== 'abandoned').forEach(t => {
+      const habitCompletedOnDate = t.isHabit
+        ? (t.completionHistory || []).some(d => isSameDay(parseISO(d), selectedDate))
+        : false;
+      map.set(t.id, {
+        id: t.id,
+        title: t.title,
+        priority: t.priority,
+        energyLevel: t.energyLevel,
+        type: t.isHabit ? 'habit' : 'task',
+        completed: t.isHabit ? habitCompletedOnDate : t.status === 'done',
+      });
+    });
     allChores.forEach(c => map.set(c.id, {
       id: c.id,
       title: c.title,
@@ -243,8 +248,18 @@ export default function PlanPage() {
   // Non-negotiables
   const nonNegotiables = useMemo(() => {
     const committedTasks = allTasks.filter(t => {
-      if (t.status === 'done' || t.status === 'abandoned') return false; // keep existing done-task filter here for suggestions
-      if (t.isHabit) return true; // habits are always daily suggestions
+      if (t.status === 'done' || t.status === 'abandoned') return false;
+      if (t.isHabit) {
+        const history = t.completionHistory || [];
+        const freq = t.habitFrequency || 'daily';
+        // Due if not completed within the current calendar period for selectedDate
+        return !history.some(d => {
+          const date = parseISO(d);
+          if (freq === 'daily') return isSameDay(date, selectedDate);
+          if (freq === 'weekly') return isSameWeek(date, selectedDate, { weekStartsOn: 1 });
+          return isSameMonth(date, selectedDate);
+        });
+      }
       
       const doToday = t.doDate && isSameDay(parseISO(t.doDate), selectedDate);
       const dueToday = t.endDate && isSameDay(parseISO(t.endDate), selectedDate);
@@ -253,16 +268,13 @@ export default function PlanPage() {
     });
 
     const committedChores = allChores.filter(c => {
+      if (c.frequency === 'once') return !c.completedOnce;
       if (!c.lastCompleted) return true;
-      const last = parseISO(c.lastCompleted);
-      const dateStart = startOfDay(selectedDate);
-      const diff = differenceInCalendarDays(dateStart, last);
-      
-      const isDue = (c.frequency === 'daily' && diff >= 1) ||
-                    (c.frequency === 'weekly' && diff >= 7) ||
-                    (c.frequency === 'monthly' && diff >= 30);
-                    
-      return isDue || c.priority === 'urgent' || c.priority === 'high';
+      const diff = differenceInCalendarDays(startOfDay(selectedDate), parseISO(c.lastCompleted));
+      const interval = c.frequency === 'daily' ? 1
+        : c.frequency === 'weekly' ? 7
+        : (c.intervalDays ?? 30);
+      return diff >= interval || c.priority === 'urgent' || c.priority === 'high';
     });
 
     return [
