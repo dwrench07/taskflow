@@ -22,7 +22,9 @@ export function calculateStreak(habit: Task): number {
     return 0;
   }
 
-  const completionDates = completionHistory.map(d => startOfDay(parseISO(d)));
+  // Normalize to date-only string first to avoid UTC→local timezone shift across devices
+  const toDateStr = (d: string) => d.length === 10 ? d : d.substring(0, 10);
+  const completionDates = completionHistory.map(d => startOfDay(parseISO(toDateStr(d))));
   const uniqueDates = Array.from(new Set(completionDates.map(d => d.getTime()))).map(t => new Date(t));
   uniqueDates.sort((a, b) => b.getTime() - a.getTime());
 

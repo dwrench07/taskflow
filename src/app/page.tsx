@@ -125,8 +125,12 @@ export default function DashboardPage() {
     loadData();
   }, [refreshKey]);
 
+  // Normalize stored date strings: handles both new "yyyy-MM-dd" and old ISO "T..." format.
+  const toDateStr = (d: string) => d.length === 10 ? d : d.substring(0, 10);
+
   const stats = useMemo(() => {
     const today = new Date();
+    const todayStr = format(today, 'yyyy-MM-dd');
     const activeTasks = allTasks.filter(t => t.status !== 'done' && !t.isHabit);
     const criticalTasks = activeTasks.filter(t =>
       t.priority === 'urgent' || t.priority === 'high' || (t.endDate && isSameDay(parseISO(t.endDate), today))
@@ -135,11 +139,12 @@ export default function DashboardPage() {
     const pnrCount = allTasks.filter(t => t.doDate && t.status !== 'done' && !t.isHabit).length;
 
     const habits = allTasks.filter(t => t.isHabit);
-    const habitsDoneToday = habits.filter(h => h.completionHistory?.some(d => isSameDay(parseISO(d), today))).length;
+    const habitsDoneToday = habits.filter(h => h.completionHistory?.some(d => toDateStr(d) === todayStr)).length;
 
     const yesterday = new Date();
     yesterday.setDate(today.getDate() - 1);
-    const habitsDoneYesterday = habits.filter(h => h.completionHistory?.some(d => isSameDay(parseISO(d), yesterday))).length;
+    const yesterdayStr = format(yesterday, 'yyyy-MM-dd');
+    const habitsDoneYesterday = habits.filter(h => h.completionHistory?.some(d => toDateStr(d) === yesterdayStr)).length;
     const habitDelta = habitsDoneToday - habitsDoneYesterday;
 
     let topTasksTotalToday = 0;
@@ -253,7 +258,7 @@ export default function DashboardPage() {
           type: task.isFrog ? 'frog' : (task.isHabit ? 'habit' : 'task'),
           isSubtask: false,
           completed: task.isHabit
-            ? (task.completionHistory?.some(d => isSameDay(parseISO(d), today)) ?? false)
+            ? (task.completionHistory?.some(d => toDateStr(d) === format(today, 'yyyy-MM-dd')) ?? false)
             : task.status === 'done',
           priority: task.priority,
         });
@@ -287,7 +292,7 @@ export default function DashboardPage() {
           title: chore.title,
           type: 'task', // treat as task for list rendering
           isSubtask: false,
-          completed: !!(chore.lastCompleted && isSameDay(parseISO(chore.lastCompleted), today)),
+          completed: !!(chore.lastCompleted && toDateStr(chore.lastCompleted) === format(today, 'yyyy-MM-dd')),
           priority: chore.priority,
         });
         addedIds.add(id);
@@ -309,7 +314,7 @@ export default function DashboardPage() {
 
     // 3. High priority chores not in plan
     allChores.filter(c => (c.priority === 'urgent' || c.priority === 'high') && !addedIds.has(c.id)).forEach(c => {
-      const doneToday = !!(c.lastCompleted && isSameDay(parseISO(c.lastCompleted), today));
+      const doneToday = !!(c.lastCompleted && toDateStr(c.lastCompleted) === format(today, 'yyyy-MM-dd'));
       if (!doneToday) {
         items.push({
           id: c.id,
@@ -341,7 +346,7 @@ export default function DashboardPage() {
 
   const handleToggleChore = async (chore: Chore) => {
     const today = new Date();
-    const isCompletedToday = chore.lastCompleted && isSameDay(parseISO(chore.lastCompleted), today);
+    const isCompletedToday = chore.lastCompleted && toDateStr(chore.lastCompleted) === format(today, 'yyyy-MM-dd');
     const completing = !isCompletedToday;
     const updated = { ...chore, lastCompleted: isCompletedToday ? undefined : today.toISOString() };
     setAllChores(prev => prev.map(c => c.id === chore.id ? updated : c));
@@ -398,12 +403,14 @@ export default function DashboardPage() {
     if (item.type === 'habit') {
       setAllTasks(prev => prev.map(t => {
         if (t.id !== item.id) return t;
-        const dayStr = startOfDay(today).toISOString();
+        const dayStr = format(today, 'yyyy-MM-dd'); // store as date-only — timezone-safe
+        const todayStr = dayStr;
         const history = [...(t.completionHistory || [])];
         if (newCompleted) {
-          if (!history.some(d => isSameDay(parseISO(d), today))) history.push(dayStr);
+          if (!history.some(d => toDateStr(d) === todayStr)) history.push(dayStr);
         } else {
-          history.splice(history.findIndex(d => isSameDay(parseISO(d), today)), 1);
+          const idx = history.findIndex(d => toDateStr(d) === todayStr);
+          if (idx !== -1) history.splice(idx, 1);
         }
         return { ...t, completionHistory: history };
       }));
@@ -427,12 +434,14 @@ export default function DashboardPage() {
       if (item.type === 'habit') {
         const habit = allTasks.find(t => t.id === item.id);
         if (!habit) return;
-        const dayStr = startOfDay(today).toISOString();
+        const dayStr = format(today, 'yyyy-MM-dd'); // store as date-only — timezone-safe
+        const todayStr = dayStr;
         const history = [...(habit.completionHistory || [])];
         if (newCompleted) {
-          if (!history.some(d => isSameDay(parseISO(d), today))) history.push(dayStr);
+          if (!history.some(d => toDateStr(d) === todayStr)) history.push(dayStr);
         } else {
-          history.splice(history.findIndex(d => isSameDay(parseISO(d), today)), 1);
+          const idx = history.findIndex(d => toDateStr(d) === todayStr);
+          if (idx !== -1) history.splice(idx, 1);
         }
         await updateTask({ ...habit, completionHistory: history });
       } else if (item.isSubtask && item.parentId) {
@@ -532,7 +541,8 @@ export default function DashboardPage() {
       {viewMode === 'schedule' && (() => {
         const today = new Date();
         const habits = allTasks.filter(t => t.isHabit);
-        const habitsDone = habits.filter(h => h.completionHistory?.some(d => isSameDay(parseISO(d), today))).length;
+        const todayStr2 = format(today, 'yyyy-MM-dd');
+        const habitsDone = habits.filter(h => h.completionHistory?.some(d => toDateStr(d) === todayStr2)).length;
         const currentEnergy = getTodayEnergy();
 
         // Eisenhower quadrant helper
@@ -664,7 +674,7 @@ export default function DashboardPage() {
                 {habitsOpen && (
                   <div className="px-2 py-2 space-y-0.5">
                     {habits.map(habit => {
-                      const doneToday = habit.completionHistory?.some(d => isSameDay(parseISO(d), today)) ?? false;
+                      const doneToday = habit.completionHistory?.some(d => toDateStr(d) === todayStr2) ?? false;
                       return (
                         <div
                           key={habit.id}
@@ -702,7 +712,7 @@ export default function DashboardPage() {
                 {choresOpen && (
                   <div className="px-2 py-2 space-y-0.5">
                     {todayChores.map(chore => {
-                      const doneToday = chore.lastCompleted ? isSameDay(parseISO(chore.lastCompleted), today) : false;
+                      const doneToday = chore.lastCompleted ? toDateStr(chore.lastCompleted) === format(today, 'yyyy-MM-dd') : false;
                       return (
                         <div
                           key={chore.id}

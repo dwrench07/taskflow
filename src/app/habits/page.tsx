@@ -161,7 +161,11 @@ function HabitCompletionGrid({ habit, onToggleDate }: { habit: Task, onToggleDat
     const completionHistory = habit.completionHistory || [];
     const dailyStatus = habit.dailyStatus || [];
 
-    const completedSet = new Set(completionHistory.map(d => format(parseISO(d), 'yyyy-MM-dd')));
+    // toDateStr: handles both new "yyyy-MM-dd" and old "yyyy-MM-ddTHH:mm:ss.sssZ" formats.
+    // For ISO strings, we take the UTC date portion (first 10 chars) which matches the
+    // user's local calendar date for all UTC- timezones (Americas).
+    const toDateStr = (d: string) => d.length === 10 ? d : d.substring(0, 10);
+    const completedSet = new Set(completionHistory.map(toDateStr));
     const statusMap = new Map(dailyStatus.map(ds => [format(parseISO(ds.date), 'yyyy-MM-dd'), ds.status]));
 
     const statusText: Record<DailyHabitStatus, string> = {
@@ -247,7 +251,8 @@ function HabitsPageContent() {
 
     const isAtRisk = (habit: Task) => {
         if (!habit.completionHistory || habit.completionHistory.length === 0) return false;
-        const hasDoneToday = habit.completionHistory.some(d => isToday(parseISO(d)));
+        const todayStr = format(new Date(), 'yyyy-MM-dd');
+        const hasDoneToday = habit.completionHistory.some(d => (d.length === 10 ? d : d.substring(0, 10)) === todayStr);
         if (hasDoneToday) return false;
         
         // At risk if it's after 6 PM and not done
@@ -297,10 +302,12 @@ function HabitsPageContent() {
         }
     }, [allTasks, selectedHabit?.id]);
 
+    const toDateStr = (d: string) => d.length === 10 ? d : d.substring(0, 10);
+
     const hasCompletedToday = (habit: Task): boolean => {
         if (!habit.completionHistory) return false;
-        const today = startOfToday();
-        return habit.completionHistory.some(d => isEqual(startOfDay(parseISO(d)), today));
+        const todayStr = format(new Date(), 'yyyy-MM-dd');
+        return habit.completionHistory.some(d => toDateStr(d) === todayStr);
     }
 
     const getTodaysStatus = (habit: Task): DailyHabitStatus => {
@@ -317,28 +324,32 @@ function HabitsPageContent() {
             return;
         }
 
-        const targetDate = dateStr ? startOfDay(parseISO(dateStr)) : startOfToday();
-        console.log('Target date normalized:', targetDate.toISOString());
-        
-        const hasCompletedOnDate = (h: Task, qDate: Date): boolean => {
+        // targetDateStr: local calendar date string "yyyy-MM-dd"
+        const targetDateStr = dateStr
+            ? format(parseISO(dateStr), 'yyyy-MM-dd')
+            : format(new Date(), 'yyyy-MM-dd');
+        const targetDate = parseISO(targetDateStr); // midnight UTC of that date
+        console.log('Target date normalized:', targetDateStr);
+
+        const hasCompletedOnDate = (h: Task, qDateStr: string): boolean => {
             if (!h.completionHistory) return false;
-            return h.completionHistory.some(d => isEqual(startOfDay(parseISO(d)), qDate));
+            return h.completionHistory.some(d => toDateStr(d) === qDateStr);
         }
 
-        const completedTarget = hasCompletedOnDate(habit, targetDate);
+        const completedTarget = hasCompletedOnDate(habit, targetDateStr);
         let newCompletionHistory = [...(habit.completionHistory || [])];
         let toastMessage = { title: "", description: "" };
         let newLastCompletedDate = habit.lastCompletedDate;
 
         if (completedTarget) {
-            newCompletionHistory = newCompletionHistory.filter(d => !isEqual(startOfDay(parseISO(d)), targetDate));
-            const sortedHistory = newCompletionHistory.map(d => parseISO(d)).sort((a, b) => b.getTime() - a.getTime());
-            newLastCompletedDate = sortedHistory.length > 0 ? sortedHistory[0].toISOString() : undefined;
+            newCompletionHistory = newCompletionHistory.filter(d => toDateStr(d) !== targetDateStr);
+            const sortedHistory = newCompletionHistory.map(d => parseISO(toDateStr(d))).sort((a, b) => b.getTime() - a.getTime());
+            newLastCompletedDate = sortedHistory.length > 0 ? format(sortedHistory[0], 'yyyy-MM-dd') : undefined;
             toastMessage = { title: "Habit undone.", description: `Completion for "${habit.title}" on ${format(targetDate, 'MMM d')} has been removed.` };
         } else {
-            newCompletionHistory.push(targetDate.toISOString());
-            const sortedHistory = newCompletionHistory.map(d => parseISO(d)).sort((a, b) => b.getTime() - a.getTime());
-            newLastCompletedDate = sortedHistory.length > 0 ? sortedHistory[0].toISOString() : undefined;
+            newCompletionHistory.push(targetDateStr); // store as "yyyy-MM-dd" — timezone-safe
+            const sortedHistory = newCompletionHistory.map(d => parseISO(toDateStr(d))).sort((a, b) => b.getTime() - a.getTime());
+            newLastCompletedDate = sortedHistory.length > 0 ? format(sortedHistory[0], 'yyyy-MM-dd') : undefined;
             toastMessage = { title: "Habit complete!", description: `Great job on "${habit.title}" for ${format(targetDate, 'MMM d')}!` };
         }
 
@@ -352,7 +363,7 @@ function HabitsPageContent() {
             
             toast(toastMessage);
 
-            const isTodayTarget = isEqual(targetDate, startOfToday());
+            const isTodayTarget = targetDateStr === format(new Date(), 'yyyy-MM-dd');
             // Celebration on completion (not on undo)
             if (!completedTarget && isTodayTarget) {
                 const streak = calculateStreak(updatedHabit);

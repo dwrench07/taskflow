@@ -218,12 +218,17 @@ export default function PlanPage() {
     load();
   }, [selectedDateStr, refreshKey]);
 
+  // Normalize stored date strings: handles both new "yyyy-MM-dd" and old ISO "T..." format.
+  // Taking substring(0,10) extracts the UTC date, which matches local calendar date for UTC- timezones.
+  const toDateStr = (d: string) => d.length === 10 ? d : d.substring(0, 10);
+
   // Unified items lookup
   const unifiedItemsMap = useMemo(() => {
     const map = new Map<string, UnifiedItem>();
+    const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
     allTasks.filter(t => t.status !== 'abandoned').forEach(t => {
       const habitCompletedOnDate = t.isHabit
-        ? (t.completionHistory || []).some(d => isSameDay(parseISO(d), selectedDate))
+        ? (t.completionHistory || []).some(d => toDateStr(d) === selectedDateStr)
         : false;
       map.set(t.id, {
         id: t.id,
@@ -240,7 +245,7 @@ export default function PlanPage() {
       priority: c.priority,
       energyLevel: c.energyLevel,
       type: 'chore',
-      completed: !!c.lastCompleted && isSameDay(parseISO(c.lastCompleted), selectedDate),
+      completed: !!c.lastCompleted && toDateStr(c.lastCompleted) === selectedDateStr,
     }));
     return map;
   }, [allTasks, allChores, selectedDate]);
@@ -254,7 +259,7 @@ export default function PlanPage() {
         const freq = t.habitFrequency || 'daily';
         // Due if not completed within the current calendar period for selectedDate
         return !history.some(d => {
-          const date = parseISO(d);
+          const date = parseISO(toDateStr(d)); // parse date-only string → local midnight, no TZ shift
           if (freq === 'daily') return isSameDay(date, selectedDate);
           if (freq === 'weekly') return isSameWeek(date, selectedDate, { weekStartsOn: 1 });
           return isSameMonth(date, selectedDate);
