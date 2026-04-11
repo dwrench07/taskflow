@@ -13,19 +13,33 @@ import { RefreshProvider, useRefresh } from '@/context/RefreshContext';
 function VisibilityRefresh() {
   const { triggerRefresh } = useRefresh();
   useEffect(() => {
-    // visibilitychange is the standard event but unreliable in some Capacitor WebViews
-    // window 'focus' fires more consistently when the app returns to foreground on Android
-    const onVisible = () => {
-      if (document.visibilityState === 'visible') triggerRefresh();
-    };
-    const onFocus = () => triggerRefresh();
+    let cleanup: (() => void) | undefined;
 
-    document.addEventListener('visibilitychange', onVisible);
-    window.addEventListener('focus', onFocus);
-    return () => {
-      document.removeEventListener('visibilitychange', onVisible);
-      window.removeEventListener('focus', onFocus);
+    const setup = async () => {
+      try {
+        // Use Capacitor's native app state listener — reliable on all Android versions
+        const { App } = await import('@capacitor/app');
+        const handle = await App.addListener('appStateChange', ({ isActive }) => {
+          if (isActive) triggerRefresh();
+        });
+        cleanup = () => handle.remove();
+      } catch {
+        // Not in a Capacitor context (regular browser) — fall back to web events
+        const onVisible = () => {
+          if (document.visibilityState === 'visible') triggerRefresh();
+        };
+        const onFocus = () => triggerRefresh();
+        document.addEventListener('visibilitychange', onVisible);
+        window.addEventListener('focus', onFocus);
+        cleanup = () => {
+          document.removeEventListener('visibilitychange', onVisible);
+          window.removeEventListener('focus', onFocus);
+        };
+      }
     };
+
+    setup();
+    return () => cleanup?.();
   }, [triggerRefresh]);
   return null;
 }

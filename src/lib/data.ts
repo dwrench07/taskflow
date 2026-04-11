@@ -5,7 +5,7 @@ import type { Task, TaskTemplate, FocusSession, Goal, Pillar, Milestone, Chore, 
 
 export async function getAllTasks(): Promise<Task[]> {
   try {
-    const response = await fetch('/api/tasks', { cache: 'no-store' });
+    const response = await fetch('/api/tasks?_='+Date.now(), { cache: 'no-store' });
     if (response.ok) {
       return await response.json();
     } else {
@@ -20,7 +20,7 @@ export async function getAllTasks(): Promise<Task[]> {
 
 export async function getAllTemplates(): Promise<TaskTemplate[]> {
   try {
-    const response = await fetch('/api/templates', { cache: 'no-store' });
+    const response = await fetch('/api/templates?_='+Date.now(), { cache: 'no-store' });
     if (response.ok) {
       return await response.json();
     } else {
@@ -119,7 +119,7 @@ export async function updateDailyPlanAsync(newTaskIds: string[], date?: string):
 
 export async function getDailyPlan(date?: string) {
   try {
-    const url = date ? `/api/daily-plan?date=${date}` : '/api/daily-plan';
+    const url = date ? `/api/daily-plan?date=${date}&_=${Date.now()}` : `/api/daily-plan?_=${Date.now()}`;
     const response = await fetch(url, { cache: 'no-store' });
     if (!response.ok) {
       if (response.status === 404) {
@@ -174,7 +174,7 @@ export async function getUser(): Promise<User | null> {
 // === FOCUS SESSIONS ===
 export async function getFocusSessions(): Promise<FocusSession[]> {
   try {
-    const response = await fetch('/api/focus', { cache: 'no-store' });
+    const response = await fetch('/api/focus?_='+Date.now(), { cache: 'no-store' });
     if (response.ok) {
       return await response.json();
     } else {
@@ -203,7 +203,7 @@ export async function addFocusSession(session: Omit<FocusSession, 'id'>): Promis
 
 export async function getActiveFocusSession(): Promise<FocusSession | null> {
   try {
-    const response = await fetch('/api/focus-sessions/active', { cache: 'no-store' });
+    const response = await fetch('/api/focus-sessions/active?_='+Date.now(), { cache: 'no-store' });
     if (response.ok) {
       return await response.json();
     }
@@ -260,7 +260,7 @@ export async function updateFocusSession(id: string, updates: Partial<FocusSessi
 
 export async function getAllGoals(): Promise<Goal[]> {
   try {
-    const response = await fetch('/api/goals', { cache: 'no-store' });
+    const response = await fetch('/api/goals?_='+Date.now(), { cache: 'no-store' });
     if (response.ok) {
       return await response.json();
     } else {
@@ -313,7 +313,7 @@ export async function deleteGoal(goalId: string): Promise<void> {
 
 export async function getAllPillars(): Promise<Pillar[]> {
   try {
-    const response = await fetch('/api/pillars', { cache: 'no-store' });
+    const response = await fetch('/api/pillars?_='+Date.now(), { cache: 'no-store' });
     if (response.ok) return await response.json();
     return [];
   } catch (error) {
@@ -351,7 +351,7 @@ export async function deletePillar(id: string): Promise<void> {
 
 export async function getAllMilestones(): Promise<Milestone[]> {
   try {
-    const response = await fetch('/api/milestones', { cache: 'no-store' });
+    const response = await fetch('/api/milestones?_='+Date.now(), { cache: 'no-store' });
     if (response.ok) return await response.json();
     return [];
   } catch (error) {
@@ -378,7 +378,7 @@ export async function deleteMilestone(id: string): Promise<void> {
 
 export async function getAllChores(): Promise<Chore[]> {
   try {
-    const response = await fetch('/api/chores', { cache: 'no-store' });
+    const response = await fetch('/api/chores?_='+Date.now(), { cache: 'no-store' });
     if (response.ok) return await response.json();
     return [];
   } catch (error) {
@@ -415,7 +415,7 @@ export async function deleteChore(id: string): Promise<void> {
 
 export async function getAllInterests(): Promise<Interest[]> {
   try {
-    const response = await fetch('/api/interests', { cache: 'no-store' });
+    const response = await fetch('/api/interests?_='+Date.now(), { cache: 'no-store' });
     if (response.ok) return await response.json();
     return [];
   } catch (error) {
@@ -451,7 +451,7 @@ export async function deleteInterest(id: string): Promise<void> {
 
 export async function getAllInterestConnections(): Promise<InterestConnection[]> {
   try {
-    const response = await fetch('/api/interest-connections', { cache: 'no-store' });
+    const response = await fetch('/api/interest-connections?_='+Date.now(), { cache: 'no-store' });
     if (response.ok) return await response.json();
     return [];
   } catch (error) {
@@ -478,7 +478,7 @@ export async function deleteInterestConnection(id: string): Promise<void> {
 
 export async function getAllBackOfMindItems(): Promise<BackOfMindItem[]> {
   try {
-    const response = await fetch('/api/back-of-mind', { cache: 'no-store' });
+    const response = await fetch('/api/back-of-mind?_='+Date.now(), { cache: 'no-store' });
     if (response.ok) return await response.json();
     return [];
   } catch (error) {
@@ -514,7 +514,7 @@ export async function deleteBackOfMindItem(id: string): Promise<void> {
 
 export async function getAllMistakeLogEntries(): Promise<MistakeLogEntry[]> {
   try {
-    const response = await fetch('/api/mistake-log', { cache: 'no-store' });
+    const response = await fetch('/api/mistake-log?_='+Date.now(), { cache: 'no-store' });
     if (response.ok) return await response.json();
     return [];
   } catch (error) {
@@ -550,7 +550,7 @@ export async function deleteMistakeLogEntry(id: string): Promise<void> {
 
 export async function getFocusReminders(): Promise<FocusReminders | null> {
   try {
-    const response = await fetch('/api/focus-reminders', { cache: 'no-store' });
+    const response = await fetch('/api/focus-reminders?_='+Date.now(), { cache: 'no-store' });
     if (response.ok) return await response.json();
     return null;
   } catch (error) {
@@ -573,7 +573,7 @@ export async function saveFocusReminders(reminders: FocusReminders): Promise<Foc
 
 export async function getUserProgress(): Promise<UserProgress | null> {
   try {
-    const response = await fetch('/api/user/progress', { cache: 'no-store' });
+    const response = await fetch('/api/user/progress?_='+Date.now(), { cache: 'no-store' });
     if (response.ok) return await response.json();
     return null;
   } catch (error) {
