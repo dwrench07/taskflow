@@ -4,6 +4,7 @@
 import React from "react";
 import { useState, useMemo, useEffect } from "react";
 import { getAllTemplates, getAllTasks, addTask, updateTask as updateTaskInData, deleteTask as deleteTaskInData, getAllGoals } from "@/lib/data";
+import { useRefresh } from "@/context/RefreshContext";
 import { type Task, type Priority, type Subtask, type TaskTemplate, type Status, type Goal } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -289,6 +290,7 @@ function TasksPageContent() {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { celebrate, refreshGamification, userProgress, refreshProgress } = useGamification();
+  const { refreshKey } = useRefresh();
   const [sortOption, setSortOption] = useState<SortOption>("priority");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<Status[]>([]);
@@ -335,7 +337,7 @@ function TasksPageContent() {
     return () => {
       isMounted = false;
     };
-  }, [searchParams, isMobile]);
+  }, [searchParams, isMobile, refreshKey]);
 
 
 

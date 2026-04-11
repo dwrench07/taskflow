@@ -4,6 +4,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { getAllTasks, getDailyPlan, updateDailyPlanAsync, getAllChores } from "@/lib/data";
+import { useRefresh } from "@/context/RefreshContext";
 import { Task, Priority, EnergyLevel, Chore } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +15,7 @@ import {
   Plus,
   ChevronRight,
   ChevronLeft,
+  ChevronDown,
   BatteryLow,
   BatteryMedium,
   BatteryFull,
@@ -68,6 +70,7 @@ type UnifiedItem = {
   priority: Priority;
   energyLevel?: EnergyLevel;
   type: 'task' | 'habit' | 'chore';
+  completed?: boolean;
 };
 
 function SortableTaskRow({
@@ -171,7 +174,9 @@ export default function PlanPage() {
   const [saving, setSaving] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [calendarOpen, setCalendarOpen] = useState(false);
-  
+  const [showCompleted, setShowCompleted] = useState(true);
+  const { refreshKey } = useRefresh();
+
   const currentEnergy = getTodayEnergy();
   const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
   const isActualToday = isSameDay(selectedDate, new Date());
@@ -211,32 +216,34 @@ export default function PlanPage() {
       }
     };
     load();
-  }, [selectedDateStr]);
+  }, [selectedDateStr, refreshKey]);
 
   // Unified items lookup
   const unifiedItemsMap = useMemo(() => {
     const map = new Map<string, UnifiedItem>();
-    allTasks.filter(t => t.status !== 'done' && t.status !== 'abandoned').forEach(t => map.set(t.id, {
+    allTasks.filter(t => t.status !== 'abandoned').forEach(t => map.set(t.id, {
       id: t.id,
       title: t.title,
       priority: t.priority,
       energyLevel: t.energyLevel,
-      type: t.isHabit ? 'habit' : 'task'
+      type: t.isHabit ? 'habit' : 'task',
+      completed: t.status === 'done',
     }));
-    allChores.forEach(c => map.set(c.id, { 
-      id: c.id, 
-      title: c.title, 
-      priority: c.priority, 
+    allChores.forEach(c => map.set(c.id, {
+      id: c.id,
+      title: c.title,
+      priority: c.priority,
       energyLevel: c.energyLevel,
-      type: 'chore' 
+      type: 'chore',
+      completed: !!c.lastCompleted && isSameDay(parseISO(c.lastCompleted), selectedDate),
     }));
     return map;
-  }, [allTasks, allChores]);
+  }, [allTasks, allChores, selectedDate]);
 
   // Non-negotiables
   const nonNegotiables = useMemo(() => {
     const committedTasks = allTasks.filter(t => {
-      if (t.status === 'done' || t.status === 'abandoned') return false;
+      if (t.status === 'done' || t.status === 'abandoned') return false; // keep existing done-task filter here for suggestions
       if (t.isHabit) return true; // habits are always daily suggestions
       
       const doToday = t.doDate && isSameDay(parseISO(t.doDate), selectedDate);
@@ -270,7 +277,7 @@ export default function PlanPage() {
     const nonNegIds = new Set(nonNegotiables.map(t => t.id));
     
     return Array.from(unifiedItemsMap.values())
-      .filter(item => !approvedSet.has(item.id) && !nonNegIds.has(item.id))
+      .filter(item => !approvedSet.has(item.id) && !nonNegIds.has(item.id) && !item.completed)
       .sort((a, b) => {
         const aMatch = currentEnergy ? getEnergyMatch(a.energyLevel, currentEnergy) : 'slight-mismatch';
         const bMatch = currentEnergy ? getEnergyMatch(b.energyLevel, currentEnergy) : 'slight-mismatch';
@@ -379,35 +386,74 @@ export default function PlanPage() {
     );
   }
 
-  const renderActivePlan = () => (
-    <div className="space-y-3">
-      <DndContext 
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableContext 
-          items={approvedIds}
-          strategy={verticalListSortingStrategy}
+  const renderActivePlan = () => {
+    const activeItems = approvedItemsList.filter(i => !i.completed);
+    const completedItems = approvedItemsList.filter(i => i.completed);
+
+    return (
+      <div className="space-y-3">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
         >
-          {approvedItemsList.map(item => (
-            <SortableTaskRow 
-              key={item.id} 
-              item={item} 
-              mode="approved" 
-              onRemove={step !== 'done' ? () => handleRemove(item.id) : undefined}
-            />
-          ))}
-        </SortableContext>
-      </DndContext>
-      
-      {approvedItemsList.length === 0 && (
-        <div className="text-center py-10 text-muted-foreground text-sm border border-dashed rounded-xl">
-          Nothing in the plan. Add items below or proceed to suggestions.
-        </div>
-      )}
-    </div>
-  );
+          <SortableContext
+            items={activeItems.map(i => i.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            {activeItems.map(item => (
+              <SortableTaskRow
+                key={item.id}
+                item={item}
+                mode="approved"
+                onRemove={step !== 'done' ? () => handleRemove(item.id) : undefined}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
+
+        {activeItems.length === 0 && completedItems.length === 0 && (
+          <div className="text-center py-10 text-muted-foreground text-sm border border-dashed rounded-xl">
+            Nothing in the plan. Add items below or proceed to suggestions.
+          </div>
+        )}
+
+        {step === 'done' && completedItems.length > 0 && (
+          <div className="pt-1">
+            <button
+              onClick={() => setShowCompleted(v => !v)}
+              className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground/60 hover:text-muted-foreground transition-colors mb-2 w-full"
+            >
+              <div className="flex-1 h-px bg-border/50" />
+              <span className="flex items-center gap-1.5 shrink-0">
+                <CheckCircle2 className="h-3.5 w-3.5 text-green-500/70" />
+                Completed ({completedItems.length})
+                <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", !showCompleted && "-rotate-90")} />
+              </span>
+              <div className="flex-1 h-px bg-border/50" />
+            </button>
+            {showCompleted && (
+              <div className="space-y-2">
+                {completedItems.map(item => (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl border border-border/30 bg-muted/5 opacity-50"
+                  >
+                    <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                    <div className="flex-shrink-0">
+                      {item.type === 'habit' && <Repeat className="h-4 w-4 text-primary/40" />}
+                      {item.type === 'chore' && <ShoppingBag className="h-4 w-4 text-orange-400/40" />}
+                    </div>
+                    <span className="text-sm line-through text-muted-foreground">{item.title}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   // Already planned today
   if (step === 'done') {
@@ -419,10 +465,30 @@ export default function PlanPage() {
           <p className="text-muted-foreground text-sm mt-1">Your unified plan for {format(selectedDate, 'MMMM do')}.</p>
         </div>
 
-        <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3">
-          <Zap className="h-4 w-4 text-green-500 shrink-0" />
-          <span className="text-sm font-medium text-green-400">{approvedIds.length} items optimized and ready</span>
-        </div>
+        {(() => {
+          const completedCount = approvedItemsList.filter(i => i.completed).length;
+          const totalCount = approvedItemsList.length;
+          const allDone = completedCount === totalCount && totalCount > 0;
+          return (
+            <div className={cn(
+              "flex items-center gap-2 rounded-xl px-4 py-3 border",
+              allDone
+                ? "bg-green-500/10 border-green-500/20"
+                : "bg-muted/30 border-border/50"
+            )}>
+              {allDone
+                ? <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                : <Zap className="h-4 w-4 text-primary shrink-0" />
+              }
+              <span className={cn("text-sm font-medium", allDone ? "text-green-400" : "text-foreground")}>
+                {completedCount > 0
+                  ? `${completedCount} of ${totalCount} completed`
+                  : `${totalCount} items planned`
+                }
+              </span>
+            </div>
+          );
+        })()}
 
         {renderActivePlan()}
 

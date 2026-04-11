@@ -42,6 +42,7 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { LogOut } from "lucide-react";
+import { PullToRefresh } from "@/components/pull-to-refresh";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -174,6 +175,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <h1 className="text-lg font-bold tracking-tight text-foreground">Dash</h1>
           </div>
         </header>
+        <PullToRefresh />
         <main className="flex-1 p-4 sm:p-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>

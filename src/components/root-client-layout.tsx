@@ -8,6 +8,21 @@ import { ReminderManager } from '@/components/reminder-manager';
 import { PwaInstallPrompt } from '@/components/pwa-install-prompt';
 import { GamificationProvider } from '@/context/GamificationContext';
 import { GroundingButton } from '@/components/grounding-button';
+import { RefreshProvider, useRefresh } from '@/context/RefreshContext';
+
+function VisibilityRefresh() {
+  const { triggerRefresh } = useRefresh();
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        triggerRefresh();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+  }, [triggerRefresh]);
+  return null;
+}
 
 export function RootClientLayout({
   children,
@@ -25,18 +40,21 @@ export function RootClientLayout({
   return (
     <body className={`${fontVariable} min-h-screen bg-background font-sans antialiased`}>
       {isMounted ? (
-        <AuthProvider>
-          <GamificationProvider>
-            <AppLayout>
-              <React.Suspense fallback={<div>Loading...</div>}>
-                {children}
-              </React.Suspense>
-            </AppLayout>
-            <ReminderManager />
-            <PwaInstallPrompt />
-            <GroundingButton />
-          </GamificationProvider>
-        </AuthProvider>
+        <RefreshProvider>
+          <AuthProvider>
+            <GamificationProvider>
+              <VisibilityRefresh />
+              <AppLayout>
+                <React.Suspense fallback={<div>Loading...</div>}>
+                  {children}
+                </React.Suspense>
+              </AppLayout>
+              <ReminderManager />
+              <PwaInstallPrompt />
+              <GroundingButton />
+            </GamificationProvider>
+          </AuthProvider>
+        </RefreshProvider>
       ) : null}
       <Toaster />
     </body>

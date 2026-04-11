@@ -11,9 +11,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import type { Chore } from "@/lib/types";
 import { getAllChores, addChore, deleteChore, updateChore, getUserProgress, saveUserProgress } from "@/lib/data";
+import { useRefresh } from "@/context/RefreshContext";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ChoresPage() {
+  const { refreshKey } = useRefresh();
   const [chores, setChores] = useState<Chore[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -26,7 +28,7 @@ export default function ChoresPage() {
 
   useEffect(() => {
     fetchChores();
-  }, []);
+  }, [refreshKey]);
 
   const fetchChores = async () => {
     setIsLoading(true);

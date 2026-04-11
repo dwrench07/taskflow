@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { getAllTasks, updateTask, addTask, deleteTask } from "@/lib/data";
+import { useRefresh } from "@/context/RefreshContext";
 import { type Task, type Priority, type HabitFrequency, DailyHabitStatus, DailyStatus } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -228,6 +229,7 @@ function HabitsPageContent() {
     const [allTasks, setAllTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
+    const { refreshKey } = useRefresh();
     const { celebrate, refreshGamification } = useGamification();
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingHabit, setEditingHabit] = useState<Task | undefined>(undefined);
@@ -269,7 +271,7 @@ function HabitsPageContent() {
 
     useEffect(() => {
         refreshHabits(true);
-    }, []);
+    }, [refreshKey]);
 
     useEffect(() => {
         if (loading && allTasks.length === 0) return; // Wait for initial load

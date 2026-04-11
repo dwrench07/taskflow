@@ -44,6 +44,7 @@ import { DashboardUpcomingDeadlines } from "@/components/dashboard-upcoming-dead
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getAllTasks, getFocusSessions, getDailyPlan, updateTask, getAllChores, updateChore, getUserProgress, saveUserProgress } from "@/lib/data";
 import { useEffect, useState, useMemo } from "react";
+import { useRefresh } from "@/context/RefreshContext";
 import { Task, FocusSession, Priority, EnergyLevel, Chore } from "@/lib/types";
 import {
   LayoutDashboard, BarChart3, Clock, Flame, Brain, ListTodo, Timer,
@@ -80,6 +81,7 @@ function isMorningTime(): boolean {
 
 export default function DashboardPage() {
   const { toast } = useToast();
+  const { refreshKey } = useRefresh();
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [allChores, setAllChores] = useState<Chore[]>([]);
   const [focusSessions, setFocusSessions] = useState<FocusSession[]>([]);
@@ -121,7 +123,7 @@ export default function DashboardPage() {
       await scheduleNotifications(tasks);
     }
     loadData();
-  }, []);
+  }, [refreshKey]);
 
   const stats = useMemo(() => {
     const today = new Date();
