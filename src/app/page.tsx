@@ -594,8 +594,11 @@ export default function DashboardPage() {
 
             {/* Daily Progress Meter */}
             {(() => {
-              const meterTotal = todayList.length + todayChores.length;
-              const meterDone = todayList.filter(i => i.completed).length + choresDoneToday;
+              const todayListIds = new Set(todayList.map(i => i.id));
+              const extraChores = todayChores.filter(c => !todayListIds.has(c.id));
+              const meterTotal = todayList.length + extraChores.length;
+              const meterDone = todayList.filter(i => i.completed).length
+                + extraChores.filter(c => !!(c.lastCompleted && isSameDay(parseISO(c.lastCompleted), new Date()))).length;
               return <DailyProgressMeter totalItems={meterTotal} completedItems={meterDone} />;
             })()}
 

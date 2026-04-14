@@ -81,6 +81,7 @@ export default function FocusPage() {
     const [newReminderText, setNewReminderText] = useState("");
     const [activeReminder, setActiveReminder] = useState<string | null>(null);
     const lastReminderTime = useRef<number>(0);
+    const pendingAutoStop = useRef<number | null>(null);
 
     // Task Picker
     const [showTaskPicker, setShowTaskPicker] = useState(false);
@@ -171,14 +172,25 @@ export default function FocusPage() {
 
                 if (limit && activeSession.expectedEndTime) {
                     const remainingMs = new Date(activeSession.expectedEndTime).getTime() - Date.now();
-                    setTimeRemaining(Math.max(0, Math.floor(remainingMs / 1000)));
-                    const elapsedMs = Date.now() - new Date(activeSession.startTime).getTime();
-                    setElapsedTime(Math.floor(elapsedMs / 1000));
+                    if (remainingMs <= 0) {
+                        // Timer expired while the user was away — auto-stop instead of resuming
+                        // with a negative countdown showing "Time is Expanding!"
+                        const expiredElapsedMs = new Date(activeSession.expectedEndTime).getTime() - new Date(activeSession.startTime).getTime();
+                        setElapsedTime(Math.floor(expiredElapsedMs / 1000));
+                        setTimeRemaining(0);
+                        pendingAutoStop.current = Math.floor(expiredElapsedMs / 1000);
+                        // Do NOT set isActive — the useEffect below will call handleStop after load
+                    } else {
+                        setTimeRemaining(Math.floor(remainingMs / 1000));
+                        const elapsedMs = Date.now() - new Date(activeSession.startTime).getTime();
+                        setElapsedTime(Math.floor(elapsedMs / 1000));
+                        setIsActive(true);
+                    }
                 } else {
                     const elapsedMs = Date.now() - new Date(activeSession.startTime).getTime();
                     setElapsedTime(Math.floor(elapsedMs / 1000));
+                    setIsActive(true);
                 }
-                setIsActive(true);
             }
 
             // Load reminder settings
@@ -227,6 +239,15 @@ export default function FocusPage() {
         }
         return () => clearInterval(interval);
     }, [isActive, mode]);
+
+    // Auto-stop when the timer expired while the user was away from the page
+    useEffect(() => {
+        if (!loading && pendingAutoStop.current !== null) {
+            const elapsed = pendingAutoStop.current;
+            pendingAutoStop.current = null;
+            handleStop(elapsed);
+        }
+    }, [loading]);
 
     // Mindfulness reminder timer
     useEffect(() => {
