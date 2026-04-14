@@ -1,5 +1,5 @@
 import { Task, FocusSession, UserProgress, GameAction } from './types';
-import { isSameDay, parseISO, startOfToday, isToday, differenceInMinutes, getHours, differenceInDays } from 'date-fns';
+import { isSameDay, parseISO, startOfToday, isToday, differenceInMinutes, getHours, differenceInDays, startOfDay } from 'date-fns';
 import { calculateStreak } from './habits';
 
 // === XP RULES ===
@@ -349,7 +349,7 @@ export interface CelebrationEvent {
 
 export function getCampfireStatus(progress: UserProgress): 'burning' | 'frozen' {
   if (!progress.lastActiveDate) return 'burning';
-  const diffDays = differenceInDays(new Date(), new Date(progress.lastActiveDate));
+  const diffDays = differenceInDays(startOfDay(new Date()), startOfDay(new Date(progress.lastActiveDate)));
   return diffDays >= 3 ? 'frozen' : 'burning';
 }
 
@@ -469,9 +469,15 @@ export function evaluateGamificationTriggers(
 ): { message: string, detail: string }[] {
   const updates: { message: string, detail: string }[] = [];
   const now = new Date();
-  
+
+  // Capture frozen state before re-igniting campfire
+  const wasFrozen = getCampfireStatus(progress) === 'frozen';
+
   // Re-ignite campfire on any active engagement
   progress.lastActiveDate = now.toISOString();
+  if (wasFrozen) {
+    updates.push({ message: 'Campfire Re-ignited!', detail: 'Your campfire was frozen. XP is halved this session — keep going to restore full gains.' });
+  }
 
   // Cleanup expired buffs mapping
   progress.activeBuffs = progress.activeBuffs.filter(b => new Date(b.expiresAt) > now);
@@ -481,7 +487,7 @@ export function evaluateGamificationTriggers(
 
     // Check for active Laser Overdrive buff (2x XP multiplier)
     const hasLaserOverdrive = progress.activeBuffs.some(b => b.type === 'laserOverdrive' && new Date(b.expiresAt) > now);
-    const xpMultiplier = hasLaserOverdrive ? 2 : 1;
+    const xpMultiplier = (hasLaserOverdrive ? 2 : 1) * (wasFrozen ? 0.5 : 1);
 
     // 1. Morning Lark (Zen Mode)
     // First task completed before 9:30 AM

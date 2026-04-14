@@ -243,9 +243,9 @@ function HabitsPageContent() {
     const router = useRouter();
     const { userProgress } = useGamification();
 
-    const isFrozen = (habit: Task) => {
+    const isFrozen = () => {
         if (!userProgress?.lastActiveDate) return false;
-        const diffDays = differenceInDays(new Date(), new Date(userProgress.lastActiveDate));
+        const diffDays = differenceInDays(startOfDay(new Date()), startOfDay(new Date(userProgress.lastActiveDate)));
         return diffDays >= 3;
     };
 
@@ -537,16 +537,16 @@ function HabitsPageContent() {
                                         dailyStatusStyles[todaysStatus],
                                         goalMet && "border-green-500/50",
                                         isAtRisk(habit) && "border-orange-500 shadow-orange-500/20 animate-pulse-subtle",
-                                        isFrozen(habit) && "border-blue-400 opacity-80"
+                                        isFrozen() && "border-blue-400 opacity-80"
                                     )}
                                     onClick={() => handleSelectHabit(habit)}
                                 >
-                                    {isFrozen(habit) && (
+                                    {isFrozen() && (
                                         <div className="absolute top-2 right-2 bg-blue-500 text-white p-1.5 rounded-full shadow-lg z-10 animate-bounce">
                                             <Snowflake className="h-4 w-4" />
                                         </div>
                                     )}
-                                    {isAtRisk(habit) && !isFrozen(habit) && (
+                                    {isAtRisk(habit) && !isFrozen() && (
                                         <div className="absolute top-2 right-2 bg-orange-600 text-white p-1.5 rounded-full shadow-lg z-10">
                                             <Flame className="h-4 w-4 animate-pulse" />
                                         </div>
@@ -564,9 +564,9 @@ function HabitsPageContent() {
                                                 </Tooltip>
                                             </TooltipProvider>
                                             <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                                                <Badge variant={streak > 0 ? "default" : "secondary"} className={cn("flex items-center gap-1 sm:gap-1.5 px-1.5 py-0 h-5 sm:h-auto sm:px-2 sm:py-0.5 text-[10px] sm:text-xs whitespace-nowrap", isAtRisk(habit) && "bg-orange-600", isFrozen(habit) && "bg-blue-400")}>
+                                                <Badge variant={streak > 0 ? "default" : "secondary"} className={cn("flex items-center gap-1 sm:gap-1.5 px-1.5 py-0 h-5 sm:h-auto sm:px-2 sm:py-0.5 text-[10px] sm:text-xs whitespace-nowrap", isAtRisk(habit) && "bg-orange-600", isFrozen() && "bg-blue-400")}>
                                                     <Flame className={cn("h-3 w-3 sm:h-4 sm:w-4", streak > 0 ? "text-orange-300" : "text-muted-foreground", isAtRisk(habit) && "text-white animate-bounce")} />
-                                                    {isFrozen(habit) ? "FROZEN" : `${streak} Day${streak !== 1 ? 's' : ''}`}
+                                                    {isFrozen() ? "FROZEN" : `${streak} Day${streak !== 1 ? 's' : ''}`}
                                                 </Badge>
                                                 <AlertDialog>
                                                     <AlertDialogTrigger asChild>

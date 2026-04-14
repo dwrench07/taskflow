@@ -594,11 +594,11 @@ export default function DashboardPage() {
 
             {/* Daily Progress Meter */}
             {(() => {
-              const todayListIds = new Set(todayList.map(i => i.id));
-              const extraChores = todayChores.filter(c => !todayListIds.has(c.id));
-              const meterTotal = todayList.length + extraChores.length;
-              const meterDone = todayList.filter(i => i.completed).length
-                + extraChores.filter(c => !!(c.lastCompleted && isSameDay(parseISO(c.lastCompleted), new Date()))).length;
+              // Now accurately tracking only the active priority tasks & planned items (todayList).
+              // Background Habits and Chores are tracked in their respective sections below
+              // to prevent the progress percentage from being skewed by minor recurring items.
+              const meterTotal = todayList.length;
+              const meterDone = todayList.filter(i => i.completed).length;
               return <DailyProgressMeter totalItems={meterTotal} completedItems={meterDone} />;
             })()}
 
@@ -629,7 +629,7 @@ export default function DashboardPage() {
               >
                 <span className="flex items-center gap-2">
                   <CalendarCheck className="h-4 w-4" />
-                  Today's To-Do List
+                  Today's Planned Items
                   {dailyPlanIds.length > 0 && (
                     <span className="text-xs font-normal opacity-70">
                       {todayList.filter(i => i.completed && dailyPlanIds.includes(i.id)).length}/{dailyPlanIds.length} done
