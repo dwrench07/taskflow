@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { FileText, CheckCircle2, Flame, Brain, Bug, ArrowRightCircle, TrendingUp, TrendingDown } from "lucide-react";
 import { subDays, isSameDay, parseISO, startOfDay, isWithinInterval, startOfWeek, endOfWeek, format } from "date-fns";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 interface WeeklyReportProps {
   allTasks: Task[];
@@ -96,6 +98,7 @@ export function DashboardWeeklyReport({ allTasks, focusSessions }: WeeklyReportP
         <CardTitle className="text-sm font-bold flex items-center gap-2">
           <FileText className="h-4 w-4 text-primary" />
           Weekly Report Card
+          <WidgetInfo description={WIDGET_DESCRIPTIONS["weekly-report"]} />
           <Badge variant="secondary" className="ml-auto text-[10px]">{report.weekLabel}</Badge>
         </CardTitle>
       </CardHeader>

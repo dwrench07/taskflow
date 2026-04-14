@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
 import { Task } from "@/lib/types";
@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Tag, TrendingUp } from "lucide-react";
 import { differenceInDays, parseISO } from "date-fns";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 interface TagHeatmapProps {
   allTasks: Task[];

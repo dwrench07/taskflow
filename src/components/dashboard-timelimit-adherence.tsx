@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
 import { Task, FocusSession } from "@/lib/types";
@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Timer, CheckCircle2, XCircle } from "lucide-react";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 interface TimeLimitAdherenceProps {
   allTasks: Task[];
@@ -71,6 +73,7 @@ export function DashboardTimeLimitAdherence({ allTasks, focusSessions }: TimeLim
           <CardTitle className="text-sm font-bold flex items-center gap-2">
             <Timer className="h-4 w-4 text-rose-500" />
             Time Limit Adherence
+            <WidgetInfo description={WIDGET_DESCRIPTIONS["timelimit-adherence"]} />
           </CardTitle>
         </CardHeader>
         <CardContent>

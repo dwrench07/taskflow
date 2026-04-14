@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
 import { FocusSession } from "@/lib/types";
@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Clock, Zap } from "lucide-react";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 interface PeakProductivityProps {
   focusSessions: FocusSession[];
@@ -76,6 +78,7 @@ export function DashboardPeakHours({ focusSessions }: PeakProductivityProps) {
           <CardTitle className="text-sm font-bold flex items-center gap-2">
             <Clock className="h-4 w-4 text-amber-500" />
             Peak Productivity Hours
+            <WidgetInfo description={WIDGET_DESCRIPTIONS["peak-hours"]} />
           </CardTitle>
         </CardHeader>
         <CardContent>

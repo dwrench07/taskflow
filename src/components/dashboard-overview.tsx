@@ -3,6 +3,8 @@ import { ListTodo, Loader, CalendarCheck, Trophy, Flame, TrendingUp } from "luci
 import { isToday, parseISO } from "date-fns";
 import { calculateStreak } from "@/lib/habits";
 import { Task } from "@/lib/types";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 export function DashboardOverview({ allTasks }: { allTasks: Task[] }) {
   const nonHabitTasks = (Array.isArray(allTasks) ? allTasks : []).filter(t => !t.isHabit);
@@ -22,7 +24,7 @@ export function DashboardOverview({ allTasks }: { allTasks: Task[] }) {
     <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-6">
       <Card className="bg-card border-border transition-all duration-300 animate-fade-in hover:shadow-md">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
-          <CardTitle className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">To-Do</CardTitle>
+          <CardTitle className="text-[9px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1">To-Do <WidgetInfo description={WIDGET_DESCRIPTIONS["overview-todo"]} /></CardTitle>
           <ListTodo className="h-3 w-3 text-primary" />
         </CardHeader>
         <CardContent className="px-4 pb-3">
@@ -32,7 +34,7 @@ export function DashboardOverview({ allTasks }: { allTasks: Task[] }) {
       </Card>
       <Card className="bg-card border-border transition-all duration-300 animate-fade-in hover:shadow-md" style={{ animationDelay: '50ms' }}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
-          <CardTitle className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">In Progress</CardTitle>
+          <CardTitle className="text-[9px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1">In Progress <WidgetInfo description={WIDGET_DESCRIPTIONS["overview-in-progress"]} /></CardTitle>
           <Loader className="h-3 w-3 text-accent animate-spin" />
         </CardHeader>
         <CardContent className="px-4 pb-3">
@@ -42,7 +44,7 @@ export function DashboardOverview({ allTasks }: { allTasks: Task[] }) {
       </Card>
       <Card className="bg-card border-border transition-all duration-300 animate-fade-in hover:shadow-md" style={{ animationDelay: '100ms' }}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
-          <CardTitle className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Due Today</CardTitle>
+          <CardTitle className="text-[9px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1">Due Today <WidgetInfo description={WIDGET_DESCRIPTIONS["overview-due-today"]} /></CardTitle>
           <CalendarCheck className="h-3 w-3 text-blue-400" />
         </CardHeader>
         <CardContent className="px-4 pb-3">
@@ -52,7 +54,7 @@ export function DashboardOverview({ allTasks }: { allTasks: Task[] }) {
       </Card>
       <Card className="bg-card border-border transition-all duration-300 animate-fade-in hover:shadow-md" style={{ animationDelay: '150ms' }}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
-          <CardTitle className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Habit Goals</CardTitle>
+          <CardTitle className="text-[9px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1">Habit Goals <WidgetInfo description={WIDGET_DESCRIPTIONS["overview-habit-goals"]} /></CardTitle>
           <Trophy className="h-3 w-3 text-yellow-400" />
         </CardHeader>
         <CardContent className="px-4 pb-3">
@@ -62,7 +64,7 @@ export function DashboardOverview({ allTasks }: { allTasks: Task[] }) {
       </Card>
       <Card className="bg-card border-border transition-all duration-300 animate-fade-in hover:shadow-md" style={{ animationDelay: '200ms' }}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
-          <CardTitle className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Longevity</CardTitle>
+          <CardTitle className="text-[9px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1">Longevity <WidgetInfo description={WIDGET_DESCRIPTIONS["overview-longevity"]} /></CardTitle>
           <TrendingUp className="h-3 w-3 text-orange-500" />
         </CardHeader>
         <CardContent className="px-4 pb-3">
@@ -72,7 +74,7 @@ export function DashboardOverview({ allTasks }: { allTasks: Task[] }) {
       </Card>
       <Card className="bg-card border-border transition-all duration-300 animate-fade-in hover:shadow-md" style={{ animationDelay: '250ms' }}>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4">
-          <CardTitle className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Avoided</CardTitle>
+          <CardTitle className="text-[9px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1">Avoided <WidgetInfo description={WIDGET_DESCRIPTIONS["overview-avoided"]} /></CardTitle>
           <TrendingUp className="h-3 w-3 text-red-500 rotate-180" />
         </CardHeader>
         <CardContent className="px-4 pb-3">

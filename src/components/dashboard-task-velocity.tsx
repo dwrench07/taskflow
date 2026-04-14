@@ -1,10 +1,12 @@
-"use client";
+﻿"use client";
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { useMemo } from 'react';
 import { Task } from "@/lib/types";
 import { differenceInDays, parseISO } from 'date-fns';
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 export function DashboardTaskVelocity({ allTasks }: { allTasks: Task[] }) {
 
@@ -64,6 +66,7 @@ export function DashboardTaskVelocity({ allTasks }: { allTasks: Task[] }) {
         <Card className="flex flex-col h-full transition-all duration-500 ease-in-out hover:shadow-md">
             <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-bold">Task Velocity</CardTitle>
+                <WidgetInfo description={WIDGET_DESCRIPTIONS["task-velocity"]} />
                 <CardDescription>
                     Time taken to complete tasks
                     {Number(averageDays) > 0 && <span className="block mt-1 font-semibold text-primary">Average: {averageDays} days</span>}

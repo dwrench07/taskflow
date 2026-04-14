@@ -8,6 +8,8 @@ import { subDays, format, parseISO, isSameDay, startOfWeek, endOfWeek, isFuture,
 import { Button } from "./ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Task } from "@/lib/types";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 export function DashboardCompletionChart({ allTasks }: { allTasks: Task[] }) {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -54,7 +56,7 @@ export function DashboardCompletionChart({ allTasks }: { allTasks: Task[] }) {
             <CardHeader>
                 <div className="flex justify-between items-center">
                     <div>
-                        <CardTitle className="text-lg sm:text-xl font-semibold">Weekly Productivity</CardTitle>
+                        <CardTitle className="text-lg sm:text-xl font-semibold flex items-center gap-2">Weekly Productivity <WidgetInfo description={WIDGET_DESCRIPTIONS["completion-chart"]} /></CardTitle>
                         <CardDescription>
                             {format(weekStart, "MMM d")} - {format(weekEnd, "MMM d, yyyy")}
                         </CardDescription>

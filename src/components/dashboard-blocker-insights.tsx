@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Link2, Unlock, Lock, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 interface BlockerInsightsProps {
   allTasks: Task[];
@@ -98,6 +100,7 @@ export function DashboardBlockerInsights({ allTasks }: BlockerInsightsProps) {
           <CardTitle className="text-sm font-bold flex items-center gap-2">
             <Link2 className="h-4 w-4 text-sky-500" />
             Blocker Insights
+            <WidgetInfo description={WIDGET_DESCRIPTIONS["blocker-insights"]} />
           </CardTitle>
         </CardHeader>
         <CardContent>

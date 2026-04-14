@@ -3,6 +3,8 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import { CheckCircle, ListChecks, Repeat } from "lucide-react";
 import { useMemo } from "react";
 import { Task } from "@/lib/types";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 export function DashboardStats({ allTasks }: { allTasks: Task[] }) {
   const stats = useMemo(() => {
@@ -32,7 +34,7 @@ export function DashboardStats({ allTasks }: { allTasks: Task[] }) {
   return (
     <Card className="flex flex-col transition-all duration-500 ease-in-out animate-fade-in hover:shadow-md" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
       <CardHeader>
-        <CardTitle className="text-sm font-bold">Overall Progress</CardTitle>
+        <CardTitle className="text-sm font-bold flex items-center gap-2">Overall Progress <WidgetInfo description={WIDGET_DESCRIPTIONS["stats"]} /></CardTitle>
         <CardDescription>Your all-time stats.</CardDescription>
       </CardHeader>
       <CardContent className="flex-grow flex flex-col justify-around">

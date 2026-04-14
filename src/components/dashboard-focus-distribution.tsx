@@ -4,6 +4,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recha
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { useMemo } from 'react';
 import { Task, FocusSession } from "@/lib/types";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))', 'hsl(var(--primary))'];
 
@@ -57,7 +59,7 @@ export function DashboardFocusDistribution({ allTasks, focusSessions }: { allTas
     return (
         <Card className="flex flex-col h-full transition-all duration-500 ease-in-out hover:shadow-md">
             <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-bold">Focus Distribution</CardTitle>
+                <CardTitle className="text-sm font-bold flex items-center gap-2">Focus Distribution <WidgetInfo description={WIDGET_DESCRIPTIONS["focus-distribution"]} /></CardTitle>
                 <CardDescription>
                     Where your deep work time goes (by task category)
                 </CardDescription>

@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { differenceInDays, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Ruler, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 interface TShirtAccuracyProps {
   allTasks: Task[];
@@ -74,6 +76,7 @@ export function DashboardTShirtAccuracy({ allTasks }: TShirtAccuracyProps) {
           <CardTitle className="text-sm font-bold flex items-center gap-2">
             <Ruler className="h-4 w-4 text-indigo-500" />
             T-Shirt Size Accuracy
+            <WidgetInfo description={WIDGET_DESCRIPTIONS["tshirt-accuracy"]} />
           </CardTitle>
         </CardHeader>
         <CardContent>

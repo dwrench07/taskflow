@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
 import { Task, PushReason } from "@/lib/types";
@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRightCircle, AlertTriangle, HelpCircle, Maximize2, Coffee, Clock, ChevronDown, TrendingDown, TrendingUp } from "lucide-react";
 import Link from "next/link";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 const REASON_CONFIG: Record<PushReason, { label: string; icon: React.ReactNode; color: string; insight: string }> = {
   'too-scary': { label: 'Too Scary', icon: <AlertTriangle className="h-3.5 w-3.5" />, color: 'text-red-600 dark:text-red-400 bg-red-500/10', insight: 'Your main blocker is fear, not ability. Try smaller first steps.' },
@@ -72,6 +74,7 @@ export function DashboardPushAnalytics({ allTasks }: DashboardPushAnalyticsProps
           <CardTitle className="text-sm font-bold flex items-center gap-2">
             <ArrowRightCircle className="h-4 w-4 text-orange-500" />
             Push Analytics
+            <WidgetInfo description={WIDGET_DESCRIPTIONS["push-analytics"]} />
           </CardTitle>
         </CardHeader>
         <CardContent>

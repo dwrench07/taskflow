@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
 import { Task } from "@/lib/types";
@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 import { AlertTriangle, Clock } from "lucide-react";
 import { parseISO, differenceInDays, startOfDay, format } from "date-fns";
 import Link from "next/link";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 interface OverdueRiskProps {
   allTasks: Task[];
@@ -113,6 +115,7 @@ export function DashboardOverdueRisk({ allTasks }: OverdueRiskProps) {
           <CardTitle className="text-sm font-bold flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-red-500" />
             Overdue Risk
+            <WidgetInfo description={WIDGET_DESCRIPTIONS["overdue-risk"]} />
           </CardTitle>
         </CardHeader>
         <CardContent>

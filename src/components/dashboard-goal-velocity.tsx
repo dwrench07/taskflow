@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
@@ -7,6 +7,8 @@ import { type Goal, type Task } from "@/lib/types";
 import { getAllGoals, getAllTasks } from "@/lib/data";
 import { differenceInDays, parseISO, startOfDay } from "date-fns";
 import { Loader2 } from "lucide-react";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 export function DashboardGoalVelocity() {
     const [goals, setGoals] = useState<Goal[]>([]);
@@ -67,6 +69,7 @@ export function DashboardGoalVelocity() {
             <Card className="flex flex-col h-full border-border/50 shadow-sm transition-all hover:shadow-md">
                 <CardHeader>
                     <CardTitle className="text-sm font-bold">Goal Velocity</CardTitle>
+                    <WidgetInfo description={WIDGET_DESCRIPTIONS["goal-velocity"]} />
                     <CardDescription>Pace vs Deadline</CardDescription>
                 </CardHeader>
                 <CardContent className="flex items-center justify-center min-h-[300px]">

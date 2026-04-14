@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState, useEffect } from "react";
 import { Task, Pillar, FocusSession } from "@/lib/types";
@@ -7,6 +7,8 @@ import { getAllPillars, getAllGoals } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { Compass } from "lucide-react";
 import type { Goal } from "@/lib/types";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 interface PillarBalanceProps {
   allTasks: Task[];
@@ -85,6 +87,7 @@ export function DashboardPillarBalance({ allTasks, focusSessions }: PillarBalanc
           <CardTitle className="text-sm font-bold flex items-center gap-2">
             <Compass className="h-4 w-4 text-indigo-500" />
             Pillar Balance
+            <WidgetInfo description={WIDGET_DESCRIPTIONS["pillar-balance"]} />
           </CardTitle>
         </CardHeader>
         <CardContent>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
 import { FocusSession, Task } from "@/lib/types";
@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { parseAllJots } from "@/lib/jots";
 import { cn } from "@/lib/utils";
 import { AlertCircle, CheckCircle2, XCircle, HelpCircle } from "lucide-react";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 interface WorryTrackerProps {
   focusSessions: FocusSession[];
@@ -53,6 +55,7 @@ export function DashboardWorryTracker({ focusSessions, allTasks }: WorryTrackerP
           <CardTitle className="text-sm font-bold flex items-center gap-2">
             <AlertCircle className="h-4 w-4 text-violet-500" />
             Worry Accuracy
+            <WidgetInfo description={WIDGET_DESCRIPTIONS["worry-accuracy"]} />
           </CardTitle>
         </CardHeader>
         <CardContent>

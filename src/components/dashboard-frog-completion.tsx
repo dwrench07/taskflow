@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
 import { Task } from "@/lib/types";
@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Bug, TrendingUp, ArrowRight } from "lucide-react";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 interface FrogCompletionProps {
   allTasks: Task[];
@@ -62,6 +64,7 @@ export function DashboardFrogCompletion({ allTasks }: FrogCompletionProps) {
           <CardTitle className="text-sm font-bold flex items-center gap-2">
             <Bug className="h-4 w-4 text-emerald-500" />
             Frog Completion
+            <WidgetInfo description={WIDGET_DESCRIPTIONS["frog-completion"]} />
           </CardTitle>
         </CardHeader>
         <CardContent>

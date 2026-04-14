@@ -4,6 +4,8 @@ import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recha
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Task } from "@/lib/types";
 import { useMemo } from "react";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 export function DashboardStatusChart({ allTasks }: { allTasks: Task[] }) {
   const data = useMemo(() => [
@@ -15,7 +17,7 @@ export function DashboardStatusChart({ allTasks }: { allTasks: Task[] }) {
   return (
     <Card>
         <CardHeader>
-            <CardTitle className="text-sm font-bold">Task Status Overview</CardTitle>
+            <CardTitle className="text-sm font-bold flex items-center gap-2">Task Status Overview <WidgetInfo description={WIDGET_DESCRIPTIONS["status-chart"]} /></CardTitle>
             <CardDescription>Current breakdown of all non-habit tasks.</CardDescription>
         </CardHeader>
         <CardContent>

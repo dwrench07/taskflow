@@ -5,6 +5,8 @@ import { Pie, PieChart, ResponsiveContainer, Tooltip, Cell, Legend } from "recha
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { useMemo } from "react";
 import { Priority, Task } from "@/lib/types";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 const COLORS: Record<Priority, string> = {
   urgent: "hsl(var(--destructive))",
@@ -40,7 +42,7 @@ export function DashboardPriorityChart({ allTasks }: { allTasks: Task[] }) {
   return (
     <Card>
         <CardHeader>
-            <CardTitle className="text-sm font-bold">Active Task Priority</CardTitle>
+            <CardTitle className="text-sm font-bold flex items-center gap-2">Active Task Priority <WidgetInfo description={WIDGET_DESCRIPTIONS["priority-chart"]} /></CardTitle>
             <CardDescription>Distribution of priorities for non-completed tasks.</CardDescription>
         </CardHeader>
         <CardContent>

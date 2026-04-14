@@ -4,6 +4,8 @@ import { useGamification } from "@/context/GamificationContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, CheckCircle2, Flame, Trophy, Brain, Zap, Layers, PenLine, Send } from "lucide-react";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 import { getLevel } from "@/lib/gamification";
 import { Progress } from "@/components/ui/progress";
 import { useState, useEffect, useRef } from "react";
@@ -87,6 +89,7 @@ export function DashboardDailyWins() {
         <CardTitle className="text-sm font-bold flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-primary" />
           Today&apos;s Wins
+          <WidgetInfo description={WIDGET_DESCRIPTIONS["daily-wins"]} />
           {todayXP > 0 && (
             <Badge variant="secondary" className="ml-auto text-[10px] bg-primary/10 text-primary">
               +{todayXP} XP

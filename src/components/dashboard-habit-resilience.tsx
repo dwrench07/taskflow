@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
 import { Task } from "@/lib/types";
@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { RefreshCw, Flame, TrendingUp } from "lucide-react";
 import { parseISO, differenceInDays, isSameDay, subDays, startOfDay } from "date-fns";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 interface HabitResilienceProps {
   allTasks: Task[];
@@ -80,6 +82,7 @@ export function DashboardHabitResilience({ allTasks }: HabitResilienceProps) {
           <CardTitle className="text-sm font-bold flex items-center gap-2">
             <RefreshCw className="h-4 w-4 text-blue-500" />
             Habit Resilience
+            <WidgetInfo description={WIDGET_DESCRIPTIONS["habit-resilience"]} />
           </CardTitle>
         </CardHeader>
         <CardContent>

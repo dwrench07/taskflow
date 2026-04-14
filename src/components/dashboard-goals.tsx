@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { type Goal } from "@/lib/types";
 import { getAllGoals, getAllTasks } from "@/lib/data";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Target, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 export function DashboardGoals() {
     const [goals, setGoals] = useState<Goal[]>([]);
@@ -42,6 +44,7 @@ export function DashboardGoals() {
             <CardHeader>
                 <CardTitle className="text-sm font-bold flex items-center gap-2">
                     <Target className="h-5 w-5 text-primary" /> Active Goals
+                    <WidgetInfo description={WIDGET_DESCRIPTIONS["goals"]} />
                 </CardTitle>
             </CardHeader>
             <CardContent>

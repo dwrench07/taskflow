@@ -1,10 +1,12 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
 import { FocusSession, EnergyLevel, ProductivityScore } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Activity } from "lucide-react";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 interface EnergyMatrixProps {
   focusSessions: FocusSession[];
@@ -72,6 +74,7 @@ export function DashboardEnergyMatrix({ focusSessions }: EnergyMatrixProps) {
           <CardTitle className="text-sm font-bold flex items-center gap-2">
             <Activity className="h-4 w-4 text-cyan-500" />
             Energy vs Output
+            <WidgetInfo description={WIDGET_DESCRIPTIONS["energy-matrix"]} />
           </CardTitle>
         </CardHeader>
         <CardContent>

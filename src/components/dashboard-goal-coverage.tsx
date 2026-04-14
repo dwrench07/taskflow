@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState, useEffect } from "react";
 import { Task, Goal } from "@/lib/types";
@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getAllGoals } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { Target, AlertCircle } from "lucide-react";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 interface GoalCoverageProps {
   allTasks: Task[];
@@ -69,6 +71,7 @@ export function DashboardGoalCoverage({ allTasks }: GoalCoverageProps) {
           <CardTitle className="text-sm font-bold flex items-center gap-2">
             <Target className="h-4 w-4 text-purple-500" />
             Goal Coverage
+            <WidgetInfo description={WIDGET_DESCRIPTIONS["goal-coverage"]} />
           </CardTitle>
         </CardHeader>
         <CardContent>

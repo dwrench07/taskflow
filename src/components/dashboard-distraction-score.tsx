@@ -5,6 +5,8 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import { useMemo } from 'react';
 import { FocusSession } from "@/lib/types";
 import { subDays, format, parseISO, isSameDay, startOfDay } from 'date-fns';
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 export function DashboardDistractionScore({ focusSessions }: { focusSessions: FocusSession[] }) {
 
@@ -40,7 +42,7 @@ export function DashboardDistractionScore({ focusSessions }: { focusSessions: Fo
     return (
         <Card className="flex flex-col h-full transition-all duration-500 ease-in-out hover:shadow-md">
             <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-bold">Distractor Score</CardTitle>
+                <CardTitle className="text-sm font-bold flex items-center gap-2">Distractor Score <WidgetInfo description={WIDGET_DESCRIPTIONS["distraction-score"]} /></CardTitle>
                 <CardDescription>
                     Average Jots (distractions) per hour of Focus
                 </CardDescription>

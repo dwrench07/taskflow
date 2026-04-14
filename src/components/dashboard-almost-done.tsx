@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Circle } from "lucide-react";
 import Link from "next/link";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 interface DashboardAlmostDoneProps {
   allTasks: Task[];
@@ -48,6 +50,7 @@ export function DashboardAlmostDone({ allTasks }: DashboardAlmostDoneProps) {
         <CardTitle className="text-sm font-bold flex items-center gap-2">
           <CheckCircle2 className="h-4 w-4 text-green-500" />
           Almost Done
+          <WidgetInfo description={WIDGET_DESCRIPTIONS["almost-done"]} />
           <Badge variant="secondary" className="ml-auto text-[10px] bg-green-500/10 text-green-500">{almostDoneTasks.length} tasks</Badge>
         </CardTitle>
         <p className="text-xs text-muted-foreground">These are 60%+ complete. Just finish them.</p>

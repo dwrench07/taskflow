@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Shield, Flame, TrendingUp, TrendingDown, ArrowRight } from "lucide-react";
 import { isSameDay, parseISO, subDays, startOfToday } from "date-fns";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 interface ApproachScoreProps {
   allTasks: Task[];
@@ -98,6 +100,7 @@ export function DashboardApproachScore({ allTasks, focusSessions }: ApproachScor
         <CardTitle className="text-sm font-bold flex items-center gap-2">
           <Shield className="h-4 w-4 text-emerald-500" />
           Approach vs Avoidance
+          <WidgetInfo description={WIDGET_DESCRIPTIONS["approach-score"]} />
           {analysis.approachStreak > 0 && (
             <Badge className="ml-auto bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[10px] gap-1">
               <Flame className="h-3 w-3" /> {analysis.approachStreak}-day streak

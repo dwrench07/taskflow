@@ -4,6 +4,8 @@ import { useMemo } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { type Task } from "@/lib/types";
 import { Flame } from "lucide-react";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 import { subDays, isSameDay, parseISO, format } from "date-fns";
 
 export function DashboardHabitHeatmap({ allTasks }: { allTasks: Task[] }) {
@@ -50,6 +52,7 @@ export function DashboardHabitHeatmap({ allTasks }: { allTasks: Task[] }) {
             <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-sm font-bold">
                     <Flame className="h-5 w-5 text-orange-500" /> Habit Consistency (Last 30 Days)
+                    <WidgetInfo description={WIDGET_DESCRIPTIONS["habit-heatmap"]} />
                 </CardTitle>
             </CardHeader>
             <CardContent>

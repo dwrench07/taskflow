@@ -1,11 +1,14 @@
-"use client";
+﻿"use client";
 
 import { useMemo } from "react";
 import { FocusSession, EmotionLabel, ProductivityScore } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getEmotionConfig } from "@/components/emotion-check-in";
+<WidgetInfo description={WIDGET_DESCRIPTIONS["emotion-productivity"]} />
 import { cn } from "@/lib/utils";
 import { Sparkles } from "lucide-react";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 interface EmotionProductivityProps {
   focusSessions: FocusSession[];

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { useMemo } from "react";
@@ -9,6 +9,8 @@ import { Priority, Task } from "@/lib/types";
 import { ScrollArea } from "./ui/scroll-area";
 import Link from "next/link";
 import { AlertTriangle, Clock } from "lucide-react";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 const priorityStyles: Record<Priority, string> = {
     urgent: "bg-red-600/30 text-red-500 border-red-600/50 shadow-[0_0_10px_rgba(220,38,38,0.3)] animate-pulse",
@@ -37,6 +39,7 @@ export function DashboardPointOfNoReturn({ allTasks }: { allTasks: Task[] }) {
                 <div className="flex items-center gap-2">
                     <AlertTriangle className="w-5 h-5 text-primary animate-pulse" />
                     <CardTitle className="text-lg sm:text-xl font-semibold text-primary">Point of No Return</CardTitle>
+                    <WidgetInfo description={WIDGET_DESCRIPTIONS["point-of-no-return"]} />
                 </div>
                 <CardDescription>Tasks approaching or past their Drop Dead Date.</CardDescription>
             </CardHeader>

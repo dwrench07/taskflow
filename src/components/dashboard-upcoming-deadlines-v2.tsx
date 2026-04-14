@@ -9,6 +9,8 @@ import { Priority, Task } from "@/lib/types";
 import { ScrollArea } from "./ui/scroll-area";
 import Link from "next/link";
 import { Calendar, Clock } from "lucide-react";
+import { WidgetInfo } from "@/components/widget-info";
+import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 const priorityStyles: Record<Priority, string> = {
   urgent: "bg-red-500/10 text-red-500 border-red-500/30",
@@ -43,6 +45,7 @@ export function DashboardUpcomingDeadlines({ allTasks }: { allTasks: Task[] }) {
                 <CardTitle className="text-primary flex items-center gap-2 text-sm font-bold">
                     <Calendar className="w-5 h-5" />
                     Upcoming Deadlines
+                    <WidgetInfo description={WIDGET_DESCRIPTIONS["upcoming-deadlines"]} />
                 </CardTitle>
                 <CardDescription className="text-xs">Final dates for completion</CardDescription>
             </CardHeader>
