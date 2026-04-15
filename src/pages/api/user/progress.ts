@@ -43,7 +43,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         } else {
           // Hydrate older progress objects with new phase 5 fields
           let needsUpdate = false;
-          if (!progress.lastActiveDate) { progress.lastActiveDate = new Date().toISOString(); needsUpdate = true; }
           if (!progress.seasonStartDate) { progress.seasonStartDate = new Date().toISOString(); needsUpdate = true; }
           if (!progress.unlockedRelics) { progress.unlockedRelics = []; needsUpdate = true; }
           if (!progress.legacyBadges) { progress.legacyBadges = []; needsUpdate = true; }
@@ -51,7 +50,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             progress.bonsai = { level: 1, experience: 0 };
             needsUpdate = true;
           }
-          
+
+          // Update lastActiveDate to today on every visit — frozen should only
+          // trigger when the user hasn't opened the app in 3+ days, not just
+          // because they haven't completed a task/focus session.
+          const todayStr = new Date().toISOString().split('T')[0];
+          const lastActiveDayStr = progress.lastActiveDate?.split('T')[0];
+          if (lastActiveDayStr !== todayStr) {
+            progress.lastActiveDate = new Date().toISOString();
+            needsUpdate = true;
+          }
+
           if (needsUpdate) {
             await upsertUserProgressAsync(progress);
           }
