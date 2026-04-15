@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { getAllTasks, updateTask, addTask, deleteTask } from "@/lib/data";
+import { getAllTasks, updateTask, addTask, deleteTask, saveUserProgress } from "@/lib/data";
 import { useRefresh } from "@/context/RefreshContext";
 import { type Task, type Priority, type HabitFrequency, DailyHabitStatus, DailyStatus } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -234,14 +234,13 @@ function HabitsPageContent() {
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
     const { refreshKey } = useRefresh();
-    const { celebrate, refreshGamification } = useGamification();
+    const { celebrate, refreshGamification, refreshProgress, userProgress } = useGamification();
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingHabit, setEditingHabit] = useState<Task | undefined>(undefined);
     const [selectedHabit, setSelectedHabit] = useState<Task | null>(null);
     const [newNote, setNewNote] = useState("");
     const isMobile = useIsMobile();
     const router = useRouter();
-    const { userProgress } = useGamification();
 
     const isFrozen = () => {
         if (!userProgress?.lastActiveDate) return false;
@@ -372,6 +371,17 @@ function HabitsPageContent() {
                 } else {
                     celebrate({ reason: 'habit-complete', title: 'Habit done!', description: habit.title, intensity: 'small' });
                 }
+
+                // Update lastActiveDate so the frozen check reflects this activity
+                if (userProgress) {
+                    import("@/lib/gamification").then(async ({ evaluateGamificationTriggers }) => {
+                        const tempProgress = JSON.parse(JSON.stringify(userProgress));
+                        evaluateGamificationTriggers({ type: 'task-completed', task: updatedHabit, allTasksOnLoad: [] }, tempProgress);
+                        await saveUserProgress(tempProgress);
+                        await refreshProgress();
+                    });
+                }
+
                 refreshGamification();
             }
         } catch (err: any) {

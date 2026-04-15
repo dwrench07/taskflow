@@ -57,7 +57,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { isSameDay, parseISO, startOfDay, format } from "date-fns";
+import { isSameDay, parseISO, startOfDay, format, differenceInDays } from "date-fns";
 import { getTodayEnergy } from "@/lib/energy";
 import { cn } from "@/lib/utils";
 import { useGamification } from "@/context/GamificationContext";
@@ -315,17 +315,15 @@ export default function DashboardPage() {
     // 3. High priority chores not in plan
     allChores.filter(c => (c.priority === 'urgent' || c.priority === 'high') && !addedIds.has(c.id)).forEach(c => {
       const doneToday = !!(c.lastCompleted && toDateStr(c.lastCompleted) === format(today, 'yyyy-MM-dd'));
-      if (!doneToday) {
-        items.push({
-          id: c.id,
-          title: c.title,
-          type: 'task',
-          isSubtask: false,
-          completed: false,
-          priority: c.priority,
-        });
-        addedIds.add(c.id);
-      }
+      items.push({
+        id: c.id,
+        title: c.title,
+        type: 'task',
+        isSubtask: false,
+        completed: doneToday,
+        priority: c.priority,
+      });
+      addedIds.add(c.id);
     });
 
     // Completed items sink to bottom
@@ -377,15 +375,11 @@ export default function DashboardPage() {
     if (c.frequency === 'daily') return true;
     if (c.frequency === 'weekly') {
       if (!c.lastCompleted) return true;
-      const last = parseISO(c.lastCompleted);
-      const diff = (new Date().getTime() - last.getTime()) / (1000 * 60 * 60 * 24);
-      return diff >= 7;
+      return differenceInDays(startOfDay(new Date()), startOfDay(parseISO(c.lastCompleted))) >= 7;
     }
     if (c.frequency === 'monthly') {
       if (!c.lastCompleted) return true;
-      const last = parseISO(c.lastCompleted);
-      const diff = (new Date().getTime() - last.getTime()) / (1000 * 60 * 60 * 24);
-      return diff >= 30;
+      return differenceInDays(startOfDay(new Date()), startOfDay(parseISO(c.lastCompleted))) >= 30;
     }
     return true;
   }), [allChores]);
@@ -630,23 +624,30 @@ export default function DashboardPage() {
                 <span className="flex items-center gap-2">
                   <CalendarCheck className="h-4 w-4" />
                   Today's Planned Items
-                  {dailyPlanIds.length > 0 && (
+                  {todayList.length > 0 && (
                     <span className="text-xs font-normal opacity-70">
-                      {todayList.filter(i => i.completed && dailyPlanIds.includes(i.id)).length}/{dailyPlanIds.length} done
+                      {todayList.filter(i => i.completed).length}/{todayList.length} done
                     </span>
                   )}
                 </span>
                 <div className="flex items-center gap-2">
-                  {dailyPlanIds.length === 0 && <span className="text-[10px] font-normal uppercase tracking-wider bg-muted-foreground/10 px-1.5 py-0.5 rounded">Empty</span>}
+                  {todayList.length === 0 && <span className="text-[10px] font-normal uppercase tracking-wider bg-muted-foreground/10 px-1.5 py-0.5 rounded">Empty</span>}
                   <ChevronDown className={cn("h-4 w-4 transition-transform", planOpen && "rotate-180")} />
                 </div>
               </button>
               {planOpen && (
                 <div className="px-2 py-2 space-y-0.5 bg-background/40">
-                  {dailyPlanIds.length > 0 ? (
+                  {todayList.length > 0 ? (
                     todayList
-                      .filter(item => dailyPlanIds.includes(item.id))
-                      .sort((a, b) => dailyPlanIds.indexOf(a.id) - dailyPlanIds.indexOf(b.id))
+                      .sort((a, b) => {
+                        const aIdx = dailyPlanIds.indexOf(a.id);
+                        const bIdx = dailyPlanIds.indexOf(b.id);
+                        // Planned items first (in plan order), auto-added items at end
+                        if (aIdx === -1 && bIdx === -1) return 0;
+                        if (aIdx === -1) return 1;
+                        if (bIdx === -1) return -1;
+                        return aIdx - bIdx;
+                      })
                       .map(item => <TaskItem key={item.id} item={item} />)
                   ) : (
                     <div className="py-6 px-4 text-center">
