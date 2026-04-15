@@ -204,7 +204,7 @@ export default function DashboardPage() {
   interface TodayItem {
     id: string;
     title: string;
-    type: 'frog' | 'task' | 'habit';
+    type: 'frog' | 'task' | 'habit' | 'chore';
     parentId?: string;
     isSubtask: boolean;
     completed: boolean;
@@ -290,7 +290,7 @@ export default function DashboardPage() {
         items.push({
           id: chore.id,
           title: chore.title,
-          type: 'task', // treat as task for list rendering
+          type: 'chore', // treat as chore for list rendering
           isSubtask: false,
           completed: !!(chore.lastCompleted && toDateStr(chore.lastCompleted) === format(today, 'yyyy-MM-dd')),
           priority: chore.priority,
@@ -318,7 +318,7 @@ export default function DashboardPage() {
       items.push({
         id: c.id,
         title: c.title,
-        type: 'task',
+        type: 'chore',
         isSubtask: false,
         completed: doneToday,
         priority: c.priority,
@@ -346,7 +346,7 @@ export default function DashboardPage() {
     const today = new Date();
     const isCompletedToday = chore.lastCompleted && toDateStr(chore.lastCompleted) === format(today, 'yyyy-MM-dd');
     const completing = !isCompletedToday;
-    const updated = { ...chore, lastCompleted: isCompletedToday ? undefined : today.toISOString() };
+    const updated = { ...chore, lastCompleted: isCompletedToday ? null : today.toISOString() } as any;
     setAllChores(prev => prev.map(c => c.id === chore.id ? updated : c));
     try {
       await updateChore(updated);
@@ -368,6 +368,7 @@ export default function DashboardPage() {
       }
     } catch {
       setAllChores(prev => prev.map(c => c.id === chore.id ? chore : c));
+      toast({ title: 'Failed to update chore', description: 'Please try again.', variant: 'destructive' });
     }
   };
 
@@ -390,6 +391,12 @@ export default function DashboardPage() {
   );
 
   const handleToggleTodayItem = async (item: TodayItem) => {
+    if (item.type === 'chore') {
+      const chore = allChores.find(c => c.id === item.id);
+      if (chore) await handleToggleChore(chore);
+      return;
+    }
+
     const today = new Date();
     const newCompleted = !item.completed;
 
