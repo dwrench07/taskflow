@@ -372,17 +372,14 @@ function HabitsPageContent() {
                     celebrate({ reason: 'habit-complete', title: 'Habit done!', description: habit.title, intensity: 'small' });
                 }
 
-                // Update lastActiveDate so the frozen check reflects this activity
+                // Update lastActiveDate so frozen clears immediately — must save before refreshing
                 if (userProgress) {
-                    import("@/lib/gamification").then(async ({ evaluateGamificationTriggers }) => {
-                        const tempProgress = JSON.parse(JSON.stringify(userProgress));
-                        evaluateGamificationTriggers({ type: 'task-completed', task: updatedHabit, allTasksOnLoad: [] }, tempProgress);
-                        await saveUserProgress(tempProgress);
-                        await refreshProgress();
-                    });
+                    const { evaluateGamificationTriggers } = await import("@/lib/gamification");
+                    const tempProgress = JSON.parse(JSON.stringify(userProgress));
+                    evaluateGamificationTriggers({ type: 'task-completed', task: updatedHabit, allTasksOnLoad: [] }, tempProgress);
+                    await saveUserProgress(tempProgress);
                 }
-
-                refreshGamification();
+                await refreshProgress();
             }
         } catch (err: any) {
             console.error('Failed to toggle completion:', err);
