@@ -66,6 +66,7 @@ import { BonsaiTree } from "@/components/BonsaiTree";
 import { DailyProgressMeter } from "@/components/DailyProgressMeter";
 
 import { DailyReviewModal } from "@/components/daily-review-modal";
+import { DayCompleteRecap } from "@/components/day-complete-recap";
 import { MorningLaunch } from "@/components/morning-launch";
 import { EnergyCheckIn } from "@/components/energy-check-in";
 import { scheduleNotifications } from "@/lib/notifications";
@@ -94,8 +95,9 @@ export default function DashboardPage() {
   const [showMorningLaunch, setShowMorningLaunch] = useState(false);
   const SHOW_ZEN_GARDEN = false; // Toggle for Bonsai Tree feature
 
-  const { userProgress } = useGamification();
+  const { userProgress, celebrate, dailyWins, level } = useGamification();
   const isZenMode = userProgress?.activeBuffs.some(b => b.type === 'zenMode');
+  const [showDayComplete, setShowDayComplete] = useState(false);
 
   useEffect(() => {
     // Show morning launch if before 10:30 AM and not dismissed this session
@@ -390,6 +392,18 @@ export default function DashboardPage() {
     [todayChores]
   );
 
+  // Day-complete recap: show once when all daily items are done
+  const todayKey = `day-complete-shown-${format(new Date(), 'yyyy-MM-dd')}`;
+  useEffect(() => {
+    if (todayList.length > 0 && todayList.every(i => i.completed)) {
+      if (!localStorage.getItem(todayKey)) {
+        localStorage.setItem(todayKey, '1');
+        celebrate({ reason: 'all-daily-done', title: 'Perfect day!', intensity: 'big' });
+        setShowDayComplete(true);
+      }
+    }
+  }, [todayList, todayKey, celebrate]);
+
   const handleToggleTodayItem = async (item: TodayItem) => {
     if (item.type === 'chore') {
       const chore = allChores.find(c => c.id === item.id);
@@ -483,6 +497,21 @@ export default function DashboardPage() {
     <div className="flex flex-col gap-4 w-full max-w-[1600px] mx-auto px-4 sm:px-8 py-2">
       <DailyReviewModal />
       <EnergyCheckIn />
+      <DayCompleteRecap
+        open={showDayComplete}
+        onClose={() => setShowDayComplete(false)}
+        tasksCompleted={stats.topTasksDoneToday + stats.subTasksDoneToday}
+        tasksTotal={stats.topTasksTotalToday + stats.subTasksTotalToday}
+        choresCompleted={choresDoneToday}
+        choresTotal={todayChores.length}
+        habitsCompleted={stats.habitsDoneToday}
+        habitsTotal={stats.habitsTotal}
+        frogsDone={stats.frogsDoneToday}
+        focusMinutes={stats.focusMinutes}
+        streaksActive={stats.habitsWithStreak}
+        xpEarned={dailyWins.xpEarned}
+        level={level.level}
+      />
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
         <div className="space-y-1">
           <div className="flex items-center gap-3">

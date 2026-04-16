@@ -45,24 +45,13 @@ export function DailyProgressMeter({ totalItems, completedItems }: DailyProgress
         ? "border-emerald-500/40 bg-emerald-500/5"
         : "border-border/40 bg-muted/20"
     )}>
-      {/* Celebration burst */}
+      {/* Celebration shimmer */}
       {celebrating && (
         <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-xl">
-          {[...Array(12)].map((_, i) => (
-            <span
-              key={i}
-              className="absolute text-base animate-bounce"
-              style={{
-                left: `${8 + (i % 6) * 16}%`,
-                top: `${i < 6 ? 10 : 60}%`,
-                animationDelay: `${i * 120}ms`,
-                animationDuration: "0.8s",
-                opacity: 0.85,
-              }}
-            >
-              {["🎉", "⭐", "✨", "🏆", "🔥", "🎊"][i % 6]}
-            </span>
-          ))}
+          <div
+            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent animate-[shimmer_1.5s_ease-in-out_2]"
+            style={{ backgroundSize: '200% 100%' }}
+          />
         </div>
       )}
 
