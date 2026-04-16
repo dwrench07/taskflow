@@ -324,6 +324,51 @@ export function calculateDailyWins(allTasks: Task[], focusSessions: FocusSession
   };
 }
 
+// === PERSONAL BESTS ===
+
+export interface PersonalBests {
+  maxTasksInDay: number;
+  maxFocusMinutes: number;
+  maxFrogsInDay: number;
+  longestStreak: number;
+  maxHabitsInDay: number;
+}
+
+const DEFAULT_BESTS: PersonalBests = { maxTasksInDay: 0, maxFocusMinutes: 0, maxFrogsInDay: 0, longestStreak: 0, maxHabitsInDay: 0 };
+
+export function updatePersonalBests(
+  current: PersonalBests | undefined,
+  dailyWins: DailyWins,
+  longestCurrentStreak: number
+): { bests: PersonalBests; newRecords: string[] } {
+  const prev = current || DEFAULT_BESTS;
+  const bests = { ...prev };
+  const newRecords: string[] = [];
+
+  if (dailyWins.tasksCompleted > prev.maxTasksInDay) {
+    bests.maxTasksInDay = dailyWins.tasksCompleted;
+    newRecords.push('maxTasksInDay');
+  }
+  if (dailyWins.focusMinutes > prev.maxFocusMinutes) {
+    bests.maxFocusMinutes = dailyWins.focusMinutes;
+    newRecords.push('maxFocusMinutes');
+  }
+  if (dailyWins.frogsEaten > prev.maxFrogsInDay) {
+    bests.maxFrogsInDay = dailyWins.frogsEaten;
+    newRecords.push('maxFrogsInDay');
+  }
+  if (longestCurrentStreak > prev.longestStreak) {
+    bests.longestStreak = longestCurrentStreak;
+    newRecords.push('longestStreak');
+  }
+  if (dailyWins.habitsCompleted > prev.maxHabitsInDay) {
+    bests.maxHabitsInDay = dailyWins.habitsCompleted;
+    newRecords.push('maxHabitsInDay');
+  }
+
+  return { bests, newRecords };
+}
+
 // === CELEBRATION TRIGGERS ===
 
 export type CelebrationReason =

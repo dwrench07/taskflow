@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { AlertCircle, Play, Info, Flame, Ghost, AlertTriangle, HelpCircle, Maximize2, Coffee, Clock, ChevronDown, Lightbulb } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { getFrogDecayLevel } from "@/lib/habits";
 import { PushReason } from "@/lib/types";
 
 const PUSH_REASON_LABELS: Record<PushReason, { label: string; icon: React.ReactNode }> = {
@@ -112,7 +113,10 @@ export default function FrogsPage() {
             ) : (
                 <div className="grid gap-8">
                     {/* The Biggest Frog */}
-                    <Card className="border-2 border-primary bg-card shadow-lg overflow-hidden relative">
+                    <Card className={cn(
+                        "border-2 bg-card shadow-lg overflow-hidden relative",
+                        getFrogDecayLevel(frogs[0]) === 'rotting' ? "border-red-500" : getFrogDecayLevel(frogs[0]) === 'aging' ? "border-amber-500" : "border-primary"
+                    )}>
                         <div className="absolute top-0 right-0 p-4 opacity-10">
                             <Flame className="h-24 w-24 text-primary" />
                         </div>
@@ -168,7 +172,10 @@ export default function FrogsPage() {
                             <h3 className="text-xl font-bold px-1">Other Frogs in Waiting</h3>
                             <div className="grid gap-4 md:grid-cols-2">
                                 {frogs.slice(1).map(frog => (
-                                    <Card key={frog.id} className="bg-card border border-border hover:border-primary transition-all hover:shadow-md">
+                                    <Card key={frog.id} className={cn(
+                                        "bg-card border transition-all hover:shadow-md",
+                                        getFrogDecayLevel(frog) === 'rotting' ? "border-red-500/50 bg-red-500/5" : getFrogDecayLevel(frog) === 'aging' ? "border-amber-500/50 bg-amber-500/5" : "border-border hover:border-primary"
+                                    )}>
                                         <CardHeader className="pb-3">
                                             <div className="flex justify-between items-start mb-1">
                                                 <Badge variant="secondary" className="text-[10px] uppercase font-bold tracking-wider">

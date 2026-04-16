@@ -5,7 +5,7 @@ import { Chore, Task } from "@/lib/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Sunrise, Play, CheckCircle2, Flame, ChevronRight, ShoppingBag } from "lucide-react";
+import { Sunrise, Play, CheckCircle2, Flame, ChevronRight, ShoppingBag, Target } from "lucide-react";
 import { isSameDay, parseISO, startOfToday } from "date-fns";
 import { cn } from "@/lib/utils";
 import { EnergyIndicator } from "@/components/energy-check-in";
@@ -92,6 +92,27 @@ export function MorningLaunch({ allTasks, allChores = [], onDismiss }: MorningLa
           }
         </p>
         <EnergyIndicator />
+
+        {/* Daily challenge */}
+        {totalItems > 0 && (() => {
+          const challenges = [
+            { text: "Complete a task before 10 AM", condition: topTasks.length > 0 },
+            { text: "Eat a frog today", condition: allTasks.some(t => t.isFrog && t.status !== 'done') },
+            { text: "Hit 30+ minutes of focused work", condition: true },
+            { text: "Complete all your habits today", condition: habitsDue.length > 0 },
+            { text: "Zero pushes today", condition: true },
+            { text: "Knock out your hardest task first", condition: topTasks.some(t => t.priority === 'urgent' || t.priority === 'high') },
+          ].filter(c => c.condition);
+          // Date-based seed so challenge is stable throughout the day
+          const seed = new Date().toDateString().split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+          const challenge = challenges[seed % challenges.length];
+          return challenge ? (
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-xs font-medium text-primary">
+              <Target className="h-3 w-3" />
+              {challenge.text}
+            </div>
+          ) : null;
+        })()}
       </div>
 
       {/* Warmup task — the first thing to do */}

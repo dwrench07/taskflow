@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { Task, FocusSession, UserProgress } from "@/lib/types";
-import { getAllTasks, getFocusSessions, getUserProgress } from "@/lib/data";
+import { getAllTasks, getFocusSessions, getUserProgress, saveUserProgress } from "@/lib/data";
 import {
   calculateTotalXP,
   calculateTodayXP,
@@ -13,7 +13,9 @@ import {
   type CelebrationReason,
   type EarnedBadge,
   type DailyWins,
+  updatePersonalBests,
 } from "@/lib/gamification";
+import { calculateStreak } from "@/lib/habits";
 import { playSound } from "@/lib/sounds";
 import { CelebrationOverlay } from "@/components/celebration-overlay";
 import { useAuth } from "@/context/AuthContext";
@@ -77,6 +79,19 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
       setAllTasks(tasks || []);
       setFocusSessions(sessions || []);
       await refreshProgress();
+
+      // Update personal bests
+      const progress = await getUserProgress();
+      if (progress) {
+        const wins = calculateDailyWins(tasks || [], sessions || []);
+        const habits = (tasks || []).filter(t => t.isHabit);
+        const longestStreak = habits.reduce((max, h) => Math.max(max, calculateStreak(h)), 0);
+        const { bests, newRecords } = updatePersonalBests(progress.personalBests, wins, longestStreak);
+        if (newRecords.length > 0) {
+          await saveUserProgress({ ...progress, personalBests: bests });
+          setUserProgress({ ...progress, personalBests: bests });
+        }
+      }
     } catch {
       // Silent fail — gamification is non-critical
     }

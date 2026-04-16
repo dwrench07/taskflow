@@ -16,7 +16,7 @@ import { useRefresh } from "@/context/RefreshContext";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ChoresPage() {
-  const { refreshKey } = useRefresh();
+  const { refreshKey, triggerRefresh } = useRefresh();
   const [chores, setChores] = useState<Chore[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -80,6 +80,7 @@ export default function ChoresPage() {
       setChores(chores.map(c => c.id === chore.id ? { ...c, completedOnce: true, lastCompleted: new Date().toISOString() } : c));
       try {
         await updateChore({ ...chore, completedOnce: true, lastCompleted: new Date().toISOString() });
+        triggerRefresh();
       } catch {
         setChores(chores.map(c => c.id === chore.id ? chore : c));
       }
@@ -116,6 +117,7 @@ export default function ChoresPage() {
           });
         }
       }
+      triggerRefresh();
     } catch (error) {
       console.error("Failed to toggle chore:", error);
       setChores(chores.map(c => c.id === chore.id ? chore : c));

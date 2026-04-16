@@ -31,7 +31,7 @@ import * as React from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { HabitAnalyticsChart } from "@/components/habit-analytics-chart";
-import { calculateStreak } from "@/lib/habits";
+import { calculateStreak, getStreakTier } from "@/lib/habits";
 import { useGamification } from "@/context/GamificationContext";
 
 const habitFormSchema = z.object({
@@ -575,6 +575,12 @@ function HabitsPageContent() {
                                                     <Flame className={cn("h-3 w-3 sm:h-4 sm:w-4", streak > 0 ? "text-orange-300" : "text-muted-foreground", isAtRisk(habit) && "text-white animate-bounce")} />
                                                     {isFrozen() ? "FROZEN" : `${streak} Day${streak !== 1 ? 's' : ''}`}
                                                 </Badge>
+                                                {streak > 0 && (() => {
+                                                    const tier = getStreakTier(streak);
+                                                    return tier.name ? (
+                                                        <span className={cn("text-[9px] sm:text-[10px] font-bold uppercase tracking-wider", tier.color)}>{tier.name}</span>
+                                                    ) : null;
+                                                })()}
                                                 <AlertDialog>
                                                     <AlertDialogTrigger asChild>
                                                         <Button variant="ghost" size="icon" className="h-5 w-5 sm:h-8 sm:w-8" onClick={e => e.stopPropagation()}>

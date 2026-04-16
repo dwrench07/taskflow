@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Sparkles, CheckCircle2, Flame, Trophy, Brain, Zap, Layers, PenLine, Send } from "lucide-react";
 import { WidgetInfo } from "@/components/widget-info";
 import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
-import { getLevel } from "@/lib/gamification";
+import { getLevel, updatePersonalBests } from "@/lib/gamification";
 import { Progress } from "@/components/ui/progress";
 import { useState, useEffect, useRef } from "react";
 import { format } from "date-fns";
@@ -32,7 +32,7 @@ function getTodayKey() {
 }
 
 export function DashboardDailyWins() {
-  const { dailyWins, todayXP, totalXP, level } = useGamification();
+  const { dailyWins, todayXP, totalXP, level, userProgress } = useGamification();
   const [winText, setWinText] = useState("");
   const [saved, setSaved] = useState(false);
   const [existingEntry, setExistingEntry] = useState<string | null>(null);
@@ -111,6 +111,41 @@ export function DashboardDailyWins() {
             ))}
           </div>
         )}
+
+        {/* Personal Bests */}
+        {(() => {
+          const bests = userProgress?.personalBests;
+          if (!bests) return null;
+          const { newRecords } = updatePersonalBests(bests, dailyWins, 0);
+          const records = [
+            { key: 'maxTasksInDay', label: 'Tasks in a day', value: bests.maxTasksInDay, isNew: newRecords.includes('maxTasksInDay') },
+            { key: 'maxFocusMinutes', label: 'Focus minutes', value: bests.maxFocusMinutes, isNew: newRecords.includes('maxFocusMinutes') },
+            { key: 'maxFrogsInDay', label: 'Frogs in a day', value: bests.maxFrogsInDay, isNew: newRecords.includes('maxFrogsInDay') },
+            { key: 'longestStreak', label: 'Longest streak', value: bests.longestStreak, isNew: newRecords.includes('longestStreak') },
+          ].filter(r => r.value > 0);
+
+          if (records.length === 0) return null;
+
+          return (
+            <div className="pt-3 border-t border-border/40 space-y-2">
+              <div className="flex items-center gap-1.5">
+                <Trophy className="h-3.5 w-3.5 text-amber-400" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Personal Bests</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {records.map(r => (
+                  <div key={r.key} className={cn("flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs", r.isNew ? "bg-primary/10 border border-primary/20" : "bg-muted/20")}>
+                    <span className="text-muted-foreground">{r.label}</span>
+                    <span className="font-black flex items-center gap-1">
+                      {r.value}
+                      {r.isNew && <Badge variant="default" className="text-[8px] px-1 py-0 h-3.5">NEW</Badge>}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Daily Win Log — identity-affirming reflection */}
         <div className="pt-3 border-t border-border/40 space-y-2">

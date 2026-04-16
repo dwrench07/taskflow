@@ -34,7 +34,7 @@ import { DashboardPillarBalance } from "@/components/dashboard-pillar-balance";
 import { DashboardOverdueRisk } from "@/components/dashboard-overdue-risk";
 import { SummaryCard } from "@/components/dashboard-summary-card";
 import { PNRDetail } from "@/components/dashboard-summary-pnr";
-import { calculateStreak } from "@/lib/habits";
+import { calculateStreak, isHabitAtRisk, getFrogDecayLevel } from "@/lib/habits";
 import { HabitDetail } from "@/components/dashboard-summary-habits";
 import { FocusDetail } from "@/components/dashboard-summary-focus";
 import { TaskDetail } from "@/components/dashboard-summary-tasks";
@@ -53,7 +53,7 @@ import {
   ClipboardList,
   Zap,
   AlertTriangle, ChevronRight, CheckCircle2, Layers, Repeat, CalendarCheck,
-  ChevronDown, BatteryLow, BatteryMedium, BatteryFull
+  ChevronDown, BatteryLow, BatteryMedium, BatteryFull, Shuffle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -98,6 +98,7 @@ export default function DashboardPage() {
   const { userProgress, celebrate, dailyWins, level } = useGamification();
   const isZenMode = userProgress?.activeBuffs.some(b => b.type === 'zenMode');
   const [showDayComplete, setShowDayComplete] = useState(false);
+  const [highlightedItemId, setHighlightedItemId] = useState<string | null>(null);
 
   useEffect(() => {
     // Show morning launch if before 10:30 AM and not dismissed this session
@@ -586,21 +587,33 @@ export default function DashboardPage() {
         const incompleteTasks = todayList.filter(i => !i.completed && i.type !== 'habit' && !dailyPlanIds.includes(i.id));
         const completedTasks = todayList.filter(i => i.completed && i.type !== 'habit' && !dailyPlanIds.includes(i.id));
 
-        const TaskItem = ({ item }: { item: typeof todayList[0] }) => (
-          <div
-            className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors cursor-pointer",
-              item.completed ? "opacity-40" : "hover:bg-muted/50"
-            )}
-            onClick={() => handleToggleTodayItem(item)}
-          >
-            <Checkbox checked={item.completed} onCheckedChange={() => { }} className="shrink-0" />
-            <span className={cn("flex-1 text-sm font-medium leading-snug truncate", item.completed && "line-through")}>
-              {item.title}
-            </span>
-            {item.type === 'frog' && <span className="text-sm leading-none shrink-0">🐸</span>}
-          </div>
-        );
+        const TaskItem = ({ item }: { item: typeof todayList[0] }) => {
+          const frogDecay = item.type === 'frog' && !item.completed
+            ? getFrogDecayLevel(allTasks.find(t => t.id === item.id) || {} as Task)
+            : 'fresh';
+          const isHighlighted = highlightedItemId === item.id;
+          return (
+            <div
+              id={`todo-item-${item.id}`}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer",
+                item.completed ? "opacity-40" : "hover:bg-muted/50",
+                frogDecay === 'aging' && "border border-amber-500/30 bg-amber-500/5",
+                frogDecay === 'rotting' && "border border-red-500/30 bg-red-500/5",
+                isHighlighted && "ring-2 ring-primary bg-primary/10 scale-[1.02]"
+              )}
+              onClick={() => handleToggleTodayItem(item)}
+            >
+              <Checkbox checked={item.completed} onCheckedChange={() => { }} className="shrink-0" />
+              <span className={cn("flex-1 text-sm font-medium leading-snug truncate", item.completed && "line-through")}>
+                {item.title}
+              </span>
+              {item.type === 'frog' && (
+                <span className={cn("text-sm leading-none shrink-0", frogDecay === 'rotting' && "grayscale opacity-60")}>🐸</span>
+              )}
+            </div>
+          );
+        };
 
         return (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-400 space-y-5">
@@ -673,7 +686,7 @@ export default function DashboardPage() {
               </button>
               {planOpen && (
                 <div className="px-2 py-2 space-y-0.5 bg-background/40">
-                  {todayList.length > 0 ? (
+                  {todayList.length > 0 && (
                     todayList
                       .sort((a, b) => {
                         const aIdx = dailyPlanIds.indexOf(a.id);
@@ -685,7 +698,26 @@ export default function DashboardPage() {
                         return aIdx - bIdx;
                       })
                       .map(item => <TaskItem key={item.id} item={item} />)
-                  ) : (
+                  )}
+                  {todayList.filter(i => !i.completed).length > 1 && (
+                    <div className="px-3 pt-1 pb-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary gap-1.5"
+                        onClick={() => {
+                          const incomplete = todayList.filter(i => !i.completed);
+                          const pick = incomplete[Math.floor(Math.random() * incomplete.length)];
+                          setHighlightedItemId(pick.id);
+                          document.getElementById(`todo-item-${pick.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                          setTimeout(() => setHighlightedItemId(null), 3000);
+                        }}
+                      >
+                        <Shuffle className="h-3 w-3" /> Pick for me
+                      </Button>
+                    </div>
+                  )}
+                  {todayList.length === 0 && (
                     <div className="py-6 px-4 text-center">
                       <p className="text-xs text-muted-foreground mb-3 font-medium">Your plan is empty for today.</p>
                       <Button variant="outline" size="sm" asChild className="h-8 text-[10px] font-bold uppercase tracking-widest">
@@ -708,6 +740,10 @@ export default function DashboardPage() {
                     <Repeat className="h-4 w-4 text-green-400" />
                     Habits
                     <span className="text-xs text-muted-foreground font-normal">{habitsDone}/{habits.length} done</span>
+                    {(() => {
+                      const atRisk = habits.filter(h => isHabitAtRisk(h)).length;
+                      return atRisk > 0 ? <span className="text-[10px] text-orange-400 font-bold">{atRisk} at risk</span> : null;
+                    })()}
                   </span>
                   <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", habitsOpen && "rotate-180")} />
                 </button>
@@ -715,10 +751,15 @@ export default function DashboardPage() {
                   <div className="px-2 py-2 space-y-0.5">
                     {habits.map(habit => {
                       const doneToday = habit.completionHistory?.some(d => toDateStr(d) === todayStr2) ?? false;
+                      const atRisk = !doneToday && isHabitAtRisk(habit);
                       return (
                         <div
                           key={habit.id}
-                          className={cn("flex items-center gap-3 px-3 py-2 rounded-lg transition-colors cursor-pointer", doneToday ? "opacity-40" : "hover:bg-muted/50")}
+                          className={cn(
+                            "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors cursor-pointer",
+                            doneToday ? "opacity-40" : "hover:bg-muted/50",
+                            atRisk && "border border-orange-500/30 bg-orange-500/5"
+                          )}
                           onClick={() => handleToggleTodayItem({ id: habit.id, title: habit.title, type: 'habit', isSubtask: false, completed: doneToday, priority: habit.priority })}
                         >
                           <Checkbox
@@ -727,6 +768,7 @@ export default function DashboardPage() {
                             className="shrink-0"
                           />
                           <span className={cn("flex-1 text-sm truncate", doneToday && "line-through")}>{habit.title}</span>
+                          {atRisk && <Flame className="h-3 w-3 text-orange-400 shrink-0" />}
                         </div>
                       );
                     })}

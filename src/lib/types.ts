@@ -292,6 +292,15 @@ export interface UserProgress {
   dailyWinStreak?: number;
   windDownStreak?: number;       // consecutive nights Wind Down completed before 11:30 PM
   lastWindDownDate?: string;     // ISO date string of last qualifying Wind Down completion
+
+  // Personal bests
+  personalBests?: {
+    maxTasksInDay: number;
+    maxFocusMinutes: number;
+    maxFrogsInDay: number;
+    longestStreak: number;
+    maxHabitsInDay: number;
+  };
 }
 
 export type GameAction = 

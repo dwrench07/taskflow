@@ -151,6 +151,18 @@ export function DashboardWeeklyReport({ allTasks, focusSessions }: WeeklyReportP
             <p className="text-[10px] text-muted-foreground mt-0.5">Pushes</p>
           </div>
         </div>
+
+        {/* Past-you narrative */}
+        <div className="mt-3 pt-3 border-t border-border/30">
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {report.taskTrend > 0
+              ? `You completed ${report.taskTrend} more task${report.taskTrend !== 1 ? 's' : ''} than last week${report.focusTrend > 0 ? ` with ${Math.abs(report.focusTrend)}h more focus time` : ''}. Momentum is building.`
+              : report.taskTrend < 0
+              ? `Lighter week — ${Math.abs(report.taskTrend)} fewer task${Math.abs(report.taskTrend) !== 1 ? 's' : ''} than last. That's okay, consistency matters more than peaks.`
+              : `Same pace as last week. Steady.`
+            }
+          </p>
+        </div>
       </CardContent>
     </Card>
   );

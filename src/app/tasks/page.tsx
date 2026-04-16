@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { getFrogDecayLevel } from "@/lib/habits";
 import { ListTodo, FileText, Calendar as CalendarIcon, Clock, PlusCircle, Edit, Trash2, Tag, ChevronDown, ClipboardList, ArrowUpDown, ArrowLeft, Search, XCircle, Save, Loader2, Timer, Check, ArrowUp, ArrowDown, Lock, Target, Play, AlarmClock, CheckCircle2, Sparkles, Shield } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
@@ -122,7 +123,15 @@ function TaskListItem({ task, allTasks, goals, onSelect, isSelected }: { task: T
       )}
       <div className="flex justify-between items-start gap-2 w-full">
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          {task.isFrog && <span className="text-lg animate-bounce duration-1000" title="Eat this Frog!">🐸</span>}
+          {task.isFrog && (() => {
+            const decay = task.status !== 'done' ? getFrogDecayLevel(task) : 'fresh';
+            return (
+              <span className={cn(
+                "text-lg animate-bounce duration-1000",
+                decay === 'rotting' && "grayscale opacity-60",
+              )} title={decay === 'rotting' ? 'This frog has been sitting too long!' : decay === 'aging' ? 'This frog is getting old...' : 'Eat this Frog!'}>🐸</span>
+            );
+          })()}
           <p className="font-semibold line-clamp-2 text-left break-words leading-snug">{task.title}</p>
         </div>
         <Badge variant="outline" className={cn("capitalize flex-shrink-0 mt-0.5", priorityStyles[task.priority])}>
@@ -293,6 +302,7 @@ function TasksPageContent() {
   const { refreshKey } = useRefresh();
   const [sortOption, setSortOption] = useState<SortOption>("priority");
   const [searchQuery, setSearchQuery] = useState("");
+  const [frogReflection, setFrogReflection] = useState<{ taskTitle: string; show: boolean }>({ taskTitle: '', show: false });
   const [statusFilter, setStatusFilter] = useState<Status[]>([]);
   const [priorityFilter, setPriorityFilter] = useState<Priority[]>([]);
   const [energyFilter, setEnergyFilter] = useState<string[]>([]);
@@ -658,6 +668,8 @@ function TasksPageContent() {
 
         if (isFrog) {
           celebrate({ reason: 'frog-eaten', title: 'Frog eaten!', description: selectedTask.title, intensity: 'big' });
+          setFrogReflection({ taskTitle: selectedTask.title, show: true });
+          setTimeout(() => setFrogReflection(prev => ({ ...prev, show: false })), 8000);
         } else {
           celebrate({ reason: 'task-complete', title: 'Task done!', description: selectedTask.title, intensity: 'medium' });
         }
@@ -1297,6 +1309,30 @@ function TasksPageContent() {
           </SheetContent>
         </Sheet>
       </div>
+      {/* Post-frog reflection */}
+      {frogReflection.show && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-fade-in bg-card border border-border rounded-xl shadow-xl px-5 py-4 max-w-sm w-[90vw]">
+          <p className="text-sm font-bold mb-2">How hard was that really?</p>
+          <p className="text-xs text-muted-foreground mb-3">{frogReflection.taskTitle}</p>
+          <div className="flex gap-2">
+            {[
+              { label: 'Easier than expected', color: 'text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10' },
+              { label: 'About right', color: 'text-blue-400 border-blue-500/30 hover:bg-blue-500/10' },
+              { label: 'That was tough', color: 'text-orange-400 border-orange-500/30 hover:bg-orange-500/10' },
+            ].map(opt => (
+              <Button
+                key={opt.label}
+                variant="outline"
+                size="sm"
+                className={cn("flex-1 text-[10px] font-bold h-8", opt.color)}
+                onClick={() => setFrogReflection({ taskTitle: '', show: false })}
+              >
+                {opt.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
     </div >
   );
 }

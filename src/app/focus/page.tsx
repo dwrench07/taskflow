@@ -416,8 +416,10 @@ export default function FocusPage() {
                 postEmotion: postEmotion || undefined,
             });
 
-            toast({ title: "Session Saved!", description: "Great job focusing!" });
-            celebrate({ reason: 'focus-complete', title: 'Focus session complete!', intensity: elapsedTime >= 30 * 60 ? 'medium' : 'small' });
+            const isDeepWork = elapsedTime >= 45 * 60;
+            const isSolid = elapsedTime >= 30 * 60;
+            toast({ title: isDeepWork ? "Deep work session complete!" : isSolid ? "Solid focus session!" : "Session Saved!", description: "Great job focusing!" });
+            celebrate({ reason: 'focus-complete', title: isDeepWork ? 'Deep work complete!' : 'Focus session complete!', intensity: isDeepWork ? 'big' : isSolid ? 'medium' : 'small' });
 
             // Gamification: evaluate focus-completed triggers
             if (userProgress) {

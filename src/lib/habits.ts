@@ -3,6 +3,7 @@ import {
   differenceInCalendarDays,
   differenceInCalendarMonths,
   differenceInCalendarWeeks,
+  differenceInDays,
   endOfMonth,
   endOfWeek,
   isToday,
@@ -81,4 +82,31 @@ export function calculateStreak(habit: Task): number {
   }
   
   return streak;
+}
+
+export function getStreakTier(streak: number): { name: string; color: string } {
+  if (streak >= 180) return { name: 'Mastered', color: 'text-amber-400' };
+  if (streak >= 66) return { name: 'Established', color: 'text-purple-400' };
+  if (streak >= 21) return { name: 'Growing', color: 'text-blue-400' };
+  if (streak >= 7) return { name: 'Rooted', color: 'text-green-400' };
+  if (streak >= 1) return { name: 'Seedling', color: 'text-emerald-400' };
+  return { name: '', color: '' };
+}
+
+export function getFrogDecayLevel(task: Task): 'fresh' | 'aging' | 'rotting' {
+  const ref = task.doDate || task.startDate;
+  if (!ref) return 'fresh';
+  const age = differenceInDays(startOfDay(new Date()), startOfDay(parseISO(ref)));
+  if (age >= 7) return 'rotting';
+  if (age >= 3) return 'aging';
+  return 'fresh';
+}
+
+export function isHabitAtRisk(habit: Task): boolean {
+  const hour = new Date().getHours();
+  if (hour < 18) return false; // Only after 6 PM
+  const todayStr = new Date().toISOString().substring(0, 10);
+  const toDateStr = (d: string) => d.length === 10 ? d : d.substring(0, 10);
+  const doneToday = habit.completionHistory?.some(d => toDateStr(d) === todayStr) ?? false;
+  return !doneToday && calculateStreak(habit) > 0; // Only at-risk if there's a streak to lose
 }
