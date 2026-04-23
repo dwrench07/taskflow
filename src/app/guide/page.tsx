@@ -83,6 +83,8 @@ const WORKFLOWS: Workflow[] = [
       'Complete your first task before 9:30 AM to trigger the Zen Mode buff (+50 XP, 3-hour boost).',
       'The Energy Check-In also shows you patterns: "Your peak energy is usually around 10 AM." Use this intel.',
       'If a task keeps getting pushed, the system tracks it. After 3 pushes, it automatically becomes a Frog.',
+      'The Morning Launch shows a random daily challenge each day (e.g., "Eat a frog today" or "Zero pushes today"). It\'s a lightweight micro-goal that adds novelty to your morning routine.',
+      'Can\'t decide what to work on? Hit the "Pick for me" button in your daily plan — it randomly selects an incomplete item and highlights it. Great for decision fatigue on low-energy days.',
     ],
   },
   {
@@ -137,6 +139,7 @@ const WORKFLOWS: Workflow[] = [
       'After a session, visit the Jots page to triage: convert todos to tasks, promote ideas to Deep Store, follow up on worries.',
       'Audio beeps play at 50%, 80%, and 100% of your timer — one beep at halfway, two at 80%, three at completion.',
       'The strategy field lets you write your approach before starting. "Eat the Frog" is auto-set when launched from the Frogs page.',
+      'Sessions of 45+ minutes are recognized as "Deep Work" — they trigger the biggest celebration, earn more XP, and are tracked separately. If you can push past the 30-minute mark to 45, the reward jumps significantly.',
     ],
   },
   {
@@ -151,6 +154,7 @@ const WORKFLOWS: Workflow[] = [
       { step: 'Check Off Daily', detail: 'Use the Dashboard\'s Habits dropdown to mark completion. Each check records the date in completion history and updates the streak counter.', tip: 'The best time to check habits is as you do them throughout the day, not in a batch at night.' },
       { step: 'Track Daily Status', detail: 'On the Habit detail page, you can log a status beyond just "done": Changes Observed, No Changes, or Negative. This gives qualitative texture to your streak.', tip: 'Use this for habits where the result isn\'t binary (e.g., meditation — did you feel calmer?).' },
       { step: 'Monitor the Heatmap', detail: 'The Habits page shows a GitHub-style heatmap of your completion history. Green = active, gaps = missed days.', tip: 'Look for weekly patterns. If you always miss Sundays, consider making it a 6-day habit instead of fighting it.' },
+      { step: 'Earn Mastery Tiers', detail: 'As your streak grows, your habit earns a visible tier: Seedling (1-6 days), Rooted (7-20), Growing (21-65), Established (66-179), Mastered (180+). Tiers appear on your habit cards next to the streak count.', tip: 'Tiers give your brain a rank to protect. Losing a "Growing" streak feels worse than losing a 22-day number — that\'s by design. The label makes the investment tangible.' },
     ],
     avoid: [
       'Creating too many habits at once — habit fatigue is real. 3-5 active habits is the sweet spot.',
@@ -162,6 +166,7 @@ const WORKFLOWS: Workflow[] = [
       'Habits appear in your Daily Plan automatically. They\'re treated as committed work, not optional.',
       'You can launch a Focus session directly from a habit — useful for habits like "Read for 30 minutes" or "Practice piano."',
       'The Habit Resilience dashboard widget shows which habits have the strongest recovery after breaks.',
+      'After 6 PM, any habit with an active streak that hasn\'t been done today shows an orange "at risk" indicator on the Dashboard — a gentle cortisol nudge to protect your streak before bed.',
     ],
   },
   {
@@ -197,15 +202,18 @@ const WORKFLOWS: Workflow[] = [
       { step: 'Frogs Are Auto-Identified', detail: 'A task becomes a Frog if: (a) you manually mark it as a Frog, (b) it has been pushed 3+ times, or (c) it has Urgent priority AND High energy level.', tip: 'You don\'t have to remember to flag them. The system catches avoidance patterns automatically.' },
       { step: 'See the Avoidance Pattern', detail: 'Each Frog card shows its push count, the top push reason (e.g., "Pushed as Too Scary 3/4 times"), and a tailored intervention.', tip: 'Read the intervention seriously. "Start with just 2 minutes" for Too Scary tasks actually works — starting is the hardest part.' },
       { step: 'Eat It', detail: 'Click "Eat This Frog" to immediately launch a Focus session (Pomodoro mode) with the "Eat the Frog" strategy pre-loaded.', tip: 'Eating Frogs early triggers Zen Mode if done before 9:30 AM, and earns the Frog Eater badge (1/5/25 frogs).' },
+      { step: 'Watch for Decay', detail: 'Frogs that sit undone for 3+ days turn amber. After 7+ days, they turn red. This visual rot is intentional — your brain processes color-based urgency faster than numbers. A red frog demands attention in a way that "pushed 5 times" doesn\'t.', tip: 'If a frog has turned red, it\'s been sitting too long. Either eat it now, break it into smaller subtasks, or honestly ask yourself: should this be abandoned instead?' },
     ],
     avoid: [
       'Ignoring the Frogs page entirely — these are your highest-value tasks precisely because they\'re hard.',
       'Manually un-marking tasks as Frogs to make the page look clean — you\'re hiding from yourself.',
+      'Letting a frog turn red and then ignoring the color — the decay is a signal to act, not decoration.',
     ],
     proTips: [
       'The push interventions are specific: Too Scary → "Start with 2 minutes." Too Vague → "Define the first step." Too Big → "Break into subtasks." Too Boring → "Pair with music."',
       'Completing a task that was pushed specifically because it was "Too Scary" earns the Fear Crusher badge.',
       'Frogs are sorted by "resistance score" — the most-pushed, most-urgent ones float to the top.',
+      'After eating a frog, a quick reflection asks "How hard was that really?" Most people discover it was easier than expected — this builds a feedback loop that weakens future dread.',
     ],
   },
   {
@@ -503,6 +511,7 @@ const BATTLE_PLANS: BattlePlan[] = [
       { action: 'Link tasks to Vision', where: 'Alignment → Pillars → Goals → Tasks', detail: 'When motivation fades, it\'s usually because the connection between today\'s task and tomorrow\'s outcome has gone dark. The Alignment Engine makes this visible: this task feeds this goal, which feeds this pillar. Open the Standing tab to see which pillars are advancing.' },
       { action: 'Chase badge tiers', where: 'Achievements → Badge Grid', detail: 'Each badge has Bronze → Silver → Gold tiers. "Task Crusher: 47/50 done" is more motivating than "keep going." External progress markers override internal motivation fade. The brain responds to proximity to a goal.' },
       { action: 'Log consumed content as Jots', where: 'Focus → Jot Log → [idea]', detail: 'When you read or watch something, capture the key insight as an [idea] jot during your Focus session. This transforms passive consumption into active synthesis — the idea becomes a concrete artifact you can promote to a task or Deep Store item later.' },
+      { action: 'Accept the Daily Challenge', where: 'Morning Launch → Challenge badge', detail: 'Each morning, a random micro-challenge appears: "Eat a frog today," "Zero pushes," or "Complete all habits." It changes daily. The novelty provides a fresh dopamine target that prevents the routine from feeling stale. You don\'t have to complete it — but noticing it primes your brain with a goal before you start.' },
       { action: 'Earn Embers of Continuity', where: '7 consecutive perfect Daily Wins', detail: 'The highest-value loot in the game is earned through consistency, not intensity. Stacking 7 good days in a row is the goal — not one heroic sprint. The Ember is the system\'s way of saying: "you showed up every day, and that\'s the hardest thing."' },
     ],
     science: 'Dopamine is not the "pleasure chemical" — it\'s the "anticipation chemical." It spikes when you predict a reward, not when you receive it. The XP system, badge tiers, and streak counts create persistent prediction targets. Your brain starts asking "how much XP will I earn today?" instead of "do I feel like working?" — and that shift from mood-dependent to game-dependent motivation is the key transition.',

@@ -26,7 +26,8 @@ import {
   getAllMistakeLogEntries,
   addMistakeLogEntry,
   updateMistakeLogEntry,
-  deleteMistakeLogEntry
+  deleteMistakeLogEntry,
+  saveUserProgress
 } from "@/lib/data";
 import type { BackOfMindItem, MistakeLogEntry } from "@/lib/types";
 import { formatDistanceToNow, parseISO } from "date-fns";
@@ -73,7 +74,7 @@ export default function BackOfMindPage() {
   const [mistakeLessons, setMistakeLessons] = useState("");
   const [mistakeAction, setMistakeAction] = useState("");
   const [saving, setSaving] = useState(false);
-  const { userProgress, saveUserProgress, refreshProgress } = useGamification();
+  const { userProgress, refreshProgress } = useGamification();
   const { toast } = useToast();
 
   const loadItems = async () => {

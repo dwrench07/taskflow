@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Task, PushReason, PushHistoryEntry } from "@/lib/types";
-import { getAllTasks, updateTask } from "@/lib/data";
+import { getAllTasks, updateTask, saveUserProgress } from "@/lib/data";
 import { isBefore, startOfDay, addDays, parseISO, isSameDay } from "date-fns";
 import { CalendarDays, XCircle, ArrowRightCircle, Sparkles, AlertTriangle, HelpCircle, Maximize2, Coffee, Clock, ChevronDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -32,7 +32,7 @@ export function DailyReviewModal() {
   const [selectedReason, setSelectedReason] = useState<PushReason | null>(null);
   const [reflectionNote, setReflectionNote] = useState("");
   const { toast } = useToast();
-  const { userProgress, saveUserProgress, refreshProgress } = useGamification();
+  const { userProgress, refreshProgress } = useGamification();
 
   useEffect(() => {
     const checkTasks = async () => {

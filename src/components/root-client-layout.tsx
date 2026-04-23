@@ -55,6 +55,9 @@ export function RootClientLayout({
 
   useEffect(() => {
     setIsMounted(true);
+    if (typeof window !== 'undefined' && (window as any).Capacitor) {
+      document.documentElement.classList.add('capacitor');
+    }
   }, []);
 
   return (

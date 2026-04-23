@@ -489,7 +489,7 @@ export default function DashboardPage() {
       <div className="flex flex-col gap-4 w-full max-w-xl mx-auto px-4 sm:px-8 py-2">
         <DailyReviewModal />
         <EnergyCheckIn />
-        <MorningLaunch allTasks={allTasks} onDismiss={handleDismissMorning} />
+        <MorningLaunch allTasks={allTasks} allChores={allChores} onDismiss={handleDismissMorning} />
       </div>
     );
   }
@@ -524,13 +524,13 @@ export default function DashboardPage() {
           <p className="text-muted-foreground text-sm font-medium pl-1.5">Focus on what matters. Ignore the rest.</p>
         </div>
 
-        <div className="bg-muted p-1 rounded-xl flex items-center shadow-sm border border-border w-fit max-w-full overflow-x-auto no-scrollbar">
+        <div className="bg-muted p-1 rounded-xl grid grid-cols-3 items-center shadow-sm border border-border w-full sm:w-auto sm:min-w-[420px] gap-1">
           <Button
             variant={viewMode === 'schedule' ? 'secondary' : 'ghost'}
             size="sm"
             onClick={() => setViewMode('schedule')}
             className={cn(
-              "h-9 px-2 sm:px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex-shrink-0",
+              "h-9 w-full px-2 sm:px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
               viewMode === 'schedule' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -543,7 +543,7 @@ export default function DashboardPage() {
             size="sm"
             onClick={() => setViewMode('quick')}
             className={cn(
-              "h-9 px-2 sm:px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex-shrink-0",
+              "h-9 w-full px-2 sm:px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
               viewMode === 'quick' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -556,7 +556,7 @@ export default function DashboardPage() {
             size="sm"
             onClick={() => setViewMode('detailed')}
             className={cn(
-              "h-9 px-2 sm:px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-300 flex-shrink-0",
+              "h-9 w-full px-2 sm:px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
               viewMode === 'detailed' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -621,7 +621,7 @@ export default function DashboardPage() {
             {SHOW_ZEN_GARDEN && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-2 mt-4">
                 <div className="lg:col-span-2 order-1 lg:order-2">
-                  {showMorningLaunch && <MorningLaunch allTasks={allTasks} onDismiss={handleDismissMorning} />}
+                  {showMorningLaunch && <MorningLaunch allTasks={allTasks} allChores={allChores} onDismiss={handleDismissMorning} />}
                 </div>
                 <div className="lg:col-span-1 order-2 lg:order-1">
                   <BonsaiTree />

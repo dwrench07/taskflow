@@ -108,6 +108,13 @@
   }
 }
 
+/* Disable native pull-to-refresh and overscroll bounce in the Capacitor app only */
+html.capacitor,
+html.capacitor body {
+  overscroll-behavior: none;
+  overscroll-behavior-y: contain;
+}
+
 @layer base {
   * {
     @apply border-border;

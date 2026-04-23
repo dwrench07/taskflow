@@ -32,7 +32,11 @@ const MOCK_TEMPLATES: TaskTemplate[] = [
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<TaskTemplate[] | { error: string }>) {
   try {
-    const user = verifyToken(req);
+    const token = req.cookies.token;
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+    const user = await verifyToken(token);
     if (!user) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
