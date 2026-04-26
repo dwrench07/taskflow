@@ -513,17 +513,7 @@ export default function DashboardPage() {
         xpEarned={dailyWins.xpEarned}
         level={level.level}
       />
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
-        <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center shadow-sm rotate-3 hover:rotate-0 transition-transform duration-500">
-              <Flame className="w-6 h-6 text-white" />
-            </div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Dash</h1>
-          </div>
-          <p className="text-muted-foreground text-sm font-medium pl-1.5">Focus on what matters. Ignore the rest.</p>
-        </div>
-
+      <div className="flex flex-col sm:flex-row sm:items-end justify-end gap-6">
         <div className="bg-muted p-1 rounded-xl grid grid-cols-3 items-center shadow-sm border border-border w-full sm:w-auto sm:min-w-[420px] gap-1">
           <Button
             variant={viewMode === 'schedule' ? 'secondary' : 'ghost'}
@@ -531,7 +521,7 @@ export default function DashboardPage() {
             onClick={() => setViewMode('schedule')}
             className={cn(
               "h-9 w-full px-2 sm:px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
-              viewMode === 'schedule' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              viewMode === 'schedule' ? "bg-background text-foreground shadow-sm hover:bg-background hover:text-foreground" : "text-muted-foreground hover:text-foreground"
             )}
           >
             <CalendarCheck className="w-3.5 h-3.5 sm:mr-2" />
@@ -544,7 +534,7 @@ export default function DashboardPage() {
             onClick={() => setViewMode('quick')}
             className={cn(
               "h-9 w-full px-2 sm:px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
-              viewMode === 'quick' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              viewMode === 'quick' ? "bg-background text-foreground shadow-sm hover:bg-background hover:text-foreground" : "text-muted-foreground hover:text-foreground"
             )}
           >
             <LayoutDashboard className="w-3.5 h-3.5 sm:mr-2" />
@@ -557,7 +547,7 @@ export default function DashboardPage() {
             onClick={() => setViewMode('detailed')}
             className={cn(
               "h-9 w-full px-2 sm:px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
-              viewMode === 'detailed' ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              viewMode === 'detailed' ? "bg-background text-foreground shadow-sm hover:bg-background hover:text-foreground" : "text-muted-foreground hover:text-foreground"
             )}
           >
             <BarChart3 className="w-3.5 h-3.5 sm:mr-2" />
@@ -986,29 +976,25 @@ export default function DashboardPage() {
               </TabsList>
 
               <TabsContent value="overview" className="space-y-6 animate-fade-in">
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-                  <div className="col-span-full xl:col-span-4 space-y-6">
-                    <DashboardCompletionChart allTasks={allTasks} />
-                    <div className="grid gap-6 sm:grid-cols-2">
-                      <DashboardPriorityChart allTasks={allTasks} />
-                      <DashboardStatusChart allTasks={allTasks} />
-                    </div>
-                  </div>
-                  <div className="col-span-full xl:col-span-3 space-y-6">
-                    <DashboardWeeklyReport allTasks={allTasks} focusSessions={focusSessions} />
-                    <DashboardDailyWins />
-                    <DashboardPointOfNoReturn allTasks={allTasks} />
-                    <DashboardOverdueRisk allTasks={allTasks} />
-                    <DashboardAlmostDone allTasks={allTasks} />
-                    <DashboardPushAnalytics allTasks={allTasks} />
-                    <DashboardApproachScore allTasks={allTasks} focusSessions={focusSessions} />
-                    <DashboardFrogCompletion allTasks={allTasks} />
-                    <DashboardBlockerInsights allTasks={allTasks} />
-                    <DashboardTShirtAccuracy allTasks={allTasks} />
-                    <DashboardPushFunnel allTasks={allTasks} />
-                    <DashboardHabitHeatmap allTasks={allTasks} />
-                    <DashboardStats allTasks={allTasks} />
-                  </div>
+                <DashboardCompletionChart allTasks={allTasks} />
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <DashboardPriorityChart allTasks={allTasks} />
+                  <DashboardStatusChart allTasks={allTasks} />
+                </div>
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-fr">
+                  <DashboardWeeklyReport allTasks={allTasks} focusSessions={focusSessions} />
+                  <DashboardDailyWins />
+                  <DashboardPointOfNoReturn allTasks={allTasks} />
+                  <DashboardOverdueRisk allTasks={allTasks} />
+                  <DashboardAlmostDone allTasks={allTasks} />
+                  <DashboardPushAnalytics allTasks={allTasks} />
+                  <DashboardApproachScore allTasks={allTasks} focusSessions={focusSessions} />
+                  <DashboardFrogCompletion allTasks={allTasks} />
+                  <DashboardBlockerInsights allTasks={allTasks} />
+                  <DashboardTShirtAccuracy allTasks={allTasks} />
+                  <DashboardPushFunnel allTasks={allTasks} />
+                  <DashboardStats allTasks={allTasks} />
+                  <DashboardHabitHeatmap allTasks={allTasks} />
                 </div>
               </TabsContent>
 
