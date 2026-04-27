@@ -134,14 +134,14 @@ export default function DashboardPage() {
   const stats = useMemo(() => {
     const today = new Date();
     const todayStr = format(today, 'yyyy-MM-dd');
-    const activeTasks = allTasks.filter(t => t.status !== 'done' && !t.isHabit);
+    const activeTasks = allTasks.filter(t => t.status !== 'done' && (t.category !== "habit"));
     const criticalTasks = activeTasks.filter(t =>
       t.priority === 'urgent' || t.priority === 'high' || (t.endDate && isSameDay(parseISO(t.endDate), today))
     ).length;
 
-    const pnrCount = allTasks.filter(t => t.doDate && t.status !== 'done' && !t.isHabit).length;
+    const pnrCount = allTasks.filter(t => t.doDate && t.status !== 'done' && (t.category !== "habit")).length;
 
-    const habits = allTasks.filter(t => t.isHabit);
+    const habits = allTasks.filter(t => (t.category === "habit"));
     const habitsDoneToday = habits.filter(h => h.completionHistory?.some(d => toDateStr(d) === todayStr)).length;
 
     const yesterday = new Date();
@@ -156,7 +156,7 @@ export default function DashboardPage() {
     let subTasksDoneToday = 0;
 
     allTasks.forEach(task => {
-      if (task.isHabit) return;
+      if ((task.category === "habit")) return;
 
       // Check top-level task
       const isTaskToday = (task.doDate && isSameDay(parseISO(task.doDate), today)) ||
@@ -258,9 +258,9 @@ export default function DashboardPage() {
         items.push({
           id: task.id,
           title: task.title,
-          type: task.isFrog ? 'frog' : (task.isHabit ? 'habit' : 'task'),
+          type: task.isFrog ? 'frog' : ((task.category === "habit") ? 'habit' : 'task'),
           isSubtask: false,
-          completed: task.isHabit
+          completed: (task.category === "habit")
             ? (task.completionHistory?.some(d => toDateStr(d) === format(today, 'yyyy-MM-dd')) ?? false)
             : task.status === 'done',
           priority: task.priority,
@@ -303,7 +303,7 @@ export default function DashboardPage() {
     });
 
     // 2. Frogs that weren't in the plan (Auto-suggested)
-    allTasks.filter(t => t.isFrog && !t.isHabit && t.status !== 'done' && !addedIds.has(t.id)).forEach(t => {
+    allTasks.filter(t => t.isFrog && (t.category !== "habit") && t.status !== 'done' && !addedIds.has(t.id)).forEach(t => {
       items.push({
         id: t.id,
         title: t.title,
@@ -561,7 +561,7 @@ export default function DashboardPage() {
 
       {viewMode === 'schedule' && (() => {
         const today = new Date();
-        const habits = allTasks.filter(t => t.isHabit);
+        const habits = allTasks.filter(t => (t.category === "habit"));
         const todayStr2 = format(today, 'yyyy-MM-dd');
         const habitsDone = habits.filter(h => h.completionHistory?.some(d => toDateStr(d) === todayStr2)).length;
         const currentEnergy = getTodayEnergy();

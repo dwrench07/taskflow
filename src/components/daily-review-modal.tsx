@@ -47,7 +47,7 @@ export function DailyReviewModal() {
 
       const today = startOfDay(new Date());
       const unfinishedPastTasks = tasks.filter(t => {
-        if (t.isHabit || t.status === 'done' || t.status === 'abandoned') return false;
+        if ((t.category === "habit") || t.status === 'done' || t.status === 'abandoned') return false;
 
         let targetDate = null;
         if (t.doDate) targetDate = parseISO(t.doDate);

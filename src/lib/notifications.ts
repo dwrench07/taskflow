@@ -129,7 +129,7 @@ export async function scheduleNotifications(allTasks: Task[]): Promise<number> {
   // --- Deadline Reminders ---
   if (prefs.deadlineReminders) {
     const tasksWithDeadlines = allTasks.filter(t =>
-      !t.isHabit && t.status !== 'done' && t.status !== 'abandoned' && (t.doDate || t.endDate)
+      (t.category !== "habit") && t.status !== 'done' && t.status !== 'abandoned' && (t.doDate || t.endDate)
     );
 
     tasksWithDeadlines.forEach((task, i) => {
@@ -175,7 +175,7 @@ export async function scheduleNotifications(allTasks: Task[]): Promise<number> {
   // --- Overdue Alerts ---
   if (prefs.overdueAlerts) {
     const overdueTasks = allTasks.filter(t => {
-      if (t.isHabit || t.status === 'done' || t.status === 'abandoned') return false;
+      if ((t.category === "habit") || t.status === 'done' || t.status === 'abandoned') return false;
       const deadline = t.doDate || t.endDate;
       if (!deadline) return false;
       try {
@@ -202,7 +202,7 @@ export async function scheduleNotifications(allTasks: Task[]): Promise<number> {
 
   // --- Habit Nudges ---
   if (prefs.habitNudges) {
-    const habits = allTasks.filter(t => t.isHabit && t.status !== 'abandoned');
+    const habits = allTasks.filter(t => (t.category === "habit") && t.status !== 'abandoned');
     const incompleteHabits = habits.filter(t => {
       const todayStr = today.toISOString().split('T')[0];
       return !(t.completionHistory || []).some(d => d.startsWith(todayStr));

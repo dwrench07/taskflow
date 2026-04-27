@@ -9,7 +9,7 @@ import Link from "next/link";
 
 export function PNRDetail({ tasks }: { tasks: Task[] }) {
   const pnrTasks = tasks
-    .filter(t => t.doDate && t.status !== 'done' && !t.isHabit)
+    .filter(t => t.doDate && t.status !== 'done' && (t.category !== "habit"))
     .sort((a, b) => parseISO(a.doDate!).getTime() - parseISO(b.doDate!).getTime())
     .slice(0, 10);
 

@@ -15,7 +15,7 @@ interface TagHeatmapProps {
 
 export function DashboardTagHeatmap({ allTasks }: TagHeatmapProps) {
   const analysis = useMemo(() => {
-    const tasks = allTasks.filter(t => !t.isHabit && t.tags && t.tags.length > 0);
+    const tasks = allTasks.filter(t => (t.category !== "habit") && t.tags && t.tags.length > 0);
     if (tasks.length < 5) return null;
 
     const tagStats: Record<string, {

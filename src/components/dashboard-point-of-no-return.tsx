@@ -27,7 +27,7 @@ export function DashboardPointOfNoReturn({ allTasks }: { allTasks: Task[] }) {
             .filter(task =>
                 task.doDate &&
                 task.status !== 'done' &&
-                !task.isHabit
+                (task.category !== "habit")
             )
             .sort((a, b) => parseISO(a.doDate!).getTime() - parseISO(b.doDate!).getTime())
             .slice(0, 5); 

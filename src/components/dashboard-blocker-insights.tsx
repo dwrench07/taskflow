@@ -16,7 +16,7 @@ interface BlockerInsightsProps {
 
 export function DashboardBlockerInsights({ allTasks }: BlockerInsightsProps) {
   const analysis = useMemo(() => {
-    const activeTasks = allTasks.filter(t => !t.isHabit && t.status !== 'done' && t.status !== 'abandoned');
+    const activeTasks = allTasks.filter(t => (t.category !== "habit") && t.status !== 'done' && t.status !== 'abandoned');
 
     // Build blocker graph
     const blockingMap: Record<string, string[]> = {}; // taskId -> tasks it blocks

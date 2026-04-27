@@ -1,88 +1,37 @@
-
 import type { DatabaseAdapter, DatabaseLogger } from './types';
-import type { User, Pillar, Milestone, Chore, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry } from '../types';
+import type { User, Task, Project } from '../types';
 
-// Initial mock data for development
-const initialTasks = [
+const initialProjects: Project[] = [
     {
-        id: "task-1",
+        id: "project-1",
         title: "Design new homepage",
-        description: "Create mockups and a prototype for the new homepage design.",
-        priority: "high",
-        status: "in-progress",
+        description: "Mockups and a prototype for the new homepage design.",
         userId: "user-1",
         tags: ["design", "website", "ux"],
-        startDate: "2024-08-01T10:00:00.000Z",
-        endDate: "2024-08-10T17:00:00.000Z",
-        doDate: "2024-08-05T10:00:00.000Z",
-        subtasks: [
-            { id: "sub-1-1", title: "Create wireframes", completed: true, tags: ['design'] },
-            { id: "sub-1-2", title: "Develop high-fidelity mockups", completed: false, tags: ['design'] },
-            { id: "sub-1-3", title: "Prototype interactions", completed: false },
-        ],
-        notes: ["Initial meeting with stakeholders went well. They prefer a clean, modern look."],
     },
     {
-        id: "task-2",
+        id: "project-2",
         title: "Develop API for user authentication",
         description: "Build and document the API endpoints for user sign-up, sign-in, and profile management.",
-        priority: "high",
-        status: "todo",
         userId: "user-1",
         tags: ["development", "backend", "api"],
-        startDate: "2024-08-05T09:00:00.000Z",
-        endDate: "2024-08-15T18:00:00.000Z",
-        doDate: "2024-08-10T09:00:00.000Z",
-        subtasks: [
-            { id: "sub-2-1", title: "Set up database schema for users", completed: false },
-            { id: "sub-2-2", title: "Implement JWT generation", completed: false, tags: ['auth'] },
-            { id: "sub-2-3", title: "Create sign-up endpoint", completed: false },
-            { id: "sub-2-4", title: "Create sign-in endpoint", completed: false },
-        ],
-        notes: [],
     },
-    {
-        id: "task-3",
-        title: "Plan Q4 Marketing Campaign",
-        description: "Outline the strategy, channels, and budget for the upcoming Q4 marketing campaign.",
-        priority: "medium",
-        status: "todo",
-        userId: "user-1",
-        tags: ["marketing", "planning", "strategy"],
-        startDate: "2024-08-12T09:00:00.000Z",
-        subtasks: [],
-        notes: ["Focus on social media and content marketing.", "Need to coordinate with the sales team for promotions."],
-    }
 ];
 
-const initialTemplates = [
-    {
-        id: "template-1",
-        title: "New Employee Onboarding",
-        description: "A standard checklist for onboarding a new team member.",
-        priority: "medium",
-        tags: ["hr", "onboarding"],
-        subtasks: [
-            { id: "tsub-1-1", title: "Set up hardware (laptop, monitor)", tags: ["it"] },
-            { id: "tsub-1-2", title: "Grant access to required systems", tags: ["it", "security"] },
-            { id: "tsub-1-3", title: "Schedule team introduction meeting" },
-        ]
-    }
+const initialTasks: Task[] = [
+    { id: "task-1", projectId: "project-1", title: "Create wireframes", status: "done", priority: "high", category: "project-work", recurrence: "once", tags: ["design"], userId: "user-1", subtasks: [], notes: [] },
+    { id: "task-2", projectId: "project-1", title: "Develop high-fidelity mockups", status: "in-progress", priority: "high", category: "project-work", recurrence: "once", tags: ["design"], userId: "user-1", subtasks: [], notes: [] },
+    { id: "task-3", projectId: "project-1", title: "Prototype interactions", status: "todo", priority: "medium", category: "project-work", recurrence: "once", userId: "user-1", subtasks: [], notes: [] },
+    { id: "task-4", projectId: "project-2", title: "Set up database schema for users", status: "todo", priority: "high", category: "project-work", recurrence: "once", userId: "user-1", subtasks: [], notes: [] },
+    { id: "task-5", projectId: "project-2", title: "Implement JWT generation", status: "todo", priority: "high", category: "project-work", recurrence: "once", tags: ["auth"], userId: "user-1", subtasks: [], notes: [] },
+    { id: "task-6", title: "Plan Q4 Marketing Campaign", description: "Outline strategy, channels, and budget.", status: "todo", priority: "medium", category: "project-work", recurrence: "once", tags: ["marketing"], userId: "user-1", subtasks: [], notes: [] },
 ];
 
 const initialDailyPlan = ['task-1'];
 
 const initialUsers: User[] = [
-    {
-        id: 'user-1',
-        email: 'user@example.com',
-        roles: ['user']
-    },
-    {
-        id: 'admin-1',
-        email: 'admin@example.com',
-        roles: ['admin']
-    }
+    { id: 'user-1', email: 'user@example.com', roles: ['user'] },
+    { id: 'admin-1', email: 'admin@example.com', roles: ['admin'] },
 ];
 
 /**
@@ -90,6 +39,7 @@ const initialUsers: User[] = [
  */
 export class MemoryAdapter implements DatabaseAdapter {
     private tasks: Map<string, any> = new Map();
+    private projects: Map<string, any> = new Map();
     private templates: Map<string, any> = new Map();
     private dailyPlans: Map<string, any> = new Map();
     private users: Map<string, User> = new Map();
@@ -97,7 +47,6 @@ export class MemoryAdapter implements DatabaseAdapter {
     private goals: Map<string, any> = new Map();
     private pillars: Map<string, any> = new Map();
     private milestones: Map<string, any> = new Map();
-    private chores: Map<string, any> = new Map();
     private interests: Map<string, any> = new Map();
     private interestConnections: Map<string, any> = new Map();
     private backOfMind: Map<string, any> = new Map();
@@ -111,9 +60,8 @@ export class MemoryAdapter implements DatabaseAdapter {
     async connect(): Promise<boolean> {
         this.connected = true;
 
-        // Initialize with mock data
-        initialTasks.forEach(task => this.tasks.set(task.id, task));
-        initialTemplates.forEach(template => this.templates.set(template.id, template));
+        initialTasks.forEach(t => this.tasks.set(t.id, t));
+        initialProjects.forEach(p => this.projects.set(p.id, p));
         initialUsers.forEach(user => this.users.set(user.id, user));
         this.dailyPlans.set('default', initialDailyPlan);
 
@@ -124,13 +72,13 @@ export class MemoryAdapter implements DatabaseAdapter {
     async disconnect(): Promise<void> {
         this.connected = false;
         this.tasks.clear();
+        this.projects.clear();
         this.templates.clear();
         this.dailyPlans.clear();
         this.users.clear();
         this.goals.clear();
         this.pillars.clear();
         this.milestones.clear();
-        this.chores.clear();
         this.interests.clear();
         this.interestConnections.clear();
         this.backOfMind.clear();
@@ -144,6 +92,7 @@ export class MemoryAdapter implements DatabaseAdapter {
         return this.connected;
     }
 
+    // === TASKS ===
     async getAllTasks(userId?: string | null): Promise<any[]> {
         return Array.from(this.tasks.values()).filter(t => !userId || t.userId === userId);
     }
@@ -170,6 +119,41 @@ export class MemoryAdapter implements DatabaseAdapter {
         return this.tasks.delete(id);
     }
 
+    // === PROJECTS ===
+    async getAllProjects(userId?: string | null): Promise<any[]> {
+        return Array.from(this.projects.values()).filter(p => !userId || p.userId === userId);
+    }
+
+    async getProject(id: string, userId?: string | null): Promise<any | null> {
+        const item = this.projects.get(id);
+        if (item && (!userId || item.userId === userId)) return item;
+        return null;
+    }
+
+    async addProject(project: any, userId?: string | null): Promise<any> {
+        const projectWithId = { ...project, userId: userId || project.userId, id: project.id || `project-${Date.now()}` };
+        this.projects.set(projectWithId.id, projectWithId);
+        return projectWithId;
+    }
+
+    async updateProject(project: any, userId?: string | null): Promise<any> {
+        const projectWithUserId = { ...project, userId: userId || project.userId };
+        this.projects.set(projectWithUserId.id, projectWithUserId);
+        return projectWithUserId;
+    }
+
+    async deleteProject(id: string, userId?: string | null): Promise<boolean> {
+        // Cascade: orphan child tasks (set projectId to undefined) rather than delete them
+        for (const [taskId, t] of this.tasks.entries()) {
+            if (t.projectId === id) {
+                const { projectId, ...rest } = t;
+                this.tasks.set(taskId, rest);
+            }
+        }
+        return this.projects.delete(id);
+    }
+
+    // === TEMPLATES ===
     async getAllTemplates(): Promise<any[]> {
         return Array.from(this.templates.values());
     }
@@ -193,6 +177,7 @@ export class MemoryAdapter implements DatabaseAdapter {
         return this.templates.delete(id);
     }
 
+    // === DAILY PLAN ===
     async getDailyPlan(date: string, userId?: string | null): Promise<any | null> {
         const key = userId ? `${userId}_${date}` : date;
         return this.dailyPlans.get(key) || null;
@@ -204,6 +189,7 @@ export class MemoryAdapter implements DatabaseAdapter {
         return plan;
     }
 
+    // === FOCUS SESSIONS ===
     async getFocusSessions(userId?: string | null): Promise<any[]> {
         return Array.from(this.focusSessions.values()).filter(session => !userId || session.userId === userId);
     }
@@ -254,6 +240,7 @@ export class MemoryAdapter implements DatabaseAdapter {
         }
     }
 
+    // === GOALS ===
     async getGoals(userId?: string | null): Promise<any[]> {
         return Array.from(this.goals.values()).filter(goal => !userId || goal.userId === userId);
     }
@@ -280,6 +267,7 @@ export class MemoryAdapter implements DatabaseAdapter {
         return this.goals.delete(id);
     }
 
+    // === USERS ===
     async getUser(id: string): Promise<User | null> {
         return this.users.get(id) || null;
     }
@@ -301,7 +289,7 @@ export class MemoryAdapter implements DatabaseAdapter {
         return this.connected;
     }
 
-    // Pillar operations
+    // === PILLARS ===
     async getPillars(userId?: string | null): Promise<any[]> {
         return Array.from(this.pillars.values()).filter(p => !userId || p.userId === userId);
     }
@@ -324,7 +312,7 @@ export class MemoryAdapter implements DatabaseAdapter {
         return this.pillars.delete(id);
     }
 
-    // Milestone operations
+    // === MILESTONES ===
     async getMilestones(userId?: string | null): Promise<any[]> {
         return Array.from(this.milestones.values()).filter(m => !userId || m.userId === userId);
     }
@@ -347,30 +335,7 @@ export class MemoryAdapter implements DatabaseAdapter {
         return this.milestones.delete(id);
     }
 
-    // Chore operations
-    async getChores(userId?: string | null): Promise<any[]> {
-        return Array.from(this.chores.values()).filter(c => !userId || c.userId === userId);
-    }
-    async getChore(id: string, userId?: string | null): Promise<any | null> {
-        const chore = this.chores.get(id);
-        if (chore && (!userId || chore.userId === userId)) return chore;
-        return null;
-    }
-    async addChore(chore: any, userId?: string | null): Promise<any> {
-        const cWithId = { ...chore, userId: userId || chore.userId, id: chore.id || Date.now().toString() };
-        this.chores.set(cWithId.id, cWithId);
-        return cWithId;
-    }
-    async updateChore(chore: any, userId?: string | null): Promise<any> {
-        const cWithId = { ...chore, userId: userId || chore.userId };
-        this.chores.set(cWithId.id, cWithId);
-        return cWithId;
-    }
-    async deleteChore(id: string, userId?: string | null): Promise<boolean> {
-        return this.chores.delete(id);
-    }
-
-    // Interest operations
+    // === INTERESTS ===
     async getInterests(userId?: string | null): Promise<any[]> {
         return Array.from(this.interests.values()).filter(i => !userId || i.userId === userId);
     }
@@ -390,7 +355,6 @@ export class MemoryAdapter implements DatabaseAdapter {
         return iWithId;
     }
     async deleteInterest(id: string, userId?: string | null): Promise<boolean> {
-        // Also delete any connections involving this interest
         for (const [connId, conn] of this.interestConnections.entries()) {
             if (conn.sourceId === id || conn.targetId === id) {
                 this.interestConnections.delete(connId);
@@ -399,7 +363,7 @@ export class MemoryAdapter implements DatabaseAdapter {
         return this.interests.delete(id);
     }
 
-    // InterestConnection operations
+    // === INTEREST CONNECTIONS ===
     async getInterestConnections(userId?: string | null): Promise<any[]> {
         return Array.from(this.interestConnections.values()).filter(c => !userId || c.userId === userId);
     }
@@ -412,7 +376,7 @@ export class MemoryAdapter implements DatabaseAdapter {
         return this.interestConnections.delete(id);
     }
 
-    // BackOfMind operations
+    // === BACK OF MIND ===
     async getBackOfMindItems(userId?: string | null): Promise<any[]> {
         const items = Array.from(this.backOfMind.values()).filter(i => !userId || i.userId === userId);
         return items.sort((a, b) => b.relevanceScore - a.relevanceScore);
@@ -436,7 +400,7 @@ export class MemoryAdapter implements DatabaseAdapter {
         return this.backOfMind.delete(id);
     }
 
-    // FocusReminders operations
+    // === FOCUS REMINDERS ===
     async getFocusReminders(userId?: string | null): Promise<any | null> {
         const key = userId || 'default';
         return this.focusReminders.get(key) || null;
@@ -448,7 +412,7 @@ export class MemoryAdapter implements DatabaseAdapter {
         return data;
     }
 
-    // MistakeLog operations
+    // === MISTAKE LOG ===
     async getMistakeLogEntries(userId?: string | null): Promise<any[]> {
         const items = Array.from(this.mistakeLog.values()).filter(i => !userId || i.userId === userId);
         return items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -472,11 +436,11 @@ export class MemoryAdapter implements DatabaseAdapter {
         return this.mistakeLog.delete(id);
     }
 
-    // UserProgress operations
+    // === USER PROGRESS ===
     async getUserProgress(userId: string): Promise<any | null> {
         return this.userProgress.get(userId) || null;
     }
-    
+
     async upsertUserProgress(progress: any): Promise<any> {
         const userId = progress.userId;
         if (!userId) throw new Error("userId is required for UserProgress");

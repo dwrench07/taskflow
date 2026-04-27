@@ -7,13 +7,13 @@ import { WidgetInfo } from "@/components/widget-info";
 import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 export function DashboardOverview({ allTasks }: { allTasks: Task[] }) {
-  const nonHabitTasks = (Array.isArray(allTasks) ? allTasks : []).filter(t => !t.isHabit);
+  const nonHabitTasks = (Array.isArray(allTasks) ? allTasks : []).filter(t => (t.category !== "habit"));
   const todoCount = nonHabitTasks.filter((t) => t.status === "todo").length;
   const inProgressCount = nonHabitTasks.filter((t) => t.status === "in-progress").length;
 
   const tasksDueToday = nonHabitTasks.filter(t => t.endDate && isToday(parseISO(t.endDate))).length;
 
-  const habits = (Array.isArray(allTasks) ? allTasks : []).filter(t => t.isHabit);
+  const habits = (Array.isArray(allTasks) ? allTasks : []).filter(t => (t.category === "habit"));
   const totalHabitsWithGoals = habits.filter(h => h.streakGoal && h.streakGoal > 0).length;
   const habitGoalsMet = habits.filter(h => h.streakGoal && calculateStreak(h) >= h.streakGoal).length;
   const activeStreaksCount = habits.filter(h => calculateStreak(h) > 2).length;

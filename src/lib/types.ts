@@ -1,10 +1,19 @@
 export type Priority = "low" | "medium" | "high" | "urgent";
 export type EnergyLevel = 'high' | 'medium' | 'low';
 export type Status = "todo" | "in-progress" | "done" | "abandoned";
-export type HabitFrequency = "daily" | "weekly" | "monthly";
-export type ChoreFrequency = "once" | "daily" | "weekly" | "custom";
+export type Recurrence = "once" | "daily" | "weekly" | "monthly" | "custom";
+export type TaskCategory = "project-work" | "chore" | "habit";
 export type PushReason = 'too-scary' | 'too-vague' | 'too-big' | 'too-boring' | 'ran-out-of-time' | 'deprioritized';
 export type EmotionLabel = 'dread' | 'anxiety' | 'resistance' | 'overwhelm' | 'calm' | 'neutral' | 'excited';
+
+/**
+ * @deprecated Use `Recurrence` instead. Kept as a transitional alias while UI migrates.
+ */
+export type HabitFrequency = "daily" | "weekly" | "monthly";
+/**
+ * @deprecated Use `Recurrence` instead. Kept as a transitional alias while UI migrates.
+ */
+export type ChoreFrequency = Recurrence;
 
 export interface EmotionCheckIn {
   emotion: EmotionLabel;
@@ -19,17 +28,86 @@ export interface PushHistoryEntry {
 
 export type DailyHabitStatus = 'changes observed' | 'no changes' | 'negative' | 'not recorded';
 export interface DailyStatus {
-  date: string; // ISO date string (e.g., "2024-08-07T00:00:00.000Z")
+  date: string; // ISO date string
   status: DailyHabitStatus;
 }
 
+/**
+ * Task — the atomic unit of work.
+ * - Standalone if `projectId` is unset; otherwise grouped under a Project.
+ * - `category` describes intent (project-work, chore, habit).
+ * - `recurrence` describes how often it repeats.
+ *   - For `once`: standard lifecycle via `status` (todo → in-progress → done).
+ *   - For `daily`/`weekly`/`monthly`/`custom`: `completionHistory` tracks per-period completions; `status` describes the *task itself* (active vs abandoned).
+ */
+export interface Task {
+  id: string;
+  projectId?: string;          // null = standalone
+  title: string;
+  description?: string;
+  status: Status;
+  priority: Priority;
+  /** Defaults to `'project-work'` when omitted. */
+  category?: TaskCategory;
+  /** Defaults to `'once'` when omitted. */
+  recurrence?: Recurrence;
+  intervalDays?: number;       // for `custom` recurrence
+
+  energyLevel?: EnergyLevel;
+  startDate?: string;
+  endDate?: string;
+  doDate?: string;
+  completedAt?: string;
+  tags?: string[];
+  /** Always defaults to `[]`. */
+  notes: string[];
+  blocks?: string[];           // IDs of Tasks blocked by this Task
+  blockedBy?: string[];        // IDs of Tasks this Task is blocked by
+  goalId?: string;
+  milestoneId?: string;
+  pushCount?: number;
+  pushHistory?: PushHistoryEntry[];
+  timeLimit?: number;          // Parkinson's Law timebox in minutes
+  tShirtSize?: 'S' | 'M' | 'L' | 'XL';
+  isFrog?: boolean;
+  order?: number;
+  isPrivate?: boolean;         // For Silent Architect
+
+  // Recurring-task fields (populated when recurrence !== 'once')
+  completionHistory?: string[];   // ISO date strings of period completions
+  lastCompletedDate?: string;
+  streak?: number;
+  streakGoal?: number;
+  shieldedDates?: string[];       // For streak shields
+  dailyStatus?: DailyStatus[];    // Optional per-day quality marker for habits
+
+  userId?: string;
+
+  // === Legacy back-compat (transitional) ===
+  /** @deprecated Use `category === 'habit'` instead. Mirrors category for legacy UI. */
+  isHabit?: boolean;
+  /** @deprecated Use `recurrence` instead. */
+  habitFrequency?: HabitFrequency;
+  /** @deprecated Use `recurrence` instead. */
+  frequency?: ChoreFrequency;
+  /** @deprecated Use `lastCompletedDate` instead. */
+  lastCompleted?: string;
+  /** @deprecated For one-time chores, check `status === 'done'` instead. */
+  completedOnce?: boolean;
+  /** @deprecated Atomic Tasks no longer have child subtasks. Promote children to standalone Tasks linked via `projectId` instead. Always defaults to `[]`. */
+  subtasks: Subtask[];
+}
+
+/**
+ * @deprecated The atomic-Task model removes nested subtasks. Existing references should be migrated to standalone Tasks with `projectId` pointing to the parent's project.
+ */
 export interface Subtask {
   id: string;
   title: string;
   completed: boolean;
   startDate?: string;
   endDate?: string;
-  completedAt?: string; // New field tracking actual completion time
+  completedAt?: string;
   tags?: string[];
   priority?: Priority;
   energyLevel?: EnergyLevel;
@@ -38,64 +116,80 @@ export interface Subtask {
   tShirtSize?: 'S' | 'M' | 'L' | 'XL';
   pushCount?: number;
   pushHistory?: PushHistoryEntry[];
-  timeLimit?: number; // Parkinson's Law timebox in minutes
+  timeLimit?: number;
   isFrog?: boolean;
 }
 
-export interface Task {
+/**
+ * @deprecated The standalone Chore type has been folded into Task with `category: 'chore'`.
+ * Kept as an alias so existing imports compile while UI migrates.
+ */
+export type Chore = Task;
+
+/**
+ * Project — container for related Tasks.
+ * Status/progress are derived from the contained Tasks (see deriveProjectStatus / deriveProjectProgress).
+ */
+export interface Project {
   id: string;
   title: string;
-  description: string;
-  priority: Priority;
-  status: Status;
-  subtasks: Subtask[];
-  notes: string[];
-  startDate?: string;
-  endDate?: string;
+  description?: string;
   tags?: string[];
-  isHabit?: boolean;
-  completionHistory?: string[]; // Array of ISO date strings
-  streakGoal?: number;
-  habitFrequency?: HabitFrequency;
-  lastCompletedDate?: string;
-  dailyStatus?: DailyStatus[];
-  goalId?: string; // Optional link to a long-term goal
-  milestoneId?: string; // Link to a specific milestone
-  energyLevel?: EnergyLevel; // Optional energy requirement
+  goalId?: string;
+  milestoneId?: string;
   order?: number;
-  blocks?: string[]; // IDs of tasks that are blocked by this task
-  blockedBy?: string[]; // IDs of tasks that this task is blocked by
-  doDate?: string;
-  streak?: number;
-  tShirtSize?: 'S' | 'M' | 'L' | 'XL';
-  pushCount?: number;
-  pushHistory?: PushHistoryEntry[];
-  timeLimit?: number; // Parkinson's Law timebox in minutes
-  isFrog?: boolean;
-  shieldedDates?: string[]; // For streak shields
-  isPrivate?: boolean; // For Silent Architect
+  userId?: string;
 }
 
-// New Template Types
-export interface TemplateSubtask {
-  id: string;
+// === TEMPLATES ===
+
+/**
+ * Spec for a Task created from a template.
+ * Lifecycle/runtime fields (status, completionHistory, pushCount, etc.) are excluded —
+ * those are produced fresh on instantiation.
+ */
+export interface TemplateTaskSpec {
   title: string;
+  description?: string;
   tags?: string[];
   priority?: Priority;
+  category?: TaskCategory;
+  recurrence?: Recurrence;
+  intervalDays?: number;
   energyLevel?: EnergyLevel;
   tShirtSize?: 'S' | 'M' | 'L' | 'XL';
+  timeLimit?: number;
+  isFrog?: boolean;
 }
 
+/**
+ * @deprecated Use `TemplateTaskSpec` instead.
+ */
+export type TemplateSubtask = TemplateTaskSpec & { id?: string };
+
+/**
+ * Template that produces either:
+ *  - A Project + child Tasks (when `tasks` has multiple entries or a project description), or
+ *  - A single standalone Task (when there's exactly one entry and `tasks[0]` carries enough metadata).
+ */
 export interface TaskTemplate {
   id: string;
   title: string;
-  description: string;
-  priority: Priority;
-  subtasks: TemplateSubtask[];
+  description?: string;
   tags?: string[];
-  goalId?: string; // Optional link to a long-term goal
+  goalId?: string;
   milestoneId?: string;
-  energyLevel?: EnergyLevel; // Optional energy requirement
+  tasks: TemplateTaskSpec[];
+  userId?: string;
+
+  // === Legacy back-compat (transitional) ===
+  /** @deprecated Use the per-task `priority` on `tasks[*]` instead. */
+  priority?: Priority;
+  /** @deprecated Use `tasks` instead. Always defaults to `[]`. */
+  subtasks: TemplateSubtask[];
+  /** @deprecated Use the per-task `energyLevel` on `tasks[*]` instead. */
+  energyLevel?: EnergyLevel;
+  /** @deprecated Use the per-task `tShirtSize` on `tasks[*]` instead. */
   tShirtSize?: 'S' | 'M' | 'L' | 'XL';
 }
 
@@ -114,12 +208,12 @@ export type JotCategory = 'worry' | 'todo' | 'idea' | 'random' | 'untagged';
 export interface ParsedJot {
   text: string;
   category: JotCategory;
-  timestamp?: string;         // HH:MM from the focus session
-  isDone?: boolean;           // for todo-style checkboxes
+  timestamp?: string;
+  isDone?: boolean;
   sessionId: string;
-  sessionDate: string;        // ISO date string
+  sessionDate: string;
   taskTitle?: string;
-  followUpDate?: string;      // ISO date string — for worry jots
+  followUpDate?: string;
   followUpResult?: 'happened' | 'didnt-happen' | 'partially';
 }
 
@@ -129,30 +223,28 @@ export type ProductivityScore = 'high' | 'medium' | 'low';
 
 export interface TimerEvent {
   type: 'start' | 'pause' | 'resume' | 'stop';
-  timestamp: string; // ISO date string
+  timestamp: string;
 }
 
 export interface FocusSession {
   id: string;
-  userId?: string;             // Attached to the tenant
-  taskId?: string;             // Optional association with a Task/Habit
-  startTime: string;           // ISO date string
-  endTime?: string;            // ISO date string (optional until complete)
-  duration: number;            // Total active focus time in minutes (so far)
+  userId?: string;
+  taskId?: string;
+  startTime: string;
+  endTime?: string;
+  duration: number;
   mode: FocusMode;
   productivityScore?: ProductivityScore;
   energyLevel?: EnergyLevel;
   distractions: string[];
-  deepWorkScore?: number;      // Multiplier logic
+  deepWorkScore?: number;
   taskTitle?: string;
 
-  // Timer API Integration Fields
   events?: TimerEvent[];
-  expectedEndTime?: string;    // ISO date string if a timer was started with a known duration
+  expectedEndTime?: string;
   status?: 'active' | 'completed' | 'abandoned';
   strategy?: string;
 
-  // Emotion tracking
   preEmotion?: EmotionCheckIn;
   postEmotion?: EmotionCheckIn;
 }
@@ -165,41 +257,25 @@ export interface Goal {
   deadline?: string;
   startDate?: string;
   tags?: string[];
-  userId?: string; // Attached to the tenant
-  pillarId?: string; // Link to a life pillar
-  stretchGoal?: string; // Ambitious version of this goal
-  completedAt?: string; // ISO date when marked completed
-  isPrivate?: boolean; // For Silent Architect
+  userId?: string;
+  pillarId?: string;
+  stretchGoal?: string;
+  completedAt?: string;
+  isPrivate?: boolean;
 }
 
 export interface Pillar {
   id: string;
   title: string;
   description: string;
-  color?: string; // Visual categorization
+  color?: string;
   icon?: string;
   userId?: string;
 }
 
 export interface Milestone extends Goal {
-  // Inherits title, description, status, etc from Goal
-  // We can add milestone specific fields here if they diverge later
   targetDate?: string;
-  stretchGoalCompleted?: boolean; // For Pinnacle Push
-}
-
-export interface Chore {
-  id: string;
-  title: string;
-  description: string;
-  frequency: ChoreFrequency;
-  intervalDays?: number;
-  lastCompleted?: string;
-  completedOnce?: boolean;
-  priority: Priority;
-  energyLevel: EnergyLevel;
-  userId?: string;
-  tags?: string[];
+  stretchGoalCompleted?: boolean;
 }
 
 export interface Interest {
@@ -229,7 +305,7 @@ export interface BackOfMindItem {
   id: string;
   content: string;
   category?: string;
-  relevanceScore: number; // 1-10
+  relevanceScore: number;
   createdAt: string;
   updatedAt: string;
   userId?: string;
@@ -238,7 +314,7 @@ export interface BackOfMindItem {
 export interface FocusReminders {
   id: string;
   reminders: string[];
-  intervalMinutes: number; // how often to show during focus
+  intervalMinutes: number;
   enabled: boolean;
   userId?: string;
 }
@@ -255,7 +331,7 @@ export interface MistakeLogEntry {
 
 export interface ActiveBuff {
   type: 'laserOverdrive' | 'zenMode' | 'momentumSurge' | 'brainFuel' | 'backlogLockdown' | 'energyInjection';
-  expiresAt: string; // ISO date string
+  expiresAt: string;
   metadata?: any;
 }
 
@@ -276,24 +352,21 @@ export interface UserProgress {
     embersOfContinuity: number;
   };
   activeBuffs: ActiveBuff[];
-  
-  // Phase 5: scaling mechanics
-  lastActiveDate?: string;     // ISO date string
-  seasonStartDate?: string;    // ISO date string
-  unlockedRelics?: string[];   // Array of relic IDs
-  legacyBadges?: string[];     // Array of earned legacy badge IDs
 
-  // Phase 5: The Digital Bonsai
+  lastActiveDate?: string;
+  seasonStartDate?: string;
+  unlockedRelics?: string[];
+  legacyBadges?: string[];
+
   bonsai?: {
     level: number;
     experience: number;
-    lastFed?: string; // ISO date
+    lastFed?: string;
   };
   dailyWinStreak?: number;
-  windDownStreak?: number;       // consecutive nights Wind Down completed before 11:30 PM
-  lastWindDownDate?: string;     // ISO date string of last qualifying Wind Down completion
+  windDownStreak?: number;
+  lastWindDownDate?: string;
 
-  // Personal bests
   personalBests?: {
     maxTasksInDay: number;
     maxFocusMinutes: number;
@@ -303,7 +376,7 @@ export interface UserProgress {
   };
 }
 
-export type GameAction = 
+export type GameAction =
   | { type: 'task-completed', task: Task, allTasksOnLoad: Task[] }
   | { type: 'focus-completed', session: FocusSession, jotsLogged: number, startedQuickly: boolean, preEmotion?: EmotionCheckIn }
   | { type: 'worry-resolved', accuracy: 'high' | 'low' }

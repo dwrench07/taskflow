@@ -23,21 +23,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { type Task, type Goal } from "@/lib/types";
+import { type Task, type Goal, type Project } from "@/lib/types";
 import { TagInput } from "./tag-input";
-import { getAllGoals, getAllMilestones, getAllTasks } from "@/lib/data";
+import { getAllGoals, getAllMilestones, getAllTasks, getAllProjects } from "@/lib/data";
 import { type Milestone } from "@/lib/types";
 import { DateTimePicker } from "./date-time-picker";
 import { Separator } from "@/components/ui/separator";
 
 const formSchema = z.object({
-  title: z.string().min(2, {
-    message: "Title must be at least 2 characters.",
-  }),
-  description: z.string().min(5, {
-    message: "Description must be at least 5 characters.",
-  }),
+  title: z.string().min(2, { message: "Title must be at least 2 characters." }),
+  description: z.string().optional(),
   priority: z.enum(["low", "medium", "high", "urgent"]),
+  category: z.enum(["project-work", "chore", "habit"]),
+  recurrence: z.enum(["once", "daily", "weekly", "monthly", "custom"]),
+  intervalDays: z.coerce.number().optional().nullable(),
+  projectId: z.string().optional().nullable(),
   energyLevel: z.enum(["high", "medium", "low"]).optional().nullable(),
   tags: z.array(z.string()).optional(),
   goalId: z.string().optional().nullable(),
@@ -52,7 +52,8 @@ const formSchema = z.object({
   isFrog: z.boolean().optional(),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+export type TaskFormValues = z.infer<typeof formSchema>;
+type FormValues = TaskFormValues;
 
 interface TaskFormProps {
   task?: Task;
@@ -63,6 +64,7 @@ interface TaskFormProps {
 export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [milestones, setMilestones] = useState<Milestone[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [allExistingTasks, setAllExistingTasks] = useState<Task[]>([]);
 
   useEffect(() => {
@@ -70,11 +72,12 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
       getAllGoals(),
       getAllMilestones(),
       getAllTasks(),
-    ]).then(([fetchedGoals, fetchedMilestones, fetchedTasks]) => {
+      getAllProjects(),
+    ]).then(([fetchedGoals, fetchedMilestones, fetchedTasks, fetchedProjects]) => {
       setGoals(fetchedGoals);
       setMilestones(fetchedMilestones);
-      // Don't allow a task to block itself
       setAllExistingTasks(fetchedTasks.filter(t => t.id !== task?.id));
+      setProjects(fetchedProjects);
     }).catch(console.error);
   }, [task?.id]);
 
@@ -84,6 +87,10 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
       title: task?.title || "",
       description: task?.description || "",
       priority: task?.priority || "medium",
+      category: task?.category || (task?.isHabit ? "habit" : "project-work"),
+      recurrence: task?.recurrence || (task?.isHabit ? (task?.habitFrequency ?? "daily") : "once"),
+      intervalDays: task?.intervalDays || null,
+      projectId: task?.projectId || null,
       tags: task?.tags || [],
       goalId: task?.goalId || null,
       milestoneId: task?.milestoneId || null,
@@ -98,6 +105,8 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
       isFrog: task?.isFrog || false,
     },
   });
+
+  const recurrence = form.watch("recurrence");
 
   return (
     <Form {...form}>
@@ -129,6 +138,7 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
                       placeholder="e.g. Create mockups and prototype..."
                       className="min-h-[120px] resize-none"
                       {...field}
+                      value={field.value || ""}
                     />
                   </FormControl>
                   <FormMessage />
@@ -166,8 +176,8 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
                         {allExistingTasks.length === 0 && <p className="text-[10px] text-muted-foreground p-1">No tasks.</p>}
                         {allExistingTasks.map(t => (
                           <label key={`blockedBy-${t.id}`} className="flex items-center space-x-2 text-xs">
-                            <input 
-                              type="checkbox" 
+                            <input
+                              type="checkbox"
                               checked={field.value?.includes(t.id)}
                               onChange={(e) => {
                                 const checked = e.target.checked;
@@ -196,8 +206,8 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
                         {allExistingTasks.length === 0 && <p className="text-[10px] text-muted-foreground p-1">No tasks.</p>}
                         {allExistingTasks.map(t => (
                           <label key={`blocks-${t.id}`} className="flex items-center space-x-2 text-xs">
-                            <input 
-                              type="checkbox" 
+                            <input
+                              type="checkbox"
                               checked={field.value?.includes(t.id)}
                               onChange={(e) => {
                                 const checked = e.target.checked;
@@ -220,6 +230,79 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
 
           {/* Sidebar Meta Column */}
           <div className="space-y-4 bg-muted/30 p-4 rounded-xl border border-white/5">
+            <div className="grid grid-cols-2 gap-3">
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs">Type</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder="Type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="project-work">Project work</SelectItem>
+                        <SelectItem value="chore">Chore</SelectItem>
+                        <SelectItem value="habit">Habit</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="recurrence"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs">Repeats</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder="Repeats" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="once">Once</SelectItem>
+                        <SelectItem value="daily">Daily</SelectItem>
+                        <SelectItem value="weekly">Weekly</SelectItem>
+                        <SelectItem value="monthly">Monthly</SelectItem>
+                        <SelectItem value="custom">Custom</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {recurrence === "custom" && (
+              <FormField
+                control={form.control}
+                name="intervalDays"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs">Every (days)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min={1}
+                        placeholder="e.g. 14"
+                        className="h-8 text-xs"
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value, 10) : null)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
             <div className="grid grid-cols-2 gap-3">
               <FormField
                 control={form.control}
@@ -321,12 +404,12 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
                   <FormItem>
                     <FormLabel className="text-xs">Timebox (m)</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="25" 
+                      <Input
+                        type="number"
+                        placeholder="25"
                         className="h-8 text-xs"
-                        {...field} 
-                        value={field.value || ""} 
+                        {...field}
+                        value={field.value || ""}
                         onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
                       />
                     </FormControl>
@@ -339,6 +422,29 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
             <Separator className="bg-white/5" />
 
             <div className="space-y-3">
+              <FormField
+                control={form.control}
+                name="projectId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-xs text-muted-foreground">Project</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || "none"}>
+                      <FormControl>
+                        <SelectTrigger className="h-8 text-xs italic bg-transparent">
+                          <SelectValue placeholder="Standalone" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="none">Standalone (no project)</SelectItem>
+                        {projects.map((p) => (
+                          <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="goalId"
@@ -397,9 +503,9 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
                   <FormItem>
                     <FormLabel className="text-[10px] uppercase font-bold text-primary">Drop Dead Date</FormLabel>
                     <FormControl>
-                      <DateTimePicker 
-                        date={field.value || undefined} 
-                        setDate={(date) => field.onChange(date.toISOString())} 
+                      <DateTimePicker
+                        date={field.value || undefined}
+                        setDate={(date) => field.onChange(date.toISOString())}
                       />
                     </FormControl>
                     <FormMessage />
@@ -413,9 +519,9 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
                   <FormItem>
                     <FormLabel className="text-[10px] uppercase text-muted-foreground">Final Deadline</FormLabel>
                     <FormControl>
-                      <DateTimePicker 
-                        date={field.value || undefined} 
-                        setDate={(date) => field.onChange(date.toISOString())} 
+                      <DateTimePicker
+                        date={field.value || undefined}
+                        setDate={(date) => field.onChange(date.toISOString())}
                       />
                     </FormControl>
                     <FormMessage />
@@ -423,7 +529,7 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
                 )}
               />
             </div>
-            
+
             <Button type="submit" className="w-full shadow-lg shadow-primary/20 mt-4">
               {task ? 'Update Task' : 'Create Task'}
             </Button>

@@ -21,7 +21,7 @@ export function DashboardGoalCoverage({ allTasks }: GoalCoverageProps) {
   }, []);
 
   const analysis = useMemo(() => {
-    const tasks = allTasks.filter(t => !t.isHabit && t.status !== 'abandoned');
+    const tasks = allTasks.filter(t => (t.category !== "habit") && t.status !== 'abandoned');
     if (tasks.length < 3) return null;
 
     const withGoal = tasks.filter(t => t.goalId);

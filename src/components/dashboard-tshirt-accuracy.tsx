@@ -27,7 +27,7 @@ const SIZE_CONFIG: Record<TSize, { label: string; expectedDays: string; color: s
 export function DashboardTShirtAccuracy({ allTasks }: TShirtAccuracyProps) {
   const analysis = useMemo(() => {
     const sized = allTasks.filter(
-      t => !t.isHabit && t.tShirtSize && t.status === 'done' && t.startDate && t.endDate
+      t => (t.category !== "habit") && t.tShirtSize && t.status === 'done' && t.startDate && t.endDate
     );
 
     if (sized.length < 3) return null;

@@ -10,14 +10,24 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import type { Chore, ChoreFrequency } from "@/lib/types";
-import { getAllChores, addChore, deleteChore, updateChore, getUserProgress, saveUserProgress } from "@/lib/data";
+import type { Task, Recurrence } from "@/lib/types";
+import { getAllTasks, addTask, deleteTask, updateTask, getUserProgress, saveUserProgress } from "@/lib/data";
 import { useRefresh } from "@/context/RefreshContext";
 import { useToast } from "@/hooks/use-toast";
 
+type ChoreRecurrence = Extract<Recurrence, "once" | "daily" | "weekly" | "custom">;
+
+const todayStr = () => new Date().toISOString().substring(0, 10);
+const isCompletedToday = (task: Task) =>
+  task.completionHistory?.some(d => d.substring(0, 10) === todayStr()) ?? false;
+const lastCompletedDate = (task: Task) =>
+  task.completionHistory && task.completionHistory.length > 0
+    ? task.completionHistory[task.completionHistory.length - 1]
+    : task.completedAt;
+
 export default function ChoresPage() {
   const { refreshKey, triggerRefresh } = useRefresh();
-  const [chores, setChores] = useState<Chore[]>([]);
+  const [chores, setChores] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const { toast } = useToast();
@@ -25,25 +35,22 @@ export default function ChoresPage() {
   const [newChore, setNewChore] = useState<{
     title: string;
     description: string;
-    frequency: ChoreFrequency;
+    recurrence: ChoreRecurrence;
     intervalDays: number;
   }>({
     title: "",
     description: "",
-    frequency: "weekly",
+    recurrence: "weekly",
     intervalDays: 7,
   });
 
-  useEffect(() => {
-    fetchChores();
-  }, [refreshKey]);
+  useEffect(() => { fetchChores(); }, [refreshKey]);
 
   const fetchChores = async () => {
     setIsLoading(true);
     try {
-      // In a real app we'd fetch this from the API, but for now we'll simulate
-      const data = await getAllChores();
-      setChores(data || []);
+      const tasks = await getAllTasks();
+      setChores(tasks.filter(t => t.category === 'chore'));
     } catch (error) {
       console.error("Failed to fetch chores:", error);
     } finally {
@@ -53,33 +60,38 @@ export default function ChoresPage() {
 
   const handleAddChore = async () => {
     if (!newChore.title.trim()) return;
-
     try {
-      const choreData: Omit<Chore, "id"> = {
+      const taskData: Omit<Task, "id"> = {
         title: newChore.title.trim(),
-        description: newChore.description.trim(),
+        description: newChore.description.trim() || undefined,
         priority: "medium",
         energyLevel: "medium",
-        frequency: newChore.frequency,
-        intervalDays: newChore.frequency === "custom" ? newChore.intervalDays : undefined,
+        status: "todo",
+        category: "chore",
+        recurrence: newChore.recurrence,
+        intervalDays: newChore.recurrence === "custom" ? newChore.intervalDays : undefined,
+        // Dual-write legacy fields so any unmigrated reads keep working.
+        frequency: newChore.recurrence,
+        subtasks: [],
+        notes: [],
       };
-
-      const addedChore = await addChore(choreData);
-      setChores([...chores, addedChore]);
-      setNewChore({ title: "", description: "", frequency: "weekly", intervalDays: 7 });
+      const added = await addTask(taskData);
+      setChores([...chores, added]);
+      setNewChore({ title: "", description: "", recurrence: "weekly", intervalDays: 7 });
       setIsAddDialogOpen(false);
     } catch (error) {
       console.error("Failed to add chore:", error);
     }
   };
 
-  const handleToggleChore = async (chore: Chore) => {
-    // One-time chores: mark permanently done, no toggle back
-    if (chore.frequency === 'once') {
-      if (chore.completedOnce) return;
-      setChores(chores.map(c => c.id === chore.id ? { ...c, completedOnce: true, lastCompleted: new Date().toISOString() } : c));
+  const handleToggleChore = async (chore: Task) => {
+    // One-time chores: flip status to 'done', no toggle back
+    if (chore.recurrence === 'once') {
+      if (chore.status === 'done') return;
+      const updated: Task = { ...chore, status: 'done', completedAt: new Date().toISOString() };
+      setChores(chores.map(c => c.id === chore.id ? updated : c));
       try {
-        await updateChore({ ...chore, completedOnce: true, lastCompleted: new Date().toISOString() });
+        await updateTask(updated);
         triggerRefresh();
       } catch {
         setChores(chores.map(c => c.id === chore.id ? chore : c));
@@ -87,34 +99,37 @@ export default function ChoresPage() {
       return;
     }
 
-    const isCompletedToday = chore.lastCompleted && new Date(chore.lastCompleted).toDateString() === new Date().toDateString();
-    const newCompletedState = isCompletedToday ? undefined : new Date().toISOString();
-    const completing = !isCompletedToday;
+    // Recurring chore: toggle today's completion in completionHistory
+    const today = todayStr();
+    const completedToday = isCompletedToday(chore);
+    const newHistory = completedToday
+      ? (chore.completionHistory || []).filter(d => d.substring(0, 10) !== today)
+      : [...(chore.completionHistory || []), new Date().toISOString()];
 
-    // Optimistic update
-    const updatedChores = chores.map(c =>
-      c.id === chore.id ? { ...c, lastCompleted: newCompletedState } : c
-    );
-    setChores(updatedChores);
+    const updated: Task = {
+      ...chore,
+      completionHistory: newHistory,
+      lastCompletedDate: completedToday ? undefined : new Date().toISOString(),
+      // Dual-write the legacy field so the dashboard keeps working.
+      lastCompleted: completedToday ? undefined : new Date().toISOString(),
+    };
+    setChores(chores.map(c => c.id === chore.id ? updated : c));
 
     try {
-      // Use null explicitly when clearing so JSON.stringify doesn't drop the field
-      await updateChore({ ...chore, lastCompleted: newCompletedState ?? null } as any);
-
+      await updateTask(updated);
       // Twilight Lock: trigger if "Wind Down" chore is being completed
-      if (completing && chore.title.toLowerCase().includes('wind down')) {
+      if (!completedToday && chore.title.toLowerCase().includes('wind down')) {
         const progress = await getUserProgress();
         if (progress) {
-          import("@/lib/gamification").then(async ({ evaluateGamificationTriggers }) => {
-            const tempProgress = JSON.parse(JSON.stringify(progress));
-            const updates = evaluateGamificationTriggers({ type: 'wind-down-completed' }, tempProgress);
-            if (updates.length > 0) {
-              await saveUserProgress(tempProgress);
-              updates.forEach((u, idx) => {
-                setTimeout(() => toast({ title: `🎁 ${u.message}`, description: u.detail }), idx * 1500);
-              });
-            }
-          });
+          const { evaluateGamificationTriggers } = await import("@/lib/gamification");
+          const tempProgress = JSON.parse(JSON.stringify(progress));
+          const updates = evaluateGamificationTriggers({ type: 'wind-down-completed' }, tempProgress);
+          if (updates.length > 0) {
+            await saveUserProgress(tempProgress);
+            updates.forEach((u, idx) => {
+              setTimeout(() => toast({ title: `🎁 ${u.message}`, description: u.detail }), idx * 1500);
+            });
+          }
         }
       }
       triggerRefresh();
@@ -127,11 +142,38 @@ export default function ChoresPage() {
   const handleDeleteChore = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      await deleteChore(id);
-      setChores(chores.filter((c) => c.id !== id));
+      await deleteTask(id);
+      setChores(chores.filter(c => c.id !== id));
     } catch (error) {
       console.error("Failed to delete chore:", error);
     }
+  };
+
+  const recurrenceLabel = (c: Task) => {
+    if (c.recurrence === 'once') return 'One-time';
+    if (c.recurrence === 'daily') return 'Daily';
+    if (c.recurrence === 'weekly') return 'Weekly';
+    if (c.recurrence === 'monthly') return 'Monthly';
+    const days = c.intervalDays ?? 30;
+    if (days === 30) return 'Monthly';
+    if (days === 90) return 'Quarterly';
+    if (days === 180) return 'Every 6mo';
+    if (days === 365) return 'Yearly';
+    return `Every ${days}d`;
+  };
+
+  const isDueLabel = (c: Task) => {
+    const last = lastCompletedDate(c);
+    if (!last || c.recurrence === 'once') return null;
+    const days = c.recurrence === 'daily' ? 1
+      : c.recurrence === 'weekly' ? 7
+      : c.recurrence === 'monthly' ? 30
+      : (c.intervalDays ?? 30);
+    const diff = differenceInCalendarDays(new Date(), parseISO(last));
+    const remaining = days - diff;
+    if (remaining <= 0) return <span className="text-orange-400 font-medium">Due now</span>;
+    if (remaining === 1) return <span className="text-muted-foreground">Due tomorrow</span>;
+    return <span className="text-muted-foreground">Due in {remaining}d</span>;
   };
 
   return (
@@ -157,21 +199,15 @@ export default function ChoresPage() {
             <div className="space-y-4 pt-4">
               <div className="space-y-2">
                 <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  placeholder="e.g., Do laundry, Pay bills"
+                <Input id="title" placeholder="e.g., Do laundry, Pay bills"
                   value={newChore.title}
-                  onChange={(e) => setNewChore({ ...newChore, title: e.target.value })}
-                />
+                  onChange={(e) => setNewChore({ ...newChore, title: e.target.value })} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="description">Description (optional)</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Notes or instructions..."
+                <Textarea id="description" placeholder="Notes or instructions..."
                   value={newChore.description}
-                  onChange={(e) => setNewChore({ ...newChore, description: e.target.value })}
-                />
+                  onChange={(e) => setNewChore({ ...newChore, description: e.target.value })} />
               </div>
               <div className="space-y-2">
                 <Label>Frequency</Label>
@@ -181,19 +217,15 @@ export default function ChoresPage() {
                     { value: "daily", label: "Daily" },
                     { value: "weekly", label: "Weekly" },
                     { value: "custom", label: "Custom" },
-                  ] as { value: ChoreFrequency; label: string }[]).map(opt => (
-                    <Button
-                      key={opt.value}
-                      type="button"
-                      size="sm"
-                      variant={newChore.frequency === opt.value ? "default" : "outline"}
-                      onClick={() => setNewChore({ ...newChore, frequency: opt.value, intervalDays: opt.value === "custom" ? 30 : newChore.intervalDays })}
-                    >
+                  ] as { value: ChoreRecurrence; label: string }[]).map(opt => (
+                    <Button key={opt.value} type="button" size="sm"
+                      variant={newChore.recurrence === opt.value ? "default" : "outline"}
+                      onClick={() => setNewChore({ ...newChore, recurrence: opt.value, intervalDays: opt.value === "custom" ? 30 : newChore.intervalDays })}>
                       {opt.label}
                     </Button>
                   ))}
                 </div>
-                {newChore.frequency === "custom" && (
+                {newChore.recurrence === "custom" && (
                   <div className="space-y-2 pt-1">
                     <div className="flex gap-2 flex-wrap">
                       {[
@@ -202,26 +234,18 @@ export default function ChoresPage() {
                         { label: "Every 6mo", days: 180 },
                         { label: "Yearly", days: 365 },
                       ].map(preset => (
-                        <Button
-                          key={preset.days}
-                          type="button"
-                          size="sm"
+                        <Button key={preset.days} type="button" size="sm"
                           variant={newChore.intervalDays === preset.days ? "secondary" : "ghost"}
                           className="text-xs h-7"
-                          onClick={() => setNewChore({ ...newChore, intervalDays: preset.days })}
-                        >
+                          onClick={() => setNewChore({ ...newChore, intervalDays: preset.days })}>
                           {preset.label}
                         </Button>
                       ))}
                     </div>
                     <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        min={1}
-                        className="w-24"
+                      <Input type="number" min={1} className="w-24"
                         value={newChore.intervalDays}
-                        onChange={(e) => setNewChore({ ...newChore, intervalDays: Math.max(1, parseInt(e.target.value) || 1) })}
-                      />
+                        onChange={(e) => setNewChore({ ...newChore, intervalDays: Math.max(1, parseInt(e.target.value) || 1) })} />
                       <span className="text-sm text-muted-foreground">days</span>
                     </div>
                   </div>
@@ -237,9 +261,7 @@ export default function ChoresPage() {
 
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse h-32 border-dashed" />
-          ))}
+          {[1, 2, 3].map((i) => <Card key={i} className="animate-pulse h-32 border-dashed" />)}
         </div>
       ) : chores.length === 0 ? (
         <div className="text-center py-20 border-2 border-dashed rounded-xl">
@@ -250,76 +272,53 @@ export default function ChoresPage() {
           </Button>
         </div>
       ) : (() => {
-        const activeChores = chores.filter(c => !(c.frequency === 'once' && c.completedOnce));
-        const archivedChores = chores.filter(c => c.frequency === 'once' && c.completedOnce);
+        const activeChores = chores.filter(c => !(c.recurrence === 'once' && c.status === 'done'));
+        const archivedChores = chores.filter(c => c.recurrence === 'once' && c.status === 'done');
 
-        const frequencyLabel = (c: Chore) => {
-          if (c.frequency === 'once') return 'One-time';
-          if (c.frequency === 'daily') return 'Daily';
-          if (c.frequency === 'weekly') return 'Weekly';
-          const days = c.intervalDays ?? 30;
-          if (days === 30) return 'Monthly';
-          if (days === 90) return 'Quarterly';
-          if (days === 180) return 'Every 6mo';
-          if (days === 365) return 'Yearly';
-          return `Every ${days}d`;
-        };
-
-        const isDueLabel = (c: Chore) => {
-          if (!c.lastCompleted || c.frequency === 'once') return null;
-          const days = c.frequency === 'daily' ? 1 : c.frequency === 'weekly' ? 7 : (c.intervalDays ?? 30);
-          const diff = differenceInCalendarDays(new Date(), parseISO(c.lastCompleted));
-          const remaining = days - diff;
-          if (remaining <= 0) return <span className="text-orange-400 font-medium">Due now</span>;
-          if (remaining === 1) return <span className="text-muted-foreground">Due tomorrow</span>;
-          return <span className="text-muted-foreground">Due in {remaining}d</span>;
-        };
-
-        const renderChoreCard = (chore: Chore, archived = false) => (
-          <Card
-            key={chore.id}
-            className={`group transition-colors ${archived ? 'opacity-50' : 'hover:border-primary/50 cursor-pointer'}`}
-            onClick={archived ? undefined : () => handleToggleChore(chore)}
-          >
-            <CardContent className="p-5 flex items-start gap-4">
-              <button className="mt-0.5 flex-shrink-0 text-muted-foreground hover:text-primary transition-colors">
-                {archived || (chore.frequency !== 'once' && chore.lastCompleted && new Date(chore.lastCompleted).toDateString() === new Date().toDateString()) ? (
-                  <CheckCircle2 className="h-6 w-6 text-green-500" />
-                ) : (
-                  <Circle className="h-6 w-6" />
-                )}
-              </button>
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-start gap-2">
-                  <h3 className={`font-medium truncate ${archived ? 'line-through text-muted-foreground' : ''}`}>{chore.title}</h3>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 -mt-1 -mr-2 hover:text-destructive"
-                    onClick={(e) => handleDeleteChore(chore.id, e)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-                {chore.description && (
-                  <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{chore.description}</p>
-                )}
-                <div className="text-xs mt-3 flex items-center gap-3 flex-wrap">
-                  <Badge variant="outline" className="text-xs font-normal gap-1 py-0">
-                    {chore.frequency !== 'once' && <RefreshCw className="h-2.5 w-2.5" />}
-                    {frequencyLabel(chore)}
-                  </Badge>
-                  {chore.lastCompleted ? (
-                    <span className="text-muted-foreground">Last: {format(new Date(chore.lastCompleted), "MMM d")}</span>
+        const renderChoreCard = (chore: Task, archived = false) => {
+          const completedToday = chore.recurrence !== 'once' && isCompletedToday(chore);
+          const last = lastCompletedDate(chore);
+          return (
+            <Card key={chore.id}
+              className={`group transition-colors ${archived ? 'opacity-50' : 'hover:border-primary/50 cursor-pointer'}`}
+              onClick={archived ? undefined : () => handleToggleChore(chore)}>
+              <CardContent className="p-5 flex items-start gap-4">
+                <button className="mt-0.5 flex-shrink-0 text-muted-foreground hover:text-primary transition-colors">
+                  {archived || completedToday ? (
+                    <CheckCircle2 className="h-6 w-6 text-green-500" />
                   ) : (
-                    <span className="text-muted-foreground italic">Never done</span>
+                    <Circle className="h-6 w-6" />
                   )}
-                  {isDueLabel(chore)}
+                </button>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start gap-2">
+                    <h3 className={`font-medium truncate ${archived ? 'line-through text-muted-foreground' : ''}`}>{chore.title}</h3>
+                    <Button variant="ghost" size="icon"
+                      className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 -mt-1 -mr-2 hover:text-destructive"
+                      onClick={(e) => handleDeleteChore(chore.id, e)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  {chore.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-2 mt-1">{chore.description}</p>
+                  )}
+                  <div className="text-xs mt-3 flex items-center gap-3 flex-wrap">
+                    <Badge variant="outline" className="text-xs font-normal gap-1 py-0">
+                      {chore.recurrence !== 'once' && <RefreshCw className="h-2.5 w-2.5" />}
+                      {recurrenceLabel(chore)}
+                    </Badge>
+                    {last ? (
+                      <span className="text-muted-foreground">Last: {format(new Date(last), "MMM d")}</span>
+                    ) : (
+                      <span className="text-muted-foreground italic">Never done</span>
+                    )}
+                    {isDueLabel(chore)}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        );
+              </CardContent>
+            </Card>
+          );
+        };
 
         return (
           <div className="space-y-8">

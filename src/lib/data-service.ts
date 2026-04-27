@@ -2,23 +2,18 @@
  * Data service layer that uses the database abstraction
  */
 
-import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry, FocusReminders, UserProgress } from './types';
+import type { Task, Project, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry, FocusReminders, UserProgress, Status } from './types';
 import type { DatabaseAdapter, DailyPlan } from './database/types';
 import { DatabaseFactory } from './database/factory';
 import { config, isServer } from './config';
 import { defaultLogger } from './database/types';
 
-// Singleton database adapter instance
 let dbAdapter: DatabaseAdapter | null = null;
 
-/**
- * Initialize the database connection
- */
 async function initializeDatabase(): Promise<DatabaseAdapter> {
     if (!isServer) {
         throw new Error('Database operations are only available on the server side');
     }
-
     if (!dbAdapter || !dbAdapter.isConnected()) {
         try {
             dbAdapter = await DatabaseFactory.initialize(config.database, defaultLogger);
@@ -28,13 +23,9 @@ async function initializeDatabase(): Promise<DatabaseAdapter> {
             throw error;
         }
     }
-
     return dbAdapter;
 }
 
-/**
- * Get the database adapter, initializing if necessary
- */
 async function getDatabase(): Promise<DatabaseAdapter> {
     if (!dbAdapter || !dbAdapter.isConnected()) {
         return await initializeDatabase();
@@ -42,89 +33,31 @@ async function getDatabase(): Promise<DatabaseAdapter> {
     return dbAdapter;
 }
 
-/**
- * Mock data for client-side and fallback scenarios
- */
+// Mock data for client-side
+const mockProjects: Project[] = [
+    { id: "project-1", title: "Design new homepage", description: "Mockups and prototype.", tags: ["design"] },
+];
+
 const mockTasks: Task[] = [
-    {
-        id: "task-1",
-        title: "Design new homepage",
-        description: "Create mockups and a prototype for the new homepage design.",
-        priority: "high",
-        status: "in-progress",
-        tags: ["design", "website", "ux"],
-        startDate: "2024-08-01T10:00:00.000Z",
-        endDate: "2024-08-10T17:00:00.000Z",
-        subtasks: [
-            { id: "sub-1-1", title: "Create wireframes", completed: true, tags: ['design'] },
-            { id: "sub-1-2", title: "Develop high-fidelity mockups", completed: false, tags: ['design'] },
-            { id: "sub-1-3", title: "Prototype interactions", completed: false },
-        ],
-        notes: ["Initial meeting with stakeholders went well. They prefer a clean, modern look."],
-    },
-    {
-        id: "task-2",
-        title: "Develop API for user authentication",
-        description: "Build and document the API endpoints for user sign-up, sign-in, and profile management.",
-        priority: "high",
-        status: "todo",
-        tags: ["development", "backend", "api"],
-        startDate: "2024-08-05T09:00:00.000Z",
-        endDate: "2024-08-15T18:00:00.000Z",
-        subtasks: [
-            { id: "sub-2-1", title: "Set up database schema for users", completed: false },
-            { id: "sub-2-2", title: "Implement JWT generation", completed: false, tags: ['auth'] },
-            { id: "sub-2-3", title: "Create sign-up endpoint", completed: false },
-            { id: "sub-2-4", title: "Create sign-in endpoint", completed: false },
-        ],
-        notes: [],
-    },
-    {
-        id: "task-3",
-        title: "Plan Q4 Marketing Campaign",
-        description: "Outline the strategy, channels, and budget for the upcoming Q4 marketing campaign.",
-        priority: "medium",
-        status: "todo",
-        tags: ["marketing", "planning", "strategy"],
-        startDate: "2024-08-12T09:00:00.000Z",
-        subtasks: [],
-        notes: ["Focus on social media and content marketing.", "Need to coordinate with the sales team for promotions."],
-    },
+    { id: "task-1", projectId: "project-1", title: "Create wireframes", status: "done", priority: "high", category: "project-work", recurrence: "once", subtasks: [], notes: [] },
+    { id: "task-2", projectId: "project-1", title: "Develop high-fidelity mockups", status: "in-progress", priority: "high", category: "project-work", recurrence: "once", subtasks: [], notes: [] },
+    { id: "task-3", title: "Plan Q4 Marketing Campaign", status: "todo", priority: "medium", category: "project-work", recurrence: "once", tags: ["marketing"], subtasks: [], notes: [] },
 ];
 
-const mockTemplates: TaskTemplate[] = [
-    {
-        id: "template-1",
-        title: "New Employee Onboarding",
-        description: "A standard checklist for onboarding a new team member.",
-        priority: "medium",
-        tags: ["hr", "onboarding"],
-        subtasks: [
-            { id: "tsub-1-1", title: "Set up hardware (laptop, monitor)", tags: ["it"] },
-            { id: "tsub-1-2", title: "Grant access to required systems", tags: ["it", "security"] },
-            { id: "tsub-1-3", title: "Schedule team introduction meeting" },
-        ]
-    }
-];
-
+const mockTemplates: TaskTemplate[] = [];
 let mockDailyPlan: string[] = ['task-1'];
-
 const mockUsers: User[] = [
     { id: 'user-1', email: 'user@example.com', roles: ['user'] },
     { id: 'admin-1', email: 'admin@example.com', roles: ['admin'] },
 ];
-
 const mockFocusSessions: FocusSession[] = [];
 const mockGoals: Goal[] = [];
-
 const mockPillars: Pillar[] = [
     { id: 'pillar-1', title: 'Health', description: 'Physical and mental well-being', color: '#ef4444' },
     { id: 'pillar-2', title: 'Wealth', description: 'Financial stability and growth', color: '#22c55e' },
     { id: 'pillar-3', title: 'Wisdom', description: 'Learning and personal growth', color: '#3b82f6' },
 ];
-
 const mockMilestones: Milestone[] = [];
-const mockChores: Chore[] = [];
 const mockInterests: Interest[] = [];
 const mockInterestConnections: InterestConnection[] = [];
 const mockBackOfMindItems: BackOfMindItem[] = [];
@@ -132,14 +65,10 @@ const mockMistakeLogEntries: MistakeLogEntry[] = [];
 let mockFocusReminders: FocusReminders | null = null;
 let mockUserProgress: UserProgress | null = null;
 
-/**
- * Get all tasks
- */
-export async function getAllTasksAsync(userId?: string | null): Promise<Task[]> {
-    if (!isServer) {
-        return mockTasks;
-    }
+// === TASKS ===
 
+export async function getAllTasksAsync(userId?: string | null): Promise<Task[]> {
+    if (!isServer) return mockTasks;
     try {
         const db = await getDatabase();
         return await db.getAllTasks(userId);
@@ -149,37 +78,31 @@ export async function getAllTasksAsync(userId?: string | null): Promise<Task[]> 
     }
 }
 
-/**
- * Get a single task by ID
- */
 export async function getTaskAsync(taskId: string, userId?: string | null): Promise<Task | null> {
-    if (!isServer) {
-        return mockTasks.find(task => task.id === taskId) || null;
-    }
-
+    if (!isServer) return mockTasks.find(t => t.id === taskId) || null;
     try {
         const db = await getDatabase();
         return await db.getTask(taskId, userId);
     } catch (error) {
         defaultLogger.warn('Failed to get task from database, checking mock data', { taskId, error });
-        return mockTasks.find(task => task.id === taskId) || null;
+        return mockTasks.find(t => t.id === taskId) || null;
     }
 }
 
-/**
- * Add a new task
- */
+export async function getTasksByProjectAsync(projectId: string, userId?: string | null): Promise<Task[]> {
+    const all = await getAllTasksAsync(userId);
+    return all.filter(t => t.projectId === projectId);
+}
+
 export async function addTaskAsync(newTask: Omit<Task, 'id'>, userId?: string | null): Promise<Task> {
     const taskWithId: Task = {
         ...newTask,
         id: `task-${Date.now()}`,
     };
-
     if (!isServer) {
         mockTasks.push(taskWithId);
         return taskWithId;
     }
-
     try {
         const db = await getDatabase();
         return await db.addTask(taskWithId, userId);
@@ -190,67 +113,140 @@ export async function addTaskAsync(newTask: Omit<Task, 'id'>, userId?: string | 
     }
 }
 
-/**
- * Update an existing task
- */
 export async function updateTaskAsync(updatedTask: Task, userId?: string | null): Promise<void> {
     if (!isServer) {
-        const index = mockTasks.findIndex(task => task.id === updatedTask.id);
-        if (index !== -1) {
-            mockTasks[index] = updatedTask;
-        }
+        const index = mockTasks.findIndex(t => t.id === updatedTask.id);
+        if (index !== -1) mockTasks[index] = updatedTask;
         return;
     }
-
     try {
         const db = await getDatabase();
         await db.updateTask(updatedTask, userId);
     } catch (error) {
         defaultLogger.warn('Failed to update task in database', { task: updatedTask, error });
-        // Update in mock data as fallback
-        const index = mockTasks.findIndex(task => task.id === updatedTask.id);
-        if (index !== -1) {
-            mockTasks[index] = updatedTask;
-        }
+        const index = mockTasks.findIndex(t => t.id === updatedTask.id);
+        if (index !== -1) mockTasks[index] = updatedTask;
     }
 }
 
-/**
- * Delete a task
- */
 export async function deleteTaskAsync(taskId: string, userId?: string | null): Promise<boolean> {
     if (!isServer) {
-        const index = mockTasks.findIndex(task => task.id === taskId);
-        if (index !== -1) {
-            mockTasks.splice(index, 1);
-            return true;
-        }
+        const index = mockTasks.findIndex(t => t.id === taskId);
+        if (index !== -1) { mockTasks.splice(index, 1); return true; }
         return false;
     }
-
     try {
         const db = await getDatabase();
         return await db.deleteTask(taskId, userId);
     } catch (error) {
         defaultLogger.warn('Failed to delete task from database', { taskId, error });
-        // Delete from mock data as fallback
-        const index = mockTasks.findIndex(task => task.id === taskId);
-        if (index !== -1) {
-            mockTasks.splice(index, 1);
-            return true;
-        }
+        const index = mockTasks.findIndex(t => t.id === taskId);
+        if (index !== -1) { mockTasks.splice(index, 1); return true; }
+        return false;
+    }
+}
+
+// === PROJECTS ===
+
+export async function getAllProjectsAsync(userId?: string | null): Promise<Project[]> {
+    if (!isServer) return mockProjects;
+    try {
+        const db = await getDatabase();
+        return await db.getAllProjects(userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to get projects from database, returning mock data', error);
+        return mockProjects;
+    }
+}
+
+export async function getProjectAsync(projectId: string, userId?: string | null): Promise<Project | null> {
+    if (!isServer) return mockProjects.find(p => p.id === projectId) || null;
+    try {
+        const db = await getDatabase();
+        return await db.getProject(projectId, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to get project from database, checking mock data', { projectId, error });
+        return mockProjects.find(p => p.id === projectId) || null;
+    }
+}
+
+export async function getProjectWithTasksAsync(projectId: string, userId?: string | null): Promise<{ project: Project; tasks: Task[] } | null> {
+    const project = await getProjectAsync(projectId, userId);
+    if (!project) return null;
+    const tasks = await getTasksByProjectAsync(projectId, userId);
+    return { project, tasks };
+}
+
+export async function addProjectAsync(newProject: Omit<Project, 'id'>, userId?: string | null): Promise<Project> {
+    const withId: Project = { ...newProject, id: `project-${Date.now()}` };
+    if (!isServer) { mockProjects.push(withId); return withId; }
+    try {
+        const db = await getDatabase();
+        return await db.addProject(withId, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to add project to database, adding to mock data', { project: withId, error });
+        mockProjects.push(withId);
+        return withId;
+    }
+}
+
+export async function updateProjectAsync(updatedProject: Project, userId?: string | null): Promise<void> {
+    if (!isServer) {
+        const index = mockProjects.findIndex(p => p.id === updatedProject.id);
+        if (index !== -1) mockProjects[index] = updatedProject;
+        return;
+    }
+    try {
+        const db = await getDatabase();
+        await db.updateProject(updatedProject, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to update project in database', { project: updatedProject, error });
+        const index = mockProjects.findIndex(p => p.id === updatedProject.id);
+        if (index !== -1) mockProjects[index] = updatedProject;
+    }
+}
+
+export async function deleteProjectAsync(projectId: string, userId?: string | null): Promise<boolean> {
+    if (!isServer) {
+        // Orphan child tasks
+        mockTasks.forEach(t => { if (t.projectId === projectId) delete (t as any).projectId; });
+        const index = mockProjects.findIndex(p => p.id === projectId);
+        if (index !== -1) { mockProjects.splice(index, 1); return true; }
+        return false;
+    }
+    try {
+        const db = await getDatabase();
+        return await db.deleteProject(projectId, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to delete project from database', { projectId, error });
         return false;
     }
 }
 
 /**
- * Get all templates
+ * Roll-up helpers — Project status/progress is derived, not stored.
  */
-export async function getAllTemplatesAsync(): Promise<TaskTemplate[]> {
-    if (!isServer) {
-        return mockTemplates;
-    }
+export function deriveProjectStatus(tasks: Task[]): Status {
+    if (tasks.length === 0) return 'todo';
+    const oneTime = tasks.filter(t => t.recurrence === 'once');
+    const considered = oneTime.length > 0 ? oneTime : tasks;
+    if (considered.every(t => t.status === 'done')) return 'done';
+    if (considered.every(t => t.status === 'abandoned')) return 'abandoned';
+    if (considered.some(t => t.status === 'in-progress')) return 'in-progress';
+    return 'todo';
+}
 
+export function deriveProjectProgress(tasks: Task[]): { done: number; total: number; pct: number } {
+    const oneTime = tasks.filter(t => t.recurrence === 'once');
+    const total = oneTime.length;
+    const done = oneTime.filter(t => t.status === 'done').length;
+    return { done, total, pct: total === 0 ? 0 : Math.round((done / total) * 100) };
+}
+
+// === TEMPLATES ===
+
+export async function getAllTemplatesAsync(): Promise<TaskTemplate[]> {
+    if (!isServer) return mockTemplates;
     try {
         const db = await getDatabase();
         return await db.getAllTemplates();
@@ -260,90 +256,55 @@ export async function getAllTemplatesAsync(): Promise<TaskTemplate[]> {
     }
 }
 
-/**
- * Add a new template
- */
 export async function addTemplateAsync(newTemplate: Omit<TaskTemplate, 'id'>): Promise<TaskTemplate> {
-    const templateWithId: TaskTemplate = {
-        ...newTemplate,
-        id: `template-${Date.now()}`,
-    };
-
-    if (!isServer) {
-        mockTemplates.push(templateWithId);
-        return templateWithId;
-    }
-
+    const withId: TaskTemplate = { ...newTemplate, id: `template-${Date.now()}` };
+    if (!isServer) { mockTemplates.push(withId); return withId; }
     try {
         const db = await getDatabase();
-        return await db.addTemplate(templateWithId);
+        return await db.addTemplate(withId);
     } catch (error) {
-        defaultLogger.warn('Failed to add template to database, adding to mock data', { template: templateWithId, error });
-        mockTemplates.push(templateWithId);
-        return templateWithId;
+        defaultLogger.warn('Failed to add template to database, adding to mock data', { template: withId, error });
+        mockTemplates.push(withId);
+        return withId;
     }
 }
 
-/**
- * Update an existing template
- */
 export async function updateTemplateAsync(updatedTemplate: TaskTemplate): Promise<void> {
     if (!isServer) {
-        const index = mockTemplates.findIndex(template => template.id === updatedTemplate.id);
-        if (index !== -1) {
-            mockTemplates[index] = updatedTemplate;
-        }
+        const index = mockTemplates.findIndex(t => t.id === updatedTemplate.id);
+        if (index !== -1) mockTemplates[index] = updatedTemplate;
         return;
     }
-
     try {
         const db = await getDatabase();
         await db.updateTemplate(updatedTemplate);
     } catch (error) {
         defaultLogger.warn('Failed to update template in database', { template: updatedTemplate, error });
-        // Update in mock data as fallback
-        const index = mockTemplates.findIndex(template => template.id === updatedTemplate.id);
-        if (index !== -1) {
-            mockTemplates[index] = updatedTemplate;
-        }
+        const index = mockTemplates.findIndex(t => t.id === updatedTemplate.id);
+        if (index !== -1) mockTemplates[index] = updatedTemplate;
     }
 }
 
-/**
- * Delete a template
- */
 export async function deleteTemplateAsync(templateId: string): Promise<void> {
     if (!isServer) {
-        const index = mockTemplates.findIndex(template => template.id === templateId);
-        if (index !== -1) {
-            mockTemplates.splice(index, 1);
-        }
+        const index = mockTemplates.findIndex(t => t.id === templateId);
+        if (index !== -1) mockTemplates.splice(index, 1);
         return;
     }
-
     try {
         const db = await getDatabase();
         await db.deleteTemplate(templateId);
     } catch (error) {
         defaultLogger.warn('Failed to delete template from database', { templateId, error });
-        // Delete from mock data as fallback
-        const index = mockTemplates.findIndex(template => template.id === templateId);
-        if (index !== -1) {
-            mockTemplates.splice(index, 1);
-        }
+        const index = mockTemplates.findIndex(t => t.id === templateId);
+        if (index !== -1) mockTemplates.splice(index, 1);
     }
 }
 
 // === FOCUS SESSIONS ===
 
-/**
- * Get all focus sessions
- */
 export async function getFocusSessionsAsync(userId?: string | null): Promise<FocusSession[]> {
-    if (!isServer) {
-        return mockFocusSessions;
-    }
-
+    if (!isServer) return mockFocusSessions;
     try {
         const db = await getDatabase();
         return await db.getFocusSessions(userId);
@@ -353,20 +314,9 @@ export async function getFocusSessionsAsync(userId?: string | null): Promise<Foc
     }
 }
 
-/**
- * Add a new focus session
- */
 export async function addFocusSessionAsync(newSession: Omit<FocusSession, 'id'>, userId?: string | null): Promise<FocusSession> {
-    const sessionWithId: FocusSession = {
-        ...newSession,
-        id: `focus-${Date.now()}`,
-    };
-
-    if (!isServer) {
-        mockFocusSessions.push(sessionWithId);
-        return sessionWithId;
-    }
-
+    const sessionWithId: FocusSession = { ...newSession, id: `focus-${Date.now()}` };
+    if (!isServer) { mockFocusSessions.push(sessionWithId); return sessionWithId; }
     try {
         const db = await getDatabase();
         return await db.addFocusSession(sessionWithId, userId);
@@ -377,14 +327,8 @@ export async function addFocusSessionAsync(newSession: Omit<FocusSession, 'id'>,
     }
 }
 
-/**
- * Get the active focus session
- */
 export async function getActiveFocusSessionAsync(userId?: string | null): Promise<FocusSession | null> {
-    if (!isServer) {
-        return mockFocusSessions.find(s => s.status === 'active' && (!userId || s.userId === userId)) || null;
-    }
-
+    if (!isServer) return mockFocusSessions.find(s => s.status === 'active' && (!userId || s.userId === userId)) || null;
     try {
         const db = await getDatabase();
         return await db.getActiveFocusSession(userId);
@@ -394,38 +338,24 @@ export async function getActiveFocusSessionAsync(userId?: string | null): Promis
     }
 }
 
-/**
- * Update a focus session
- */
 export async function updateFocusSessionAsync(session: FocusSession, userId?: string | null): Promise<void> {
     if (!isServer) {
         const index = mockFocusSessions.findIndex(s => s.id === session.id);
-        if (index !== -1) {
-            mockFocusSessions[index] = session;
-        }
+        if (index !== -1) mockFocusSessions[index] = session;
         return;
     }
-
     try {
         const db = await getDatabase();
         await db.updateFocusSession(session, userId);
     } catch (error) {
-        defaultLogger.warn('Failed to update focus session in database', { session: session, error });
+        defaultLogger.warn('Failed to update focus session in database', { session, error });
         const index = mockFocusSessions.findIndex(s => s.id === session.id);
-        if (index !== -1) {
-            mockFocusSessions[index] = session;
-        }
+        if (index !== -1) mockFocusSessions[index] = session;
     }
 }
 
-/**
- * Finalize orphaned sessions
- */
 export async function finalizeOrphanedSessionsAsync(userId?: string | null): Promise<void> {
-    if (!isServer) {
-        return; // No-op on client side mocks
-    }
-
+    if (!isServer) return;
     try {
         const db = await getDatabase();
         await db.finalizeOrphanedSessions(userId);
@@ -436,14 +366,8 @@ export async function finalizeOrphanedSessionsAsync(userId?: string | null): Pro
 
 // === GOALS ===
 
-/**
- * Get all goals
- */
 export async function getGoalsAsync(userId?: string | null): Promise<Goal[]> {
-    if (!isServer) {
-        return mockGoals;
-    }
-
+    if (!isServer) return mockGoals;
     try {
         const db = await getDatabase();
         return await db.getGoals(userId);
@@ -453,14 +377,8 @@ export async function getGoalsAsync(userId?: string | null): Promise<Goal[]> {
     }
 }
 
-/**
- * Get a single goal
- */
 export async function getGoalAsync(id: string, userId?: string | null): Promise<Goal | null> {
-    if (!isServer) {
-        return mockGoals.find(g => g.id === id) || null;
-    }
-
+    if (!isServer) return mockGoals.find(g => g.id === id) || null;
     try {
         const db = await getDatabase();
         return await db.getGoal(id, userId);
@@ -470,20 +388,9 @@ export async function getGoalAsync(id: string, userId?: string | null): Promise<
     }
 }
 
-/**
- * Add a new goal
- */
 export async function addGoalAsync(newGoal: Omit<Goal, 'id'>, userId?: string | null): Promise<Goal> {
-    const goalWithId: Goal = {
-        ...newGoal,
-        id: `goal-${Date.now()}`,
-    };
-
-    if (!isServer) {
-        mockGoals.push(goalWithId);
-        return goalWithId;
-    }
-
+    const goalWithId: Goal = { ...newGoal, id: `goal-${Date.now()}` };
+    if (!isServer) { mockGoals.push(goalWithId); return goalWithId; }
     try {
         const db = await getDatabase();
         return await db.addGoal(goalWithId, userId);
@@ -494,69 +401,42 @@ export async function addGoalAsync(newGoal: Omit<Goal, 'id'>, userId?: string | 
     }
 }
 
-/**
- * Update an existing goal
- */
 export async function updateGoalAsync(updatedGoal: Goal, userId?: string | null): Promise<void> {
     if (!isServer) {
         const index = mockGoals.findIndex(g => g.id === updatedGoal.id);
-        if (index !== -1) {
-            mockGoals[index] = updatedGoal;
-        }
+        if (index !== -1) mockGoals[index] = updatedGoal;
         return;
     }
-
     try {
         const db = await getDatabase();
         await db.updateGoal(updatedGoal, userId);
     } catch (error) {
         defaultLogger.warn('Failed to update goal in database', { goal: updatedGoal, error });
-        // Update mock data as fallback
         const index = mockGoals.findIndex(g => g.id === updatedGoal.id);
-        if (index !== -1) {
-            mockGoals[index] = updatedGoal;
-        }
+        if (index !== -1) mockGoals[index] = updatedGoal;
     }
 }
 
-/**
- * Delete a goal
- */
 export async function deleteGoalAsync(id: string, userId?: string | null): Promise<boolean> {
     if (!isServer) {
         const index = mockGoals.findIndex(g => g.id === id);
-        if (index !== -1) {
-            mockGoals.splice(index, 1);
-            return true;
-        }
+        if (index !== -1) { mockGoals.splice(index, 1); return true; }
         return false;
     }
-
     try {
         const db = await getDatabase();
         return await db.deleteGoal(id, userId);
     } catch (error) {
         defaultLogger.warn('Failed to delete goal from database', { id, error });
-        // Delete mock data as fallback
-        const index = mockGoals.findIndex(g => g.id === id);
-        if (index !== -1) {
-            mockGoals.splice(index, 1);
-            return true;
-        }
         return false;
     }
 }
 
-/**
- * Get daily plan
- */
+// === DAILY PLAN ===
+
 export async function getDailyPlanAsync(date?: string, userId?: string | null): Promise<string[]> {
     const targetDate = date || new Date().toISOString().split('T')[0];
-
-    if (!isServer) {
-        return mockDailyPlan;
-    }
-
+    if (!isServer) return mockDailyPlan;
     try {
         const db = await getDatabase();
         const plan = await db.getDailyPlan(targetDate, userId);
@@ -567,17 +447,9 @@ export async function getDailyPlanAsync(date?: string, userId?: string | null): 
     }
 }
 
-/**
- * Update daily plan
- */
 export async function updateDailyPlanAsync(taskIds: string[], date?: string, userId?: string | null): Promise<void> {
     const targetDate = date || new Date().toISOString().split('T')[0];
-
-    if (!isServer) {
-        mockDailyPlan = taskIds;
-        return;
-    }
-
+    if (!isServer) { mockDailyPlan = taskIds; return; }
     try {
         const db = await getDatabase();
         const plan: DailyPlan = {
@@ -590,19 +462,12 @@ export async function updateDailyPlanAsync(taskIds: string[], date?: string, use
         await db.updateDailyPlan(plan, userId);
     } catch (error) {
         defaultLogger.warn('Failed to update daily plan in database', { taskIds, error });
-        // Update mock data as fallback
         mockDailyPlan = taskIds;
     }
 }
 
-/**
- * Health check for the database
- */
 export async function healthCheckAsync(): Promise<boolean> {
-    if (!isServer) {
-        return true; // Client-side always returns true
-    }
-
+    if (!isServer) return true;
     try {
         const db = await getDatabase();
         return await db.healthCheck();
@@ -612,25 +477,16 @@ export async function healthCheckAsync(): Promise<boolean> {
     }
 }
 
-/**
- * Initialize database on server startup
- */
 if (isServer) {
     initializeDatabase().catch((error) => {
         defaultLogger.error('Failed to initialize database on startup', error);
     });
 }
 
-// === AUTHENTICATION ===
+// === USERS ===
 
-/**
- * Get a user by ID
- */
 export async function getUserAsync(userId: string): Promise<User | null> {
-    if (!isServer) {
-        return mockUsers.find(user => user.id === userId) || null;
-    }
-
+    if (!isServer) return mockUsers.find(u => u.id === userId) || null;
     try {
         const db = await getDatabase();
         return await db.getUser(userId);
@@ -640,14 +496,8 @@ export async function getUserAsync(userId: string): Promise<User | null> {
     }
 }
 
-/**
- * Get a user by email
- */
 export async function getUserByEmailAsync(email: string): Promise<User | null> {
-    if (!isServer) {
-        return mockUsers.find(user => user.email === email) || null;
-    }
-
+    if (!isServer) return mockUsers.find(u => u.email === email) || null;
     try {
         const db = await getDatabase();
         return await db.getUserByEmail(email);
@@ -657,16 +507,12 @@ export async function getUserByEmailAsync(email: string): Promise<User | null> {
     }
 }
 
-/**
- * Create a new user
- */
 export async function createUserAsync(user: User): Promise<User | null> {
     if (!isServer) {
         const userWithId = { ...user, id: user.id || Date.now().toString() };
         mockUsers.push(userWithId);
         return userWithId;
     }
-
     try {
         const db = await getDatabase();
         return await db.createUser(user);
@@ -690,9 +536,7 @@ export async function getPillarsAsync(userId?: string | null): Promise<Pillar[]>
 }
 
 export async function getPillarByIdAsync(id: string, userId?: string | null): Promise<Pillar | null> {
-    if (!isServer) {
-        return mockPillars.find(p => p.id === id) || null;
-    }
+    if (!isServer) return mockPillars.find(p => p.id === id) || null;
     try {
         const db = await getDatabase();
         return await db.getPillar(id, userId);
@@ -767,75 +611,6 @@ export async function deleteMilestoneAsync(id: string, userId?: string | null): 
         return await db.deleteMilestone(id, userId);
     } catch (error) {
         defaultLogger.warn('Failed to delete milestone', error);
-        return false;
-    }
-}
-
-// === CHORES ===
-
-export async function getChoresAsync(userId?: string | null): Promise<Chore[]> {
-    if (!isServer) return mockChores;
-    try {
-        const db = await getDatabase();
-        return await db.getChores(userId);
-    } catch (error) {
-        defaultLogger.warn('Failed to get chores', error);
-        return mockChores;
-    }
-}
-
-export async function getChoreAsync(id: string, userId?: string | null): Promise<Chore | null> {
-    if (!isServer) return mockChores.find(c => c.id === id) || null;
-    try {
-        const db = await getDatabase();
-        return await db.getChore(id, userId);
-    } catch (error) {
-        defaultLogger.warn('Failed to get chore', { id, error });
-        return mockChores.find(c => c.id === id) || null;
-    }
-}
-
-export async function addChoreAsync(chore: Omit<Chore, 'id'>, userId?: string | null): Promise<Chore> {
-    const withId: Chore = { ...chore, id: `chore-${Date.now()}` } as Chore;
-    if (!isServer) { mockChores.push(withId); return withId; }
-    try {
-        const db = await getDatabase();
-        return await db.addChore(withId, userId);
-    } catch (error) {
-        defaultLogger.warn('Failed to add chore', error);
-        mockChores.push(withId);
-        return withId;
-    }
-}
-
-export async function updateChoreAsync(chore: Chore, userId?: string | null): Promise<Chore> {
-    if (!isServer) {
-        const idx = mockChores.findIndex(c => c.id === chore.id);
-        if (idx !== -1) mockChores[idx] = chore;
-        return chore;
-    }
-    try {
-        const db = await getDatabase();
-        return await db.updateChore(chore, userId);
-    } catch (error) {
-        defaultLogger.warn('Failed to update chore', { chore, error });
-        const idx = mockChores.findIndex(c => c.id === chore.id);
-        if (idx !== -1) mockChores[idx] = chore;
-        return chore;
-    }
-}
-
-export async function deleteChoreAsync(id: string, userId?: string | null): Promise<boolean> {
-    if (!isServer) {
-        const idx = mockChores.findIndex(c => c.id === id);
-        if (idx !== -1) { mockChores.splice(idx, 1); return true; }
-        return false;
-    }
-    try {
-        const db = await getDatabase();
-        return await db.deleteChore(id, userId);
-    } catch (error) {
-        defaultLogger.warn('Failed to delete chore', error);
         return false;
     }
 }
@@ -970,7 +745,6 @@ export async function addBackOfMindItemAsync(item: Omit<BackOfMindItem, 'id' | '
         updatedAt: new Date().toISOString()
     };
     if (userId) withId.userId = userId;
-    
     if (!isServer) { mockBackOfMindItems.push(withId); return withId; }
     try {
         const db = await getDatabase();
@@ -985,7 +759,6 @@ export async function addBackOfMindItemAsync(item: Omit<BackOfMindItem, 'id' | '
 export async function updateBackOfMindItemAsync(item: BackOfMindItem, userId?: string | null): Promise<BackOfMindItem> {
     const withId: BackOfMindItem = { ...item, updatedAt: new Date().toISOString() };
     if (userId) withId.userId = userId;
-
     if (!isServer) {
         const idx = mockBackOfMindItems.findIndex(i => i.id === item.id);
         if (idx !== -1) mockBackOfMindItems[idx] = withId;
@@ -1048,7 +821,6 @@ export async function addMistakeLogEntryAsync(entry: Omit<MistakeLogEntry, 'id' 
         createdAt: new Date().toISOString()
     };
     if (userId) withId.userId = userId;
-
     if (!isServer) { mockMistakeLogEntries.push(withId); return withId; }
     try {
         const db = await getDatabase();
@@ -1063,7 +835,6 @@ export async function addMistakeLogEntryAsync(entry: Omit<MistakeLogEntry, 'id' 
 export async function updateMistakeLogEntryAsync(entry: MistakeLogEntry, userId?: string | null): Promise<MistakeLogEntry> {
     const withId = { ...entry };
     if (userId) withId.userId = userId;
-
     if (!isServer) {
         const idx = mockMistakeLogEntries.findIndex(i => i.id === entry.id);
         if (idx !== -1) mockMistakeLogEntries[idx] = withId;

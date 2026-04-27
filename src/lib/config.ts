@@ -37,6 +37,7 @@ function createConfig(): AppConfig {
             databaseName: process.env.MONGODB_DATABASE || 'taskflow',
             collections: {
                 tasks: process.env.MONGODB_TASKS_COLLECTION || 'tasks',
+                projects: process.env.MONGODB_PROJECTS_COLLECTION || 'projects',
                 templates: process.env.MONGODB_TEMPLATES_COLLECTION || 'templates',
                 dailyPlans: process.env.MONGODB_DAILY_PLANS_COLLECTION || 'dailyPlans',
                 focusSessions: process.env.MONGODB_FOCUS_SESSIONS_COLLECTION || 'focus_sessions',
@@ -47,12 +48,12 @@ function createConfig(): AppConfig {
                     : (process.env.MONGODB_USERS_DEV_COLLECTION || 'users_dev'),
                 pillars: process.env.MONGODB_PILLARS_COLLECTION || 'pillars',
                 milestones: process.env.MONGODB_MILESTONES_COLLECTION || 'milestones',
-                chores: process.env.MONGODB_CHORES_COLLECTION || 'chores',
                 interests: process.env.MONGODB_INTERESTS_COLLECTION || 'interests',
                 interestConnections: process.env.MONGODB_INTEREST_CONNECTIONS_COLLECTION || 'interest_connections',
                 backOfMind: process.env.MONGODB_BACK_OF_MIND_COLLECTION || 'back_of_mind',
                 mistakeLog: process.env.MONGODB_MISTAKE_LOG_COLLECTION || 'mistake_log',
                 focusReminders: process.env.MONGODB_FOCUS_REMINDERS_COLLECTION || 'focus_reminders',
+                userProgress: process.env.MONGODB_USER_PROGRESS_COLLECTION || 'user_progress',
             },
         };
     } else {
@@ -61,6 +62,7 @@ function createConfig(): AppConfig {
             type: 'memory',
             collections: {
                 tasks: 'tasks',
+                projects: 'projects',
                 templates: 'templates',
                 dailyPlans: 'dailyPlans',
                 focusSessions: 'focus_sessions',
@@ -69,12 +71,12 @@ function createConfig(): AppConfig {
                 users: process.env.NODE_ENV === 'production' ? 'users' : 'users_dev',
                 pillars: 'pillars',
                 milestones: 'milestones',
-                chores: 'chores',
                 interests: 'interests',
                 interestConnections: 'interest_connections',
                 backOfMind: 'back_of_mind',
                 mistakeLog: 'mistake_log',
                 focusReminders: 'focus_reminders',
+                userProgress: 'user_progress',
             },
         };
     }

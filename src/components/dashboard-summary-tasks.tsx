@@ -15,7 +15,7 @@ export function TaskDetail({ tasks }: { tasks: Task[] }) {
     const items: { id: string; title: string; priority: string; date?: string; completed: boolean }[] = [];
     
     tasks.forEach(task => {
-        if (task.isHabit) return;
+        if ((task.category === "habit")) return;
 
         const isTaskToday = (task.doDate && isSameDay(parseISO(task.doDate), today)) || 
                            (task.endDate && isSameDay(parseISO(task.endDate), today));

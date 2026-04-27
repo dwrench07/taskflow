@@ -4,7 +4,7 @@
 
 import { MongoClient, Db, Collection, ObjectId } from 'mongodb';
 import type { DatabaseAdapter, DatabaseConfig, DatabaseLogger, DatabaseError, DailyPlan } from './types';
-import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry, FocusReminders } from '../types';
+import type { Task, Project, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry, FocusReminders } from '../types';
 
 export class MongoDBAdapter implements DatabaseAdapter {
     private client: MongoClient | null = null;
@@ -12,6 +12,7 @@ export class MongoDBAdapter implements DatabaseAdapter {
     private isConnectedFlag = false;
 
     private tasksCollection: Collection<any> | null = null;
+    private projectsCollection: Collection<any> | null = null;
     private templatesCollection: Collection<any> | null = null;
     private dailyPlansCollection: Collection<any> | null = null;
     private usersCollection: Collection<any> | null = null;
@@ -19,7 +20,6 @@ export class MongoDBAdapter implements DatabaseAdapter {
     private goalsCollection: Collection<any> | null = null;
     private pillarsCollection: Collection<any> | null = null;
     private milestonesCollection: Collection<any> | null = null;
-    private choresCollection: Collection<any> | null = null;
     private interestsCollection: Collection<any> | null = null;
     private interestConnectionsCollection: Collection<any> | null = null;
     private backOfMindCollection: Collection<any> | null = null;
@@ -54,6 +54,7 @@ export class MongoDBAdapter implements DatabaseAdapter {
 
             // Initialize collections
             this.tasksCollection = this.db.collection(this.config.collections?.tasks || 'tasks');
+            this.projectsCollection = this.db.collection(this.config.collections?.projects || 'projects');
             this.templatesCollection = this.db.collection(this.config.collections?.templates || 'templates');
             this.dailyPlansCollection = this.db.collection(this.config.collections?.dailyPlans || 'dailyPlans');
             this.usersCollection = this.db.collection(this.config.collections?.users || 'users');
@@ -61,7 +62,6 @@ export class MongoDBAdapter implements DatabaseAdapter {
             this.goalsCollection = this.db.collection(this.config.collections?.goals || 'goals');
             this.pillarsCollection = this.db.collection(this.config.collections?.pillars || 'pillars');
             this.milestonesCollection = this.db.collection(this.config.collections?.milestones || 'milestones');
-            this.choresCollection = this.db.collection(this.config.collections?.chores || 'chores');
             this.interestsCollection = this.db.collection(this.config.collections?.interests || 'interests');
             this.interestConnectionsCollection = this.db.collection(this.config.collections?.interestConnections || 'interest_connections');
             this.backOfMindCollection = this.db.collection(this.config.collections?.backOfMind || 'back_of_mind');
@@ -611,69 +611,74 @@ export class MongoDBAdapter implements DatabaseAdapter {
         }
     }
 
-    // Chore operations
-    async getChores(userId?: string | null): Promise<Chore[]> {
+    // Project operations
+    async getAllProjects(userId?: string | null): Promise<Project[]> {
         this.ensureConnected();
         try {
             const query = userId ? { userId } : {};
-            const items = await this.choresCollection!.find(query).toArray();
-            return items.map(c => this.convertFromMongo<Chore>(c));
+            const items = await this.projectsCollection!.find(query).toArray();
+            return items.map(p => this.convertFromMongo<Project>(p));
         } catch (error) {
-            this.logger.error('Failed to get chores', error);
-            throw new Error(`Failed to get chores: ${error}`);
+            this.logger.error('Failed to get projects', error);
+            throw new Error(`Failed to get projects: ${error}`);
         }
     }
 
-    async getChore(id: string, userId?: string | null): Promise<Chore | null> {
+    async getProject(id: string, userId?: string | null): Promise<Project | null> {
         this.ensureConnected();
         try {
             const query: any = { _id: id };
             if (userId) query.userId = userId;
-            const item = await this.choresCollection!.findOne(query);
-            return item ? this.convertFromMongo<Chore>(item) : null;
+            const item = await this.projectsCollection!.findOne(query);
+            return item ? this.convertFromMongo<Project>(item) : null;
         } catch (error) {
-            this.logger.error('Failed to get chore', { id, error });
-            throw new Error(`Failed to get chore: ${error}`);
+            this.logger.error('Failed to get project', { id, error });
+            throw new Error(`Failed to get project: ${error}`);
         }
     }
 
-    async addChore(chore: Chore, userId?: string | null): Promise<Chore> {
+    async addProject(project: Project, userId?: string | null): Promise<Project> {
         this.ensureConnected();
         try {
-            const toInsert = this.convertToMongo({ ...chore, userId });
-            const result = await this.choresCollection!.insertOne(toInsert);
-            return { ...chore, id: result.insertedId.toString(), userId: userId || chore.userId };
+            const toInsert = this.convertToMongo({ ...project, userId });
+            const result = await this.projectsCollection!.insertOne(toInsert);
+            return { ...project, id: result.insertedId.toString(), userId: userId || project.userId };
         } catch (error) {
-            this.logger.error('Failed to add chore', { chore, error });
-            throw new Error(`Failed to add chore: ${error}`);
+            this.logger.error('Failed to add project', { project, error });
+            throw new Error(`Failed to add project: ${error}`);
         }
     }
 
-    async updateChore(chore: Chore, userId?: string | null): Promise<Chore> {
+    async updateProject(project: Project, userId?: string | null): Promise<Project> {
         this.ensureConnected();
         try {
-            const toUpdate = this.convertToMongo({ ...chore, userId });
+            const toUpdate = this.convertToMongo({ ...project, userId });
             const { _id, ...updateData } = toUpdate;
-            const query: any = { _id: chore.id };
+            const query: any = { _id: project.id };
             if (userId) query.userId = userId;
-            await this.choresCollection!.updateOne(query, { $set: { ...updateData, updatedAt: new Date().toISOString() } });
-            return chore;
+            await this.projectsCollection!.updateOne(query, { $set: { ...updateData, updatedAt: new Date().toISOString() } });
+            return project;
         } catch (error) {
-            this.logger.error('Failed to update chore', { chore, error });
-            throw new Error(`Failed to update chore: ${error}`);
+            this.logger.error('Failed to update project', { project, error });
+            throw new Error(`Failed to update project: ${error}`);
         }
     }
 
-    async deleteChore(id: string, userId?: string | null): Promise<boolean> {
+    async deleteProject(id: string, userId?: string | null): Promise<boolean> {
         this.ensureConnected();
         try {
+            // Cascade: orphan child tasks (unset projectId)
+            const childQuery: any = { projectId: id };
+            if (userId) childQuery.userId = userId;
+            await this.tasksCollection!.updateMany(childQuery, { $unset: { projectId: "" } });
+
             const query: any = { _id: id };
             if (userId) query.userId = userId;
-            const result = await this.choresCollection!.deleteOne(query);
+            const result = await this.projectsCollection!.deleteOne(query);
             return result.deletedCount > 0;
         } catch (error) {
-            this.logger.error('Failed to delete chore', { id, error });
-            throw new Error(`Failed to delete chore: ${error}`);
+            this.logger.error('Failed to delete project', { id, error });
+            throw new Error(`Failed to delete project: ${error}`);
         }
     }
 
@@ -1097,8 +1102,13 @@ export class MongoDBAdapter implements DatabaseAdapter {
             await this.pillarsCollection!.createIndex({ userId: 1 });
             await this.milestonesCollection!.createIndex({ userId: 1 });
             await this.milestonesCollection!.createIndex({ status: 1 });
-            await this.choresCollection!.createIndex({ userId: 1 });
-            await this.choresCollection!.createIndex({ lastCompleted: 1 });
+            await this.projectsCollection!.createIndex({ userId: 1 });
+            await this.projectsCollection!.createIndex({ goalId: 1 });
+            await this.tasksCollection!.createIndex({ projectId: 1 });
+            await this.tasksCollection!.createIndex({ userId: 1 });
+            await this.tasksCollection!.createIndex({ category: 1 });
+            await this.tasksCollection!.createIndex({ recurrence: 1 });
+            await this.tasksCollection!.createIndex({ doDate: 1 });
             await this.interestsCollection!.createIndex({ userId: 1 });
             await this.interestsCollection!.createIndex({ category: 1 });
             await this.interestConnectionsCollection!.createIndex({ userId: 1 });

@@ -401,7 +401,7 @@ function TasksPageContent() {
 
 
   const sortedAndFilteredTasks = useMemo(() => {
-    let sorted = typeof allTasks === 'object' ? allTasks?.filter(t => !t.isHabit) : [];
+    let sorted = typeof allTasks === 'object' ? allTasks?.filter(t => (t.category !== "habit")) : [];
     const priorityOrder: Record<string, number> = { urgent: 0, high: 1, medium: 2, low: 3 };
     const statusOrder: Record<Status, number> = { todo: 1, "in-progress": 2, done: 3, abandoned: 4 };
 
@@ -470,10 +470,12 @@ function TasksPageContent() {
     setSelectedTask(freshSelectedTask || null);
   };
 
-  const handleAddTask = async (newTaskData: Omit<Task, 'id' | 'subtasks' | 'notes' | 'status'> & { status?: Status }) => {
+  const handleAddTask = async (newTaskData: Omit<Task, 'id' | 'subtasks' | 'notes' | 'status' | 'category' | 'recurrence'> & { status?: Status; category?: Task['category']; recurrence?: Task['recurrence'] }) => {
     const taskToAdd: Omit<Task, 'id'> = {
       ...newTaskData,
-      status: 'todo',
+      status: newTaskData.status ?? 'todo',
+      category: newTaskData.category ?? 'project-work',
+      recurrence: newTaskData.recurrence ?? 'once',
       subtasks: [],
       notes: [],
     };
@@ -481,6 +483,22 @@ function TasksPageContent() {
     refreshTasks();
     setSelectedTask(addedTask);
     router.push(`/tasks?taskId=${addedTask.id}`, { scroll: false });
+  }
+
+  const handleQuickAdd = async (title: string) => {
+    const trimmed = title.trim();
+    if (!trimmed) return;
+    const taskToAdd: Omit<Task, 'id'> = {
+      title: trimmed,
+      status: 'todo',
+      priority: 'medium',
+      category: 'project-work',
+      recurrence: 'once',
+      subtasks: [],
+      notes: [],
+    };
+    await addTask(taskToAdd);
+    await refreshTasks();
   }
 
   const handleDeleteTask = async (taskId: string) => {
@@ -506,7 +524,7 @@ function TasksPageContent() {
     const taskToAdd: Omit<Task, 'id'> = {
       title: template.title,
       description: template.description,
-      priority: template.priority,
+      priority: template.priority ?? 'medium',
       status: 'todo',
       tags: template.tags || [],
       subtasks: newSubtasks,
@@ -786,15 +804,18 @@ function TasksPageContent() {
                     onSubmit={(data) => {
                       const sanitizedData = {
                         ...data,
-                        goalId: data.goalId === null ? undefined : data.goalId,
+                        description: data.description || undefined,
+                        projectId: data.projectId === "none" || data.projectId === null ? undefined : data.projectId,
+                        goalId: data.goalId === "none" || data.goalId === null ? undefined : data.goalId,
                         milestoneId: data.milestoneId === "none" || data.milestoneId === null ? undefined : data.milestoneId,
-                        energyLevel: data.energyLevel === null ? undefined : data.energyLevel,
+                        energyLevel: data.energyLevel === null || (data.energyLevel as any) === "none" ? undefined : data.energyLevel,
+                        intervalDays: data.intervalDays || undefined,
                         startDate: data.startDate || undefined,
                         endDate: data.endDate || undefined,
                         doDate: data.doDate || undefined,
                         blocks: data.blocks || [],
                         blockedBy: data.blockedBy || [],
-                        tShirtSize: data.tShirtSize === null ? undefined : data.tShirtSize,
+                        tShirtSize: data.tShirtSize === null || (data.tShirtSize as any) === "none" ? undefined : data.tShirtSize,
                         timeLimit: data.timeLimit || undefined,
                       };
                       handleAddTask(sanitizedData);
@@ -901,6 +922,28 @@ function TasksPageContent() {
             </div>
           </CardHeader>
           <div className="p-3">
+            <form
+              className="flex gap-2 mb-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const form = e.currentTarget;
+                const input = form.elements.namedItem('quick-capture') as HTMLInputElement;
+                if (input?.value) {
+                  handleQuickAdd(input.value);
+                  input.value = '';
+                }
+              }}
+            >
+              <Input
+                name="quick-capture"
+                placeholder="Quick add a task — title only, refine later"
+                className="flex-1 h-9"
+                aria-label="Quick add a task"
+              />
+              <Button type="submit" size="sm" variant="secondary" className="h-9">
+                <PlusCircle className="h-4 w-4 mr-1" /> Add
+              </Button>
+            </form>
             {viewMode === 'list' ? (
               <div className="grid gap-6 pb-8 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
                 {loading ? (
@@ -1036,15 +1079,17 @@ function TasksPageContent() {
                                     const updatedData = {
                                       ...selectedTask,
                                       ...data,
-                                      goalId: data.goalId === null ? undefined : data.goalId,
-                                      energyLevel: data.energyLevel === null ? undefined : data.energyLevel,
+                                      projectId: data.projectId === "none" || data.projectId === null ? undefined : data.projectId,
+                                      goalId: data.goalId === "none" || data.goalId === null ? undefined : data.goalId,
+                                      energyLevel: data.energyLevel === null || (data.energyLevel as any) === "none" ? undefined : data.energyLevel,
                                       milestoneId: data.milestoneId === "none" || data.milestoneId === null ? undefined : data.milestoneId,
+                                      intervalDays: data.intervalDays || undefined,
                                       startDate: data.startDate || undefined,
                                       endDate: data.endDate || undefined,
                                       doDate: data.doDate || undefined,
                                       blockedBy: data.blockedBy || [],
                                       blocks: data.blocks || [],
-                                      tShirtSize: data.tShirtSize === null ? undefined : data.tShirtSize,
+                                      tShirtSize: data.tShirtSize === null || (data.tShirtSize as any) === "none" ? undefined : data.tShirtSize,
                                       timeLimit: data.timeLimit || undefined,
                                     };
                                     await handleUpdateTask(updatedData);

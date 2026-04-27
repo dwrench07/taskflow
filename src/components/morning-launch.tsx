@@ -26,7 +26,7 @@ export function MorningLaunch({ allTasks, allChores = [], onDismiss }: MorningLa
   const { topTasks, habitsDue, choresDue, warmupTask } = useMemo(() => {
     // Get today's tasks (scheduled for today via doDate or endDate)
     const todayTasks = allTasks.filter(t =>
-      !t.isHabit && t.status !== 'done' && t.status !== 'abandoned' &&
+      (t.category !== "habit") && t.status !== 'done' && t.status !== 'abandoned' &&
       ((t.doDate && isSameDay(parseISO(t.doDate), today)) ||
        (t.endDate && isSameDay(parseISO(t.endDate), today)))
     );
@@ -53,7 +53,7 @@ export function MorningLaunch({ allTasks, allChores = [], onDismiss }: MorningLa
 
     // Habits due today
     const habits = allTasks.filter(t =>
-      t.isHabit && t.status !== 'abandoned' &&
+      (t.category === "habit") && t.status !== 'abandoned' &&
       !t.completionHistory?.some(d => isSameDay(parseISO(d), today))
     );
 

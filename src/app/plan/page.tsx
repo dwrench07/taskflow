@@ -227,7 +227,7 @@ export default function PlanPage() {
     const map = new Map<string, UnifiedItem>();
     const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
     allTasks.filter(t => t.status !== 'abandoned').forEach(t => {
-      const habitCompletedOnDate = t.isHabit
+      const habitCompletedOnDate = (t.category === "habit")
         ? (t.completionHistory || []).some(d => toDateStr(d) === selectedDateStr)
         : false;
       map.set(t.id, {
@@ -235,8 +235,8 @@ export default function PlanPage() {
         title: t.title,
         priority: t.priority,
         energyLevel: t.energyLevel,
-        type: t.isHabit ? 'habit' : 'task',
-        completed: t.isHabit ? habitCompletedOnDate : t.status === 'done',
+        type: (t.category === "habit") ? 'habit' : 'task',
+        completed: (t.category === "habit") ? habitCompletedOnDate : t.status === 'done',
       });
     });
     allChores.forEach(c => map.set(c.id, {
@@ -254,7 +254,7 @@ export default function PlanPage() {
   const nonNegotiables = useMemo(() => {
     const committedTasks = allTasks.filter(t => {
       if (t.status === 'done' || t.status === 'abandoned') return false;
-      if (t.isHabit) {
+      if ((t.category === "habit")) {
         const history = t.completionHistory || [];
         const freq = t.habitFrequency || 'daily';
         // Due if not completed within the current calendar period for selectedDate

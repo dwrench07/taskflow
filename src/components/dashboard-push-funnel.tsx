@@ -15,7 +15,7 @@ interface PushFunnelProps {
 
 export function DashboardPushFunnel({ allTasks }: PushFunnelProps) {
   const analysis = useMemo(() => {
-    const tasks = allTasks.filter(t => !t.isHabit);
+    const tasks = allTasks.filter(t => (t.category !== "habit"));
     if (tasks.length < 5) return null;
 
     const total = tasks.length;

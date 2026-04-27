@@ -9,7 +9,7 @@ import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 export function DashboardStats({ allTasks }: { allTasks: Task[] }) {
   const stats = useMemo(() => {
     const totalTasksCompleted = (Array.isArray(allTasks) ? allTasks : []).filter(
-      (task) => !task.isHabit && task.status === "done"
+      (task) => (task.category !== "habit") && task.status === "done"
     ).length;
 
     const totalSubtasksCompleted = (Array.isArray(allTasks) ? allTasks : []).reduce((acc, task) => {
@@ -18,7 +18,7 @@ export function DashboardStats({ allTasks }: { allTasks: Task[] }) {
     }, 0);
 
     const totalHabitCompletions = (Array.isArray(allTasks) ? allTasks : []).reduce((acc, task) => {
-      if (task.isHabit && task.completionHistory) {
+      if ((task.category === "habit") && task.completionHistory) {
         return acc + task.completionHistory.length;
       }
       return acc;

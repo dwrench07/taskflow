@@ -12,7 +12,7 @@ export function DashboardTaskVelocity({ allTasks }: { allTasks: Task[] }) {
 
     const data = useMemo(() => {
         // Find tasks that are done and have a startDate
-        const completedTasks = allTasks.filter(t => !t.isHabit && t.status === "done" && t.startDate && t.endDate);
+        const completedTasks = allTasks.filter(t => (t.category !== "habit") && t.status === "done" && t.startDate && t.endDate);
 
         if (completedTasks.length === 0) return [];
 
@@ -49,7 +49,7 @@ export function DashboardTaskVelocity({ allTasks }: { allTasks: Task[] }) {
 
     // Average calculation
     const averageDays = useMemo(() => {
-        const completedTasks = allTasks.filter(t => !t.isHabit && t.status === "done" && t.startDate);
+        const completedTasks = allTasks.filter(t => (t.category !== "habit") && t.status === "done" && t.startDate);
         if (completedTasks.length === 0) return 0;
 
         const totalDays = completedTasks.reduce((acc, task) => {

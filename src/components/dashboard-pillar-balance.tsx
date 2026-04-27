@@ -41,7 +41,7 @@ export function DashboardPillarBalance({ allTasks, focusSessions }: PillarBalanc
     });
 
     // Count tasks per pillar (via goalId → pillarId)
-    allTasks.filter(t => !t.isHabit).forEach(t => {
+    allTasks.filter(t => (t.category !== "habit")).forEach(t => {
       if (t.goalId && goalPillarMap[t.goalId]) {
         const pillarId = goalPillarMap[t.goalId];
         if (pillarStats[pillarId]) {

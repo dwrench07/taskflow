@@ -9,7 +9,7 @@ import { calculateStreak } from "@/lib/habits";
 import Link from "next/link";
 
 export function HabitDetail({ tasks }: { tasks: Task[] }) {
-  const habits = tasks.filter(t => t.isHabit);
+  const habits = tasks.filter(t => (t.category === "habit"));
   const today = new Date();
 
   if (habits.length === 0) {

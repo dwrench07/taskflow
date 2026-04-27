@@ -58,7 +58,11 @@ function HabitForm({ habit, onSubmit, onOpenChange }: { habit?: Task; onSubmit: 
             description: habit?.description || "",
             priority: habit?.priority || "medium",
             streakGoal: habit?.streakGoal || undefined,
-            habitFrequency: habit?.habitFrequency || "daily",
+            habitFrequency: ((): "daily" | "weekly" | "monthly" => {
+                const r = habit?.recurrence ?? habit?.habitFrequency;
+                if (r === "weekly" || r === "monthly") return r;
+                return "daily";
+            })(),
         },
     });
 
@@ -260,7 +264,7 @@ function HabitsPageContent() {
 
     const searchParams = useSearchParams();
 
-    const habits = useMemo(() => (Array.isArray(allTasks) ? allTasks : []).filter(task => task.isHabit), [allTasks]);
+    const habits = useMemo(() => (Array.isArray(allTasks) ? allTasks : []).filter(task => task.category === 'habit' || task.isHabit), [allTasks]);
     const sortedHabits = useMemo(() => {
         return [...habits].sort((a, b) => (b.priority === 'high' ? 1 : -1) - (a.priority === 'high' ? 1 : -1) || calculateStreak(b) - calculateStreak(a));
     }, [habits]);
@@ -281,7 +285,7 @@ function HabitsPageContent() {
         if (loading && allTasks.length === 0) return; // Wait for initial load
         const taskId = searchParams?.get('taskId');
         if (taskId) {
-            const habitToSelect = allTasks.find(t => t.id === taskId && t.isHabit);
+            const habitToSelect = allTasks.find(t => t.id === taskId && (t.category === 'habit' || t.isHabit));
             setSelectedHabit(habitToSelect || null);
         } else {
             setSelectedHabit(null);
@@ -419,6 +423,9 @@ function HabitsPageContent() {
             priority: data.priority,
             streakGoal: data.streakGoal,
             status: 'todo',
+            category: 'habit',
+            recurrence: data.habitFrequency,
+            // Dual-write the legacy fields so widgets that still read them keep working.
             isHabit: true,
             habitFrequency: data.habitFrequency,
             subtasks: [],
@@ -434,7 +441,17 @@ function HabitsPageContent() {
 
     const handleUpdateHabit = async (data: HabitFormValues) => {
         if (!editingHabit) return;
-        const updatedHabit = { ...editingHabit, ...data };
+        const updatedHabit: Task = {
+            ...editingHabit,
+            title: data.title,
+            description: data.description,
+            priority: data.priority,
+            streakGoal: data.streakGoal,
+            category: 'habit',
+            recurrence: data.habitFrequency,
+            isHabit: true,
+            habitFrequency: data.habitFrequency,
+        };
         await updateTask(updatedHabit);
         await refreshHabits();
         setEditingHabit(undefined);

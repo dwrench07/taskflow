@@ -31,13 +31,13 @@ export function DashboardCompletionChart({ allTasks }: { allTasks: Task[] }) {
         return daysInWeek.map(day => {
             const tasksCompleted = (Array.isArray(allTasks) ? allTasks : []).filter(task =>
                 task.status === "done" &&
-                !task.isHabit &&
+                (task.category !== "habit") &&
                 task.endDate &&
                 isSameDay(parseISO(task.endDate), day)
             ).length;
 
             const habitsCompleted = (Array.isArray(allTasks) ? allTasks : []).filter(task =>
-                task.isHabit &&
+                (task.category === "habit") &&
                 task.completionHistory?.some(d => isSameDay(parseISO(d), day))
             ).length;
 

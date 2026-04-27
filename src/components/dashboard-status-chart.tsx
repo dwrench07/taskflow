@@ -9,9 +9,9 @@ import { WIDGET_DESCRIPTIONS } from "@/lib/widget-descriptions";
 
 export function DashboardStatusChart({ allTasks }: { allTasks: Task[] }) {
   const data = useMemo(() => [
-    { name: "To-Do", total: (Array.isArray(allTasks) ? allTasks : []).filter((t) => !t.isHabit && t.status === "todo").length, fill: "hsl(var(--chart-1))" },
-    { name: "In Progress", total: (Array.isArray(allTasks) ? allTasks : []).filter((t) => !t.isHabit && t.status === "in-progress").length, fill: "hsl(var(--chart-2))" },
-    { name: "Done", total: (Array.isArray(allTasks) ? allTasks : []).filter((t) => !t.isHabit && t.status === "done").length, fill: "hsl(var(--chart-3))" },
+    { name: "To-Do", total: (Array.isArray(allTasks) ? allTasks : []).filter((t) => (t.category !== "habit") && t.status === "todo").length, fill: "hsl(var(--chart-1))" },
+    { name: "In Progress", total: (Array.isArray(allTasks) ? allTasks : []).filter((t) => (t.category !== "habit") && t.status === "in-progress").length, fill: "hsl(var(--chart-2))" },
+    { name: "Done", total: (Array.isArray(allTasks) ? allTasks : []).filter((t) => (t.category !== "habit") && t.status === "done").length, fill: "hsl(var(--chart-3))" },
   ], [allTasks]);
 
   return (

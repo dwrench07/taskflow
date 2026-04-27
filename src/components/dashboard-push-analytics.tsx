@@ -24,7 +24,7 @@ interface DashboardPushAnalyticsProps {
 
 export function DashboardPushAnalytics({ allTasks }: DashboardPushAnalyticsProps) {
   const analytics = useMemo(() => {
-    const activeTasks = allTasks.filter(t => !t.isHabit && t.status !== 'done' && t.status !== 'abandoned');
+    const activeTasks = allTasks.filter(t => (t.category !== "habit") && t.status !== 'done' && t.status !== 'abandoned');
 
     // Collect all push history entries
     const allEntries = activeTasks.flatMap(t => t.pushHistory || []);

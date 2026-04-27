@@ -27,7 +27,7 @@ export function DashboardUpcomingDeadlines({ allTasks }: { allTasks: Task[] }) {
             .filter(task =>
                 task.endDate &&
                 task.status !== 'done' &&
-                !task.isHabit
+                (task.category !== "habit")
             )
             .sort((a, b) => {
                 const dateA = parseISO(a.endDate!);

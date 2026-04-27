@@ -33,10 +33,10 @@ export const WIDGET_DESCRIPTIONS: Record<string, string> = {
 
   // Performance
   "weekly-report": "Snapshot of this week's key metrics: tasks completed, focus hours, active habits, frogs eaten, and pushes. Compares against last week where applicable.",
-  "daily-wins": "Celebrates what you've accomplished today — tasks, subtasks, habits, frogs, streaks, and focus time. Also includes a daily win log for identity-reinforcing reflections. XP and level progression are tracked here.",
+  "daily-wins": "Celebrates what you've accomplished today — tasks, habits, frogs, streaks, and focus time. Also includes a daily win log for identity-reinforcing reflections. XP and level progression are tracked here.",
   "point-of-no-return": "Tasks approaching or past their 'Drop Dead Date' (doDate) — the last possible day to start and still finish on time. These need immediate action.",
   "overdue-risk": "Tasks at risk of becoming overdue based on their end date and current status. Sorted by urgency to help you triage.",
-  "almost-done": "Tasks that are 60%+ complete (based on subtask progress) but not yet finished. These are quick wins — just push through the last few steps.",
+  "almost-done": "Projects that are 60%+ complete (based on child-task progress) but not yet finished. These are quick wins — just push through the last few tasks.",
   "push-analytics": "Analyzes your task-pushing (postponing) behavior. Shows how often you push, which reasons you use most, and which tasks get pushed repeatedly.",
   "approach-score": "Measures approach vs. avoidance behavior. Approach points come from completing focus sessions on tasks that felt scary or uncomfortable. Avoidance points come from pushing tasks for emotional reasons like 'too scary' or 'too boring.'",
   "frog-completion": "Tracks how well you're eating your frogs (hardest/most-dreaded tasks). Shows completion rates and how early in the day you tackle them.",

@@ -1,9 +1,8 @@
 /**
  * Database abstraction layer for TaskFlow
- * Provides a unified interface for different database implementations
  */
 
-import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry, FocusReminders, UserProgress } from '../types';
+import type { Task, Project, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry, FocusReminders, UserProgress } from '../types';
 
 export interface DailyPlan {
     id: string;
@@ -14,21 +13,25 @@ export interface DailyPlan {
     updatedAt?: string;
 }
 
-/**
- * Base database interface that all database adapters must implement
- */
 export interface DatabaseAdapter {
     // Connection management
     connect(): Promise<boolean>;
     disconnect(): Promise<void>;
     isConnected(): boolean;
 
-    // Task operations
+    // Task operations (atomic units)
     getAllTasks(userId?: string | null): Promise<Task[]>;
     getTask(id: string, userId?: string | null): Promise<Task | null>;
     addTask(task: Task, userId?: string | null): Promise<Task>;
     updateTask(task: Task, userId?: string | null): Promise<Task>;
     deleteTask(id: string, userId?: string | null): Promise<boolean>;
+
+    // Project operations (containers)
+    getAllProjects(userId?: string | null): Promise<Project[]>;
+    getProject(id: string, userId?: string | null): Promise<Project | null>;
+    addProject(project: Project, userId?: string | null): Promise<Project>;
+    updateProject(project: Project, userId?: string | null): Promise<Project>;
+    deleteProject(id: string, userId?: string | null): Promise<boolean>;
 
     // Template operations
     getAllTemplates(): Promise<TaskTemplate[]>;
@@ -74,13 +77,6 @@ export interface DatabaseAdapter {
     updateMilestone(milestone: Milestone, userId?: string | null): Promise<Milestone>;
     deleteMilestone(id: string, userId?: string | null): Promise<boolean>;
 
-    // Chore operations
-    getChores(userId?: string | null): Promise<Chore[]>;
-    getChore(id: string, userId?: string | null): Promise<Chore | null>;
-    addChore(chore: Chore, userId?: string | null): Promise<Chore>;
-    updateChore(chore: Chore, userId?: string | null): Promise<Chore>;
-    deleteChore(id: string, userId?: string | null): Promise<boolean>;
-
     // Interest operations
     getInterests(userId?: string | null): Promise<Interest[]>;
     getInterest(id: string, userId?: string | null): Promise<Interest | null>;
@@ -115,13 +111,9 @@ export interface DatabaseAdapter {
     getUserProgress(userId: string): Promise<UserProgress | null>;
     upsertUserProgress(progress: UserProgress): Promise<UserProgress>;
 
-    // Health check
     healthCheck(): Promise<boolean>;
 }
 
-/**
- * Database configuration interface
- */
 export interface DatabaseConfig {
     type: 'mongodb' | 'memory';
     connectionString?: string;
@@ -132,6 +124,7 @@ export interface DatabaseConfig {
     databaseName?: string;
     collections?: {
         tasks: string;
+        projects: string;
         templates: string;
         dailyPlans: string;
         users: string;
@@ -139,19 +132,17 @@ export interface DatabaseConfig {
         goals: string;
         pillars: string;
         milestones: string;
-        chores: string;
         interests: string;
         interestConnections: string;
         backOfMind: string;
         mistakeLog: string;
         focusReminders: string;
         userProgress: string;
+        /** @deprecated Chores are now Tasks with `category: 'chore'`. The collection is unused. */
+        chores?: string;
     };
 }
 
-/**
- * Database error class for better error handling
- */
 export class DatabaseError extends Error {
     constructor(
         message: string,
@@ -163,9 +154,6 @@ export class DatabaseError extends Error {
     }
 }
 
-/**
- * Logger interface for database operations
- */
 export interface DatabaseLogger {
     debug(message: string, meta?: any): void;
     info(message: string, meta?: any): void;
@@ -173,9 +161,6 @@ export interface DatabaseLogger {
     error(message: string, meta?: any): void;
 }
 
-/**
- * Default console logger implementation
- */
 export const defaultLogger: DatabaseLogger = {
     debug: (message: string, meta?: any) => {
         console.debug(`[DB] ${message}`, meta || '');

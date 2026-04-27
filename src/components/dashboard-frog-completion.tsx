@@ -15,7 +15,7 @@ interface FrogCompletionProps {
 
 export function DashboardFrogCompletion({ allTasks }: FrogCompletionProps) {
   const analysis = useMemo(() => {
-    const frogs = allTasks.filter(t => t.isFrog && !t.isHabit);
+    const frogs = allTasks.filter(t => t.isFrog && (t.category !== "habit"));
     const frogSubtasks = allTasks.flatMap(t => t.subtasks.filter(s => s.isFrog));
 
     if (frogs.length === 0 && frogSubtasks.length === 0) return null;
@@ -27,7 +27,7 @@ export function DashboardFrogCompletion({ allTasks }: FrogCompletionProps) {
     const frogCompletionRate = frogs.length > 0 ? Math.round((frogsDone / frogs.length) * 100) : 0;
 
     // Non-frog comparison
-    const nonFrogs = allTasks.filter(t => !t.isFrog && !t.isHabit);
+    const nonFrogs = allTasks.filter(t => !t.isFrog && (t.category !== "habit"));
     const nonFrogsDone = nonFrogs.filter(t => t.status === 'done').length;
     const nonFrogCompletionRate = nonFrogs.length > 0 ? Math.round((nonFrogsDone / nonFrogs.length) * 100) : 0;
 

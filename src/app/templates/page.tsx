@@ -9,8 +9,9 @@ import {
     deleteTemplate,
     getAllTasks,
     addTask,
+    addProject,
 } from "@/lib/data";
-import { type TaskTemplate, type Priority, type Task } from "@/lib/types";
+import { type TaskTemplate, type Priority, type Task, type TemplateTaskSpec } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
@@ -51,7 +52,7 @@ function TemplateListItem({ template, onSelect, isSelected }: { template: TaskTe
         )}>
             <div className="flex justify-between items-start">
                 <p className="font-semibold">{template.title}</p>
-                <Badge variant="outline" className={cn("capitalize", priorityStyles[template.priority])}>
+                <Badge variant="outline" className={cn("capitalize", priorityStyles[template.priority ?? 'medium'])}>
                     {template.priority}
                 </Badge>
             </div>
@@ -140,30 +141,75 @@ export default function TemplatesPage() {
 
     const handleBulkInstantiate = async (dates: string[]) => {
         if (!selectedTemplate) return;
+        const tpl = selectedTemplate;
+        const childSpecs: TemplateTaskSpec[] = tpl.tasks?.length ? tpl.tasks : (tpl.subtasks ?? []).map(s => ({
+            title: s.title,
+            tags: s.tags,
+            priority: s.priority,
+            energyLevel: s.energyLevel,
+            tShirtSize: s.tShirtSize,
+        }));
 
-        const promises = dates.map(date => {
-            const newTask = {
-                title: selectedTemplate.title,
-                description: selectedTemplate.description,
-                priority: selectedTemplate.priority,
-                status: "todo" as const,
-                tags: selectedTemplate.tags,
-                goalId: selectedTemplate.goalId,
-                subtasks: selectedTemplate.subtasks.map(sh => ({
-                    id: `sub-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-                    title: sh.title,
-                    completed: false,
-                    tags: sh.tags
-                })),
-                notes: [],
-                startDate: date,
-                endDate: date,
-            };
-            return addTask(newTask);
-        });
+        for (const date of dates) {
+            // 0 or 1 child → single standalone Task. 2+ children → a Project + child Tasks.
+            if (childSpecs.length <= 1) {
+                const child = childSpecs[0];
+                const standalone: Omit<Task, 'id'> = {
+                    title: child?.title || tpl.title,
+                    description: tpl.description,
+                    priority: child?.priority ?? tpl.priority ?? 'medium',
+                    status: "todo",
+                    category: child?.category ?? 'project-work',
+                    recurrence: child?.recurrence ?? 'once',
+                    intervalDays: child?.intervalDays,
+                    energyLevel: child?.energyLevel,
+                    tShirtSize: child?.tShirtSize,
+                    timeLimit: child?.timeLimit,
+                    isFrog: child?.isFrog,
+                    tags: tpl.tags,
+                    goalId: tpl.goalId,
+                    milestoneId: tpl.milestoneId,
+                    notes: [],
+                    subtasks: [],
+                    startDate: date,
+                    endDate: date,
+                };
+                await addTask(standalone);
+                continue;
+            }
 
-        await Promise.all(promises);
-        toast({ title: "Tasks Generated", description: `Successfully created ${dates.length} tasks.` });
+            const project = await addProject({
+                title: tpl.title,
+                description: tpl.description,
+                tags: tpl.tags,
+                goalId: tpl.goalId,
+                milestoneId: tpl.milestoneId,
+            });
+
+            for (const spec of childSpecs) {
+                const childTask: Omit<Task, 'id'> = {
+                    title: spec.title,
+                    projectId: project.id,
+                    priority: spec.priority ?? tpl.priority ?? 'medium',
+                    status: "todo",
+                    category: spec.category ?? 'project-work',
+                    recurrence: spec.recurrence ?? 'once',
+                    intervalDays: spec.intervalDays,
+                    energyLevel: spec.energyLevel,
+                    tShirtSize: spec.tShirtSize,
+                    timeLimit: spec.timeLimit,
+                    isFrog: spec.isFrog,
+                    tags: spec.tags,
+                    notes: [],
+                    subtasks: [],
+                    startDate: date,
+                    endDate: date,
+                };
+                await addTask(childTask);
+            }
+        }
+
+        toast({ title: "Tasks Generated", description: `Successfully created ${dates.length} batch${dates.length === 1 ? '' : 'es'}.` });
     };
 
     const handleSelectTemplate = (template: TaskTemplate) => {
@@ -252,7 +298,7 @@ export default function TemplatesPage() {
                                     <CardHeader>
                                         <div className="flex justify-between items-start">
                                             <div>
-                                                <Badge variant="outline" className={cn("capitalize w-fit", priorityStyles[selectedTemplate.priority])}>
+                                                <Badge variant="outline" className={cn("capitalize w-fit", priorityStyles[selectedTemplate.priority ?? 'medium'])}>
                                                     {selectedTemplate.priority}
                                                 </Badge>
                                                 <CardTitle className="text-2xl pt-2">{selectedTemplate.title}</CardTitle>

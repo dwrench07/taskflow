@@ -28,14 +28,14 @@ export function DashboardOverdueRisk({ allTasks }: OverdueRiskProps) {
   const analysis = useMemo(() => {
     const today = startOfDay(new Date());
     const activeTasks = allTasks.filter(t =>
-      !t.isHabit && t.status !== 'done' && t.status !== 'abandoned'
+      (t.category !== "habit") && t.status !== 'done' && t.status !== 'abandoned'
     );
 
     if (activeTasks.length < 3) return null;
 
     // Calculate historical velocity (avg days to complete)
     const completedTasks = allTasks.filter(t =>
-      !t.isHabit && t.status === 'done' && t.startDate && t.endDate
+      (t.category !== "habit") && t.status === 'done' && t.startDate && t.endDate
     );
     const avgCompletionDays = completedTasks.length > 0
       ? completedTasks.reduce((s, t) =>
@@ -86,8 +86,8 @@ export function DashboardOverdueRisk({ allTasks }: OverdueRiskProps) {
         }
       }
 
-      // Factor 6: Large size with no subtasks
-      if ((task.tShirtSize === 'L' || task.tShirtSize === 'XL') && task.subtasks.length === 0) {
+      // Factor 6: Large standalone task (not broken into a Project with child Tasks)
+      if ((task.tShirtSize === 'L' || task.tShirtSize === 'XL') && !task.projectId) {
         risk += 10;
         factors.push('Large, not broken down');
       }

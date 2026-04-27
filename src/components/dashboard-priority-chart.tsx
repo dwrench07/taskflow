@@ -27,7 +27,7 @@ export function DashboardPriorityChart({ allTasks }: { allTasks: Task[] }) {
     const priorityCounts: Record<Priority, number> = { urgent: 0, high: 0, medium: 0, low: 0 };
     
     (Array.isArray(allTasks) ? allTasks : [])
-      .filter(task => task.status !== 'done' && !task.isHabit)
+      .filter(task => task.status !== 'done' && (task.category !== "habit"))
       .forEach(task => {
         priorityCounts[task.priority]++;
       });

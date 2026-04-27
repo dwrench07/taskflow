@@ -1,4 +1,4 @@
-import type { Task, TaskTemplate, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry, FocusReminders, UserProgress } from './types';
+import type { Task, Project, TaskTemplate, FocusSession, Goal, Pillar, Milestone, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry, FocusReminders, UserProgress } from './types';
 
 // === API FUNCTIONS FOR CLIENT-SIDE USAGE ===
 // These functions make direct API calls and are used by React components
@@ -374,41 +374,69 @@ export async function deleteMilestone(id: string): Promise<void> {
   await fetch(`/api/milestones/${id}`, { method: 'DELETE' });
 }
 
-// === CHORES ===
+// === LEGACY CHORE WRAPPERS (deprecated) ===
+// Chores are now Tasks with `category: 'chore'`. These thin wrappers exist only so
+// callers compiled against the previous model keep working until each surface migrates.
 
+import type { Chore } from './types';
+
+/** @deprecated Use `getAllTasks` and filter by `category === 'chore'`. */
 export async function getAllChores(): Promise<Chore[]> {
+  const all = await getAllTasks();
+  return all.filter(t => t.category === 'chore') as Chore[];
+}
+
+/** @deprecated Create a Task with `category: 'chore'` instead. */
+export async function addChore(chore: Omit<Chore, 'id'>): Promise<Chore> {
+  return await addTask({ ...chore, category: 'chore' }) as Chore;
+}
+
+/** @deprecated Update a Task whose `category === 'chore'` instead. */
+export async function updateChore(chore: Chore): Promise<Chore> {
+  await updateTask(chore);
+  return chore;
+}
+
+/** @deprecated Delete the Task instead. */
+export async function deleteChore(id: string): Promise<void> {
+  await deleteTask(id);
+}
+
+// === PROJECTS ===
+
+export async function getAllProjects(): Promise<Project[]> {
   try {
-    const response = await fetch('/api/chores?_='+Date.now(), { cache: 'no-store' });
+    const response = await fetch('/api/projects?_='+Date.now(), { cache: 'no-store' });
     if (response.ok) return await response.json();
     return [];
   } catch (error) {
-    console.error('Failed to fetch chores:', error);
+    console.error('Failed to fetch projects:', error);
     return [];
   }
 }
 
-export async function addChore(chore: Omit<Chore, 'id'>): Promise<Chore> {
-  const response = await fetch('/api/chores', {
+export async function addProject(project: Omit<Project, 'id'>): Promise<Project> {
+  const response = await fetch('/api/projects', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(chore),
+    body: JSON.stringify(project),
   });
   if (response.ok) return await response.json();
-  throw new Error(`Failed to add chore: ${response.statusText}`);
+  throw new Error(`Failed to add project: ${response.statusText}`);
 }
 
-export async function updateChore(chore: Chore): Promise<Chore> {
-  const response = await fetch(`/api/chores/${chore.id}`, {
+export async function updateProject(project: Project): Promise<Project> {
+  const response = await fetch(`/api/projects/${project.id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(chore),
+    body: JSON.stringify(project),
   });
   if (response.ok) return await response.json();
-  throw new Error(`Failed to update chore: ${response.statusText}`);
+  throw new Error(`Failed to update project: ${response.statusText}`);
 }
 
-export async function deleteChore(id: string): Promise<void> {
-  await fetch(`/api/chores/${id}`, { method: 'DELETE' });
+export async function deleteProject(id: string): Promise<void> {
+  await fetch(`/api/projects/${id}`, { method: 'DELETE' });
 }
 
 // === INTERESTS ===

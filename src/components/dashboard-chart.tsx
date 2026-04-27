@@ -23,7 +23,7 @@ export function DashboardCompletionChart() {
     const last7Days = Array.from({ length: 7 }).map((_, i) => subDays(new Date(), i)).reverse();
     
     const completedTasks = allTasks.filter(
-        (t) => t.status === "done" && t.endDate && !t.isHabit
+        (t) => t.status === "done" && t.endDate && (t.category !== "habit")
     );
 
     return last7Days.map(day => {

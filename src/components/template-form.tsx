@@ -71,7 +71,14 @@ export function TemplateForm({ template, allTags, onSubmit }: TemplateFormProps)
       ...st,
       id: template?.subtasks[index]?.id || `tsub-${Date.now()}-${index}`,
     })) || [];
-    onSubmit({ ...data, subtasks });
+    // Mirror the legacy subtasks into the new `tasks: TemplateTaskSpec[]` shape so
+    // instantiation produces atomic Tasks (and a Project when there are 2+).
+    const tasks = subtasks.map(st => ({
+      title: st.title,
+      tags: st.tags,
+      priority: data.priority,
+    }));
+    onSubmit({ ...data, subtasks, tasks });
   }
 
   return (

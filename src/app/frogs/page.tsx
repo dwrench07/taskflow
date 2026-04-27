@@ -55,7 +55,7 @@ export default function FrogsPage() {
             // 2. High push count (> 3)
             // 3. Urgent Priority AND High Energy Level
             const identifiedFrogs = (allTasks || []).filter(t => 
-                t.status !== 'done' && t.status !== 'abandoned' && !t.isHabit && (
+                t.status !== 'done' && t.status !== 'abandoned' && (t.category !== "habit") && (
                     t.isFrog || 
                     (t.pushCount && t.pushCount >= 3) || 
                     (t.priority === 'urgent' && t.energyLevel === 'high')

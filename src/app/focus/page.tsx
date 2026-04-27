@@ -633,7 +633,7 @@ export default function FocusPage() {
                                             <div className="max-h-64 overflow-y-auto">
                                                 {(() => {
                                                     const today = new Date();
-                                                    const activeTasks = tasks.filter(t => t.status !== 'done' && t.status !== 'abandoned' && !t.isHabit);
+                                                    const activeTasks = tasks.filter(t => t.status !== 'done' && t.status !== 'abandoned' && (t.category !== "habit"));
                                                     const search = taskSearch.toLowerCase().trim();
                                                     const filtered = search
                                                         ? activeTasks.filter(t => t.title.toLowerCase().includes(search))

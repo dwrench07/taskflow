@@ -18,7 +18,12 @@ import {
 import type { Task } from './types';
 
 export function calculateStreak(habit: Task): number {
-  const { completionHistory, habitFrequency = 'daily' } = habit;
+  const { completionHistory } = habit;
+  // Map the unified recurrence to the streak window. Anything not weekly/monthly is treated as daily.
+  const frequency: 'daily' | 'weekly' | 'monthly' =
+    habit.recurrence === 'weekly' ? 'weekly'
+    : habit.recurrence === 'monthly' ? 'monthly'
+    : 'daily';
   if (!completionHistory || completionHistory.length === 0) {
     return 0;
   }
@@ -53,7 +58,7 @@ export function calculateStreak(habit: Task): number {
     }
   }
   
-  const { isCurrent, diff, sub } = checkFunctions[habitFrequency];
+  const { isCurrent, diff, sub } = checkFunctions[frequency];
 
   if (!isCurrent(lastCompletion)) {
     return 0;

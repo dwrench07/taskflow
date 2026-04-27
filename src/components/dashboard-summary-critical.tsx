@@ -15,7 +15,7 @@ export function CriticalDetail({ tasks }: { tasks: Task[] }) {
     return tasks
       .filter(t => 
         t.status !== 'done' && 
-        !t.isHabit && 
+        (t.category !== "habit") && 
         (t.priority === 'urgent' || t.priority === 'high' || (t.endDate && isSameDay(parseISO(t.endDate), today)))
       )
       .sort((a, b) => {

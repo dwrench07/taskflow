@@ -140,6 +140,8 @@ export default function JotsPage() {
                 description: `Converted from jot captured during "${jot.taskTitle || 'focus session'}" on ${format(parseISO(jot.sessionDate), 'MMM d, yyyy')}`,
                 priority: 'medium',
                 status: 'todo',
+                category: 'project-work',
+                recurrence: 'once',
                 subtasks: [],
                 notes: [],
                 doDate: new Date().toISOString(),

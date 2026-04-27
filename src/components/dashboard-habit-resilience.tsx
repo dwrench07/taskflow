@@ -25,7 +25,7 @@ interface HabitData {
 
 export function DashboardHabitResilience({ allTasks }: HabitResilienceProps) {
   const analysis = useMemo(() => {
-    const habits = allTasks.filter(t => t.isHabit && t.completionHistory && t.completionHistory.length >= 5);
+    const habits = allTasks.filter(t => (t.category === "habit") && t.completionHistory && t.completionHistory.length >= 5);
     if (habits.length === 0) return null;
 
     const habitData: HabitData[] = [];

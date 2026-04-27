@@ -10,7 +10,7 @@ import { subDays, isSameDay, parseISO, format } from "date-fns";
 
 export function DashboardHabitHeatmap({ allTasks }: { allTasks: Task[] }) {
     const habits = useMemo(() => {
-        return (Array.isArray(allTasks) ? allTasks : []).filter(t => t.isHabit);
+        return (Array.isArray(allTasks) ? allTasks : []).filter(t => (t.category === "habit"));
     }, [allTasks]);
 
     // Calculate completions for the last 30 days

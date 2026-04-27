@@ -26,7 +26,7 @@ export function DashboardUpcomingPNRs({ allTasks }: { allTasks: Task[] }) {
             .filter(task =>
                 (task.doDate || task.startDate) &&
                 task.status !== 'done' &&
-                !task.isHabit
+                (task.category !== "habit")
             )
             .sort((a, b) => {
                 const dateA = parseISO(a.doDate || a.startDate!);

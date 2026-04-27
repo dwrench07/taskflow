@@ -17,7 +17,7 @@ interface TimeLimitAdherenceProps {
 export function DashboardTimeLimitAdherence({ allTasks, focusSessions }: TimeLimitAdherenceProps) {
   const analysis = useMemo(() => {
     // Find tasks/subtasks with time limits
-    const timeboxedTasks = allTasks.filter(t => t.timeLimit && t.timeLimit > 0 && !t.isHabit);
+    const timeboxedTasks = allTasks.filter(t => t.timeLimit && t.timeLimit > 0 && (t.category !== "habit"));
     const timeboxedSubtasks = allTasks.flatMap(t =>
       t.subtasks.filter(s => s.timeLimit && s.timeLimit > 0)
     );

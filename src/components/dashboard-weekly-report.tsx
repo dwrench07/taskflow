@@ -38,14 +38,14 @@ export function DashboardWeeklyReport({ allTasks, focusSessions }: WeeklyReportP
 
     // Tasks completed this week
     const tasksCompletedThisWeek = allTasks.filter(t =>
-      !t.isHabit && t.status === 'done' && t.endDate && inThisWeek(t.endDate)
+      (t.category !== "habit") && t.status === 'done' && t.endDate && inThisWeek(t.endDate)
     ).length;
     const tasksCompletedPrevWeek = allTasks.filter(t =>
-      !t.isHabit && t.status === 'done' && t.endDate && inPrevWeek(t.endDate)
+      (t.category !== "habit") && t.status === 'done' && t.endDate && inPrevWeek(t.endDate)
     ).length;
 
     // Habits maintained
-    const habits = allTasks.filter(t => t.isHabit);
+    const habits = allTasks.filter(t => (t.category === "habit"));
     const habitsDoneThisWeek = habits.filter(t =>
       t.completionHistory?.some(d => inThisWeek(d))
     ).length;

@@ -101,7 +101,7 @@ function CalendarEvent({ event }: { event: CalendarEventData }) {
   const router = useRouter();
 
   const getLink = () => {
-    if (event.isHabit) {
+    if ((event.category === "habit")) {
       return '/habits';
     }
     const taskId = event.isSubtask ? event.parentId : event.id;
@@ -144,9 +144,9 @@ function CalendarEvent({ event }: { event: CalendarEventData }) {
           Due
         </span>
       )}
-      {event.isHabit && event.dailyStatus && event.dailyStatus !== 'not recorded' && statusIcons[event.dailyStatus]}
+      {(event.category === "habit") && event.dailyStatus && event.dailyStatus !== 'not recorded' && statusIcons[event.dailyStatus]}
       <span className="font-semibold flex-1 truncate">{renderTitle(event.title, event.isSubtask)}</span>
-      {event.isHabit && <Repeat className="inline-block h-3 w-3 ml-1.5 opacity-90" />}
+      {(event.category === "habit") && <Repeat className="inline-block h-3 w-3 ml-1.5 opacity-90" />}
     </div>
   );
 }
@@ -178,9 +178,9 @@ function SortableCalendarItem({
   };
 
   const isCompleted = isEventCompleted(event, currentDate);
-  const startDate = event.isHabit ? add(startOfDay(currentDate), { hours: 9 }) : (event.startDate ? parseISO(event.startDate) : startOfDay(currentDate));
-  const endDate = event.isHabit ? add(startOfDay(currentDate), { hours: 9, minutes: 30 }) : (event.endDate ? parseISO(event.endDate) : startDate);
-  const getLink = () => event.isHabit ? `/habits?taskId=${event.id}` : `/tasks?taskId=${event.isSubtask ? event.parentId : event.id}`;
+  const startDate = (event.category === "habit") ? add(startOfDay(currentDate), { hours: 9 }) : (event.startDate ? parseISO(event.startDate) : startOfDay(currentDate));
+  const endDate = (event.category === "habit") ? add(startOfDay(currentDate), { hours: 9, minutes: 30 }) : (event.endDate ? parseISO(event.endDate) : startDate);
+  const getLink = () => (event.category === "habit") ? `/habits?taskId=${event.id}` : `/tasks?taskId=${event.isSubtask ? event.parentId : event.id}`;
   const dailyStatus = event.dailyStatus;
   const statusIcon = dailyStatus && dailyStatus !== 'not recorded' ? statusIcons[dailyStatus] : null;
 
@@ -219,12 +219,12 @@ function SortableCalendarItem({
         </Link>
         <div className="flex items-center gap-1.5 mt-1 overflow-x-auto pb-1 no-scrollbar">
           <Badge variant="outline" className={cn("capitalize shrink-0", priorityStyles[event.priority])}>{event.priority}</Badge>
-          {event.isHabit && <Badge variant="outline" className="shrink-0"><Repeat className="h-3 w-3 mr-1" />Habit</Badge>}
+          {(event.category === "habit") && <Badge variant="outline" className="shrink-0"><Repeat className="h-3 w-3 mr-1" />Habit</Badge>}
           {statusIcon && <Badge variant="outline" className="flex items-center gap-1 shrink-0">{statusIcon}<span className="capitalize">{dailyStatus?.replace(' observed', '')}</span></Badge>}
         </div>
       </div>
       <div className="flex items-center gap-1">
-        {event.isHabit && (
+        {(event.category === "habit") && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
@@ -294,7 +294,7 @@ export default function CalendarPage() {
       }
 
       if (scheduledSubtasks.size === 0) {
-        if (task.isHabit) {
+        if ((task.category === "habit")) {
           const dailyStatusEntry = task.dailyStatus?.find(ds => isSameDay(parseISO(ds.date), day));
           events.push({
             ...task,
@@ -348,7 +348,7 @@ export default function CalendarPage() {
       const subtask = parent?.subtasks.find(st => st.id === event.id);
       return subtask?.completed ?? false;
     }
-    if (event.isHabit) {
+    if ((event.category === "habit")) {
       return event.completionHistory?.some(d => isSameDay(parseISO(d), day)) ?? false;
     }
     return event.status === 'done';
@@ -359,7 +359,7 @@ export default function CalendarPage() {
   }
 
   const getHabitStatsForDay = (day: Date) => {
-    const habits = (Array.isArray(allTasks) ? allTasks : []).filter(t => t.isHabit);
+    const habits = (Array.isArray(allTasks) ? allTasks : []).filter(t => (t.category === "habit"));
     const totalHabits = habits.length;
     const completedHabits = habits.filter(h => h.completionHistory?.some(d => isSameDay(parseISO(d), day))).length;
     return { totalHabits, completedHabits };
@@ -382,6 +382,8 @@ export default function CalendarPage() {
       description: data.description || "",
       priority: data.priority,
       status: 'todo',
+      category: data.category ?? 'project-work',
+      recurrence: data.recurrence ?? 'once',
       tags: data.tags || [],
       startDate: currentDate.toISOString(),
       subtasks: [],
@@ -396,7 +398,7 @@ export default function CalendarPage() {
   const handleToggleCompletion = (event: CalendarEventData, checked: boolean) => {
     let taskToUpdate: Task | undefined;
 
-    if (event.isHabit) {
+    if ((event.category === "habit")) {
       const habit = allTasks.find(h => h.id === event.id);
       if (!habit) return;
 
@@ -488,7 +490,7 @@ export default function CalendarPage() {
       const tasksToUpdate = new Map<string, Task>();
 
       newOrder.forEach((event, index) => {
-        if (event.isHabit || (!event.isHabit && !event.isSubtask)) {
+        if ((event.category === "habit") || !event.isSubtask) {
           const taskId = event.id;
           const task = tasksToUpdate.get(taskId) || allTasks.find((t) => t.id === taskId);
           if (task && task.order !== index) {
