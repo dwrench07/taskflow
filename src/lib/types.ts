@@ -191,6 +191,7 @@ export interface Milestone extends Goal {
   // We can add milestone specific fields here if they diverge later
   targetDate?: string;
   stretchGoalCompleted?: boolean; // For Pinnacle Push
+  parentMilestoneId?: string;
 }
 
 export interface Chore {

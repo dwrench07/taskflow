@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import type { Pillar, Milestone, Task, Goal } from "@/lib/types";
-import { getAllPillars, getAllMilestones, getAllTasks, addPillar, addMilestone, getAllGoals } from "@/lib/data";
+import { getAllPillars, getAllMilestones, getAllTasks, addPillar, addMilestone, deleteMilestone, updateMilestone, getAllGoals } from "@/lib/data";
 
 // Placeholder components that we will create next
 import { AlignmentTreeView } from "@/components/alignment/alignment-tree-view";
@@ -28,7 +28,7 @@ export default function AlignmentPage() {
   const [isMilestoneDialogOpen, setIsMilestoneDialogOpen] = useState(false);
   
   const [newPillar, setNewPillar] = useState({ title: "", description: "", color: "#3b82f6" });
-  const [newMilestone, setNewMilestone] = useState({ title: "", description: "", pillarId: "" });
+  const [newMilestone, setNewMilestone] = useState({ title: "", description: "", pillarId: "", parentMilestoneId: "" });
   
   const { toast } = useToast();
 
@@ -74,6 +74,39 @@ export default function AlignmentPage() {
     }
   };
 
+  const handleDeleteMilestone = async (id: string) => {
+    try {
+      await deleteMilestone(id);
+      // Promote any children of the deleted milestone so they aren't orphaned in the tree.
+      const orphans = milestones.filter(m => m.parentMilestoneId === id);
+      await Promise.all(
+        orphans.map(child => updateMilestone({ ...child, parentMilestoneId: undefined }))
+      );
+      setMilestones(prev =>
+        prev
+          .filter(m => m.id !== id)
+          .map(m => (m.parentMilestoneId === id ? { ...m, parentMilestoneId: undefined } : m))
+      );
+      setTasks(prev => prev.map(t => t.milestoneId === id ? { ...t, milestoneId: undefined } : t));
+      toast({ title: "Milestone deleted" });
+    } catch (error) {
+      console.error(error);
+      toast({ title: "Error", description: "Failed to delete milestone.", variant: "destructive" });
+    }
+  };
+
+  const handleUpdateMilestone = async (milestone: Milestone) => {
+    const previous = milestones;
+    setMilestones(prev => prev.map(m => m.id === milestone.id ? milestone : m));
+    try {
+      await updateMilestone(milestone);
+    } catch (error) {
+      console.error(error);
+      setMilestones(previous);
+      toast({ title: "Error", description: "Failed to update milestone.", variant: "destructive" });
+    }
+  };
+
   const handleCreateMilestone = async () => {
     if (!newMilestone.title.trim()) return;
     try {
@@ -81,10 +114,11 @@ export default function AlignmentPage() {
         title: newMilestone.title.trim(),
         description: newMilestone.description.trim(),
         pillarId: newMilestone.pillarId || "",
+        parentMilestoneId: newMilestone.parentMilestoneId || undefined,
         status: "active",
       });
       setMilestones([...milestones, added]);
-      setNewMilestone({ title: "", description: "", pillarId: "" });
+      setNewMilestone({ title: "", description: "", pillarId: "", parentMilestoneId: "" });
       setIsMilestoneDialogOpen(false);
       toast({ title: "Milestone created", description: "Successfully added new milestone." });
     } catch (error) {
@@ -141,13 +175,24 @@ export default function AlignmentPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Attach to Pillar (Optional)</Label>
-                  <select 
+                  <select
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
                     value={newMilestone.pillarId}
                     onChange={(e) => setNewMilestone({...newMilestone, pillarId: e.target.value})}
                   >
                     <option value="">None</option>
                     {pillars.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Nest under Milestone (Optional)</Label>
+                  <select
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background disabled:cursor-not-allowed disabled:opacity-50"
+                    value={newMilestone.parentMilestoneId}
+                    onChange={(e) => setNewMilestone({...newMilestone, parentMilestoneId: e.target.value})}
+                  >
+                    <option value="">No parent (top-level)</option>
+                    {milestones.map(m => <option key={m.id} value={m.id}>{m.title}</option>)}
                   </select>
                 </div>
                 <Button className="w-full" onClick={handleCreateMilestone} disabled={!newMilestone.title.trim()}>Save Milestone</Button>
@@ -190,10 +235,12 @@ export default function AlignmentPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <AlignmentTreeView 
-                    pillars={pillars} 
-                    milestones={milestones} 
-                    tasks={tasks} 
+                  <AlignmentTreeView
+                    pillars={pillars}
+                    milestones={milestones}
+                    tasks={tasks}
+                    onDeleteMilestone={handleDeleteMilestone}
+                    onUpdateMilestone={handleUpdateMilestone}
                   />
                 </CardContent>
               </Card>

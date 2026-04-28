@@ -370,6 +370,16 @@ export async function addMilestone(milestone: Omit<Milestone, 'id'>): Promise<Mi
   throw new Error(`Failed to add milestone: ${response.statusText}`);
 }
 
+export async function updateMilestone(milestone: Milestone): Promise<Milestone> {
+  const response = await fetch(`/api/milestones/${milestone.id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(milestone),
+  });
+  if (response.ok) return await response.json();
+  throw new Error(`Failed to update milestone: ${response.statusText}`);
+}
+
 export async function deleteMilestone(id: string): Promise<void> {
   await fetch(`/api/milestones/${id}`, { method: 'DELETE' });
 }

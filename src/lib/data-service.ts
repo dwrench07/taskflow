@@ -756,6 +756,21 @@ export async function addMilestoneAsync(milestone: Omit<Milestone, 'id'>, userId
     }
 }
 
+export async function updateMilestoneAsync(milestone: Milestone, userId?: string | null): Promise<Milestone> {
+    if (!isServer) {
+        const idx = mockMilestones.findIndex(m => m.id === milestone.id);
+        if (idx !== -1) mockMilestones[idx] = milestone;
+        return milestone;
+    }
+    try {
+        const db = await getDatabase();
+        return await db.updateMilestone(milestone, userId);
+    } catch (error) {
+        defaultLogger.warn('Failed to update milestone', error);
+        return milestone;
+    }
+}
+
 export async function deleteMilestoneAsync(id: string, userId?: string | null): Promise<boolean> {
     if (!isServer) {
         const idx = mockMilestones.findIndex(m => m.id === id);
