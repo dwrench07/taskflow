@@ -51,7 +51,7 @@ export function DashboardAlmostDone({ allTasks }: DashboardAlmostDoneProps) {
           <CheckCircle2 className="h-4 w-4 text-green-500" />
           Almost Done
           <WidgetInfo description={WIDGET_DESCRIPTIONS["almost-done"]} />
-          <Badge variant="secondary" className="ml-auto text-[10px] bg-green-500/10 text-green-500">{almostDoneTasks.length} tasks</Badge>
+          <Badge variant="secondary" className="ml-auto text-[11px] bg-green-500/10 text-green-500">{almostDoneTasks.length} tasks</Badge>
         </CardTitle>
         <p className="text-xs text-muted-foreground">These are 60%+ complete. Just finish them.</p>
       </CardHeader>
@@ -60,7 +60,7 @@ export function DashboardAlmostDone({ allTasks }: DashboardAlmostDoneProps) {
           <div key={task.id} className="space-y-2">
             <div className="flex items-center justify-between gap-2">
               <Link href={`/focus?taskId=${task.id}`} className="text-sm font-medium truncate hover:text-primary transition-colors">{task.title}</Link>
-              <Badge variant="outline" className="text-[10px] shrink-0 text-green-500 border-green-500/30">
+              <Badge variant="outline" className="text-[11px] shrink-0 text-green-500 border-green-500/30">
                 {completed}/{total} ({percentage}%)
               </Badge>
             </div>
@@ -80,7 +80,7 @@ export function DashboardAlmostDone({ allTasks }: DashboardAlmostDoneProps) {
                 </div>
               ))}
               {remaining.length > 3 && (
-                <span className="text-[10px] text-muted-foreground pl-4">+{remaining.length - 3} more</span>
+                <span className="text-[11px] text-muted-foreground pl-4">+{remaining.length - 3} more</span>
               )}
             </div>
           </div>

@@ -99,7 +99,7 @@ export function DashboardEnergyMatrix({ focusSessions }: EnergyMatrixProps) {
         <CardTitle className="text-sm font-bold flex items-center gap-2">
           <Activity className="h-4 w-4 text-cyan-500" />
           Energy vs Output
-          <span className="ml-auto text-[10px] text-muted-foreground">{analysis.total} sessions</span>
+          <span className="ml-auto text-[11px] text-muted-foreground">{analysis.total} sessions</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -109,7 +109,7 @@ export function DashboardEnergyMatrix({ focusSessions }: EnergyMatrixProps) {
           <div className="grid grid-cols-4 gap-1">
             <div /> {/* empty corner */}
             {PROD_ORDER.map(p => (
-              <div key={p} className="text-center text-[9px] text-muted-foreground uppercase tracking-wider font-bold pb-1">
+              <div key={p} className="text-center text-[11px] text-muted-foreground uppercase tracking-wider font-bold pb-1">
                 {PROD_LABELS[p].split(' ')[0]}
               </div>
             ))}
@@ -118,7 +118,7 @@ export function DashboardEnergyMatrix({ focusSessions }: EnergyMatrixProps) {
           {/* Matrix rows */}
           {ENERGY_ORDER.map(energy => (
             <div key={energy} className="grid grid-cols-4 gap-1">
-              <div className="flex items-center text-[9px] text-muted-foreground uppercase tracking-wider font-bold pr-1">
+              <div className="flex items-center text-[11px] text-muted-foreground uppercase tracking-wider font-bold pr-1">
                 {ENERGY_LABELS[energy].split(' ')[0]}
               </div>
               {PROD_ORDER.map(prod => {
@@ -150,7 +150,7 @@ export function DashboardEnergyMatrix({ focusSessions }: EnergyMatrixProps) {
         </div>
 
         {/* Axis labels */}
-        <div className="flex justify-between text-[9px] text-muted-foreground/40">
+        <div className="flex justify-between text-[11px] text-muted-foreground/40">
           <span>← Energy</span>
           <span>Output →</span>
         </div>

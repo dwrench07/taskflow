@@ -178,17 +178,17 @@ export default function FrogsPage() {
                                     )}>
                                         <CardHeader className="pb-3">
                                             <div className="flex justify-between items-start mb-1">
-                                                <Badge variant="secondary" className="text-[10px] uppercase font-bold tracking-wider">
+                                                <Badge variant="secondary" className="text-[11px] uppercase font-bold tracking-wider">
                                                     {frog.priority}
                                                 </Badge>
                                                 <div className="flex items-center gap-1.5">
                                                     {frog.pushCount && frog.pushCount > 0 && (
-                                                        <Badge variant="outline" className="text-[10px] text-red-500 border-red-500/50">
+                                                        <Badge variant="outline" className="text-[11px] text-red-500 border-red-500/50">
                                                             {frog.pushCount}x pushed
                                                         </Badge>
                                                     )}
                                                     {getTopPushReason(frog) && (
-                                                        <Badge variant="outline" className="text-[10px] text-orange-400 border-orange-500/30">
+                                                        <Badge variant="outline" className="text-[11px] text-orange-400 border-orange-500/30">
                                                             {PUSH_REASON_LABELS[getTopPushReason(frog)!].icon}
                                                             <span className="ml-1">{PUSH_REASON_LABELS[getTopPushReason(frog)!].label}</span>
                                                         </Badge>

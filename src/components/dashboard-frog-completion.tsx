@@ -84,7 +84,7 @@ export function DashboardFrogCompletion({ allTasks }: FrogCompletionProps) {
         <CardTitle className="text-sm font-bold flex items-center gap-2">
           <Bug className="h-4 w-4 text-emerald-500" />
           Frog Completion
-          <Badge variant="secondary" className="ml-auto text-[10px]">
+          <Badge variant="secondary" className="ml-auto text-[11px]">
             {analysis.totalFrogs} frogs
           </Badge>
         </CardTitle>
@@ -94,17 +94,17 @@ export function DashboardFrogCompletion({ allTasks }: FrogCompletionProps) {
         <div className="grid grid-cols-2 gap-3">
           <div className="text-center p-3 bg-emerald-500/5 rounded-xl border border-emerald-500/10">
             <p className="text-2xl font-black text-emerald-400">{analysis.frogCompletionRate}%</p>
-            <p className="text-[10px] text-muted-foreground mt-1">🐸 Frogs completed</p>
+            <p className="text-[11px] text-muted-foreground mt-1">🐸 Frogs completed</p>
           </div>
           <div className="text-center p-3 bg-muted/20 rounded-xl">
             <p className="text-2xl font-black text-muted-foreground">{analysis.nonFrogCompletionRate}%</p>
-            <p className="text-[10px] text-muted-foreground mt-1">Regular tasks</p>
+            <p className="text-[11px] text-muted-foreground mt-1">Regular tasks</p>
           </div>
         </div>
 
         {/* Progress bar */}
         <div className="space-y-1">
-          <div className="flex justify-between text-[10px] text-muted-foreground">
+          <div className="flex justify-between text-[11px] text-muted-foreground">
             <span>{analysis.frogsDone} done</span>
             <span>{analysis.frogsActive} active</span>
             <span>{analysis.frogsAbandoned} dropped</span>

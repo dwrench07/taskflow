@@ -76,7 +76,7 @@ export function BonsaiTree() {
             <Sprout className="w-5 h-5 text-green-500" />
             Zen Garden
           </CardTitle>
-          <div className="px-2 py-0.5 rounded-full bg-green-500/10 text-green-500 text-[10px] font-bold uppercase tracking-wider">
+          <div className="px-2 py-0.5 rounded-full bg-green-500/10 text-green-500 text-[11px] font-bold uppercase tracking-wider">
             Level {level}
           </div>
         </div>
@@ -102,7 +102,7 @@ export function BonsaiTree() {
           
           <div className="mt-4 text-center">
             <div className="font-black text-sm tracking-tight">{stage.label}</div>
-            <div className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter">
+            <div className="text-[11px] text-muted-foreground font-medium uppercase tracking-tighter">
               A physical representation of your focus
             </div>
           </div>
@@ -126,7 +126,7 @@ export function BonsaiTree() {
 
         {/* Feeding Section */}
         <div className="space-y-3">
-          <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/70 mb-1">
+          <div className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/70 mb-1">
             Feed your artifacts
           </div>
           <div className="grid grid-cols-2 gap-2 sm:gap-3">
@@ -144,11 +144,11 @@ export function BonsaiTree() {
                   disabled={count <= 0 || isFeeding}
                   onClick={() => handleFeed(item.key as any)}
                 >
-                  <div className="flex items-center gap-1 sm:gap-1.5 font-bold text-[9px] sm:text-[10px]">
+                  <div className="flex items-center gap-1 sm:gap-1.5 font-bold text-[11px] sm:text-[11px]">
                     <span className="shrink-0">{item.icon}</span>
                     <span className="truncate">{item.label}</span>
                   </div>
-                  <div className="text-[8px] sm:text-[9px] text-muted-foreground font-medium truncate">
+                  <div className="text-[11px] sm:text-[11px] text-muted-foreground font-medium truncate">
                     {count} Available (+{item.xp} XP)
                   </div>
                 </Button>

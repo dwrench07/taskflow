@@ -99,7 +99,7 @@ export function GoalForm({ goal, allTags = [], onSubmit }: GoalFormProps) {
                     value={stretchGoal}
                     onChange={(e) => setStretchGoal(e.target.value)}
                 />
-                <p className="text-[10px] text-muted-foreground">After hitting your goal, we&apos;ll surface this as an optional next level.</p>
+                <p className="text-[11px] text-muted-foreground">After hitting your goal, we&apos;ll surface this as an optional next level.</p>
             </div>
 
             <div className="space-y-2">

@@ -59,12 +59,12 @@ export function DashboardUpcomingDeadlines({ allTasks }: { allTasks: Task[] }) {
                         >
                             <div className="flex flex-col min-w-0">
                                 <span className="font-bold text-sm truncate">{task.title}</span>
-                                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                <span className="text-[11px] text-muted-foreground flex items-center gap-1">
                                     <Clock className="w-3 h-3" />
                                     {format(parseISO(task.endDate!), "MMM d, h:mm a")}
                                 </span>
                             </div>
-                            <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 h-4 capitalize shrink-0 ml-2", priorityStyles[task.priority])}>
+                            <Badge variant="outline" className={cn("text-[11px] px-1.5 py-0 h-4 capitalize shrink-0 ml-2", priorityStyles[task.priority])}>
                                 {task.priority}
                             </Badge>
                         </Link>

@@ -128,27 +128,27 @@ export function DashboardBlockerInsights({ allTasks }: BlockerInsightsProps) {
               <Lock className="h-3.5 w-3.5 text-sky-400" />
               <span className="text-xl font-black text-sky-400">{analysis.totalBlocked}</span>
             </div>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Tasks blocked</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Tasks blocked</p>
           </div>
           <div className="text-center p-2.5 bg-emerald-500/5 rounded-xl border border-emerald-500/10">
             <div className="flex items-center justify-center gap-1.5">
               <Unlock className="h-3.5 w-3.5 text-emerald-400" />
               <span className="text-xl font-black text-emerald-400">{analysis.totalBlocking}</span>
             </div>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Key blockers</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Key blockers</p>
           </div>
         </div>
 
         {/* Highest impact tasks */}
         {analysis.impactRanking.length > 0 && (
           <div className="space-y-2">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">
+            <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-bold">
               Complete these to unblock the most
             </p>
             {analysis.impactRanking.map((t, i) => (
               <div key={t.id} className="flex items-center gap-2 text-xs">
                 <span className={cn(
-                  "flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-black shrink-0",
+                  "flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-black shrink-0",
                   i === 0 ? "bg-emerald-500/20 text-emerald-400" : "bg-muted/30 text-muted-foreground"
                 )}>
                   {i + 1}
@@ -159,7 +159,7 @@ export function DashboardBlockerInsights({ allTasks }: BlockerInsightsProps) {
                 >
                   {t.title}
                 </Link>
-                <Badge variant="outline" className="text-[10px] shrink-0 gap-1">
+                <Badge variant="outline" className="text-[11px] shrink-0 gap-1">
                   <Unlock className="h-2.5 w-2.5" /> {t.transitiveBlocks}
                 </Badge>
               </div>
@@ -170,7 +170,7 @@ export function DashboardBlockerInsights({ allTasks }: BlockerInsightsProps) {
         {/* Stuck tasks */}
         {analysis.blockedTasks.length > 0 && (
           <div className="space-y-2 pt-2 border-t border-border/30">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">
+            <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-bold">
               Currently stuck
             </p>
             {analysis.blockedTasks.map(t => (
@@ -179,7 +179,7 @@ export function DashboardBlockerInsights({ allTasks }: BlockerInsightsProps) {
                   <Lock className="h-3 w-3 text-red-400 shrink-0" />
                   <span className="font-medium truncate">{t.title}</span>
                 </div>
-                <p className="text-[10px] text-muted-foreground mt-0.5 pl-[18px]">
+                <p className="text-[11px] text-muted-foreground mt-0.5 pl-[18px]">
                   Waiting on: {t.blockerTitles.slice(0, 2).join(', ')}
                   {t.blockerTitles.length > 2 && ` +${t.blockerTitles.length - 2} more`}
                 </p>

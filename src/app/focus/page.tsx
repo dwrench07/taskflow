@@ -659,7 +659,7 @@ export default function FocusPage() {
                                                         if (items.length === 0) return null;
                                                         return (
                                                             <div key={label}>
-                                                                <div className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/60 flex items-center gap-1.5">
+                                                                <div className="px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 flex items-center gap-1.5">
                                                                     {icon} {label}
                                                                 </div>
                                                                 {items.slice(0, 5).map(t => (
@@ -675,11 +675,11 @@ export default function FocusPage() {
                                                                         <div className="flex-1 truncate">
                                                                             <span className="font-medium">{t.title}</span>
                                                                             {t.tShirtSize && (
-                                                                                <span className="ml-2 text-[10px] text-muted-foreground opacity-60">{t.tShirtSize}</span>
+                                                                                <span className="ml-2 text-[11px] text-muted-foreground opacity-60">{t.tShirtSize}</span>
                                                                             )}
                                                                         </div>
-                                                                        {t.priority === 'urgent' && <Badge variant="destructive" className="text-[9px] px-1.5 py-0">urgent</Badge>}
-                                                                        {t.priority === 'high' && <Badge className="text-[9px] px-1.5 py-0 bg-orange-500/10 text-orange-400 border-orange-500/30">high</Badge>}
+                                                                        {t.priority === 'urgent' && <Badge variant="destructive" className="text-[11px] px-1.5 py-0">urgent</Badge>}
+                                                                        {t.priority === 'high' && <Badge className="text-[11px] px-1.5 py-0 bg-orange-500/10 text-orange-400 border-orange-500/30">high</Badge>}
                                                                     </button>
                                                                 ))}
                                                             </div>

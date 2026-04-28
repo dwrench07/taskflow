@@ -50,7 +50,7 @@ export function NotificationSettings() {
           <CardTitle className="text-sm font-bold flex items-center gap-2">
             <Bell className="h-4 w-4 text-primary" />
             Notifications
-            <Badge variant="secondary" className="ml-auto text-[10px]">Android App Only</Badge>
+            <Badge variant="secondary" className="ml-auto text-[11px]">Android App Only</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -74,9 +74,9 @@ export function NotificationSettings() {
           <Bell className="h-4 w-4 text-primary" />
           Notifications
           {prefs.enabled && hasPermission ? (
-            <Badge className="ml-auto text-[10px] bg-green-500/20 text-green-400 border-green-500/30">Active</Badge>
+            <Badge className="ml-auto text-[11px] bg-green-500/20 text-green-400 border-green-500/30">Active</Badge>
           ) : (
-            <Badge variant="secondary" className="ml-auto text-[10px]">Disabled</Badge>
+            <Badge variant="secondary" className="ml-auto text-[11px]">Disabled</Badge>
           )}
         </CardTitle>
       </CardHeader>
@@ -103,7 +103,7 @@ export function NotificationSettings() {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="w-full text-[10px] uppercase tracking-wider font-bold h-8 border border-dashed border-border/50 hover:bg-primary/10 hover:text-primary transition-colors"
+                  className="w-full text-[11px] uppercase tracking-wider font-bold h-8 border border-dashed border-border/50 hover:bg-primary/10 hover:text-primary transition-colors"
                   onClick={async () => {
                     if (isNative) {
                       const { LocalNotifications } = await import('@capacitor/local-notifications');
@@ -155,7 +155,7 @@ export function NotificationSettings() {
                 {/* Time pickers */}
                 <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border/20">
                   <div className="space-y-1">
-                    <label className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Morning Brief</label>
+                    <label className="text-[11px] text-muted-foreground uppercase tracking-wider font-bold">Morning Brief</label>
                     <select
                       className="w-full text-xs bg-muted/20 border border-border/30 rounded-lg px-2 py-1.5"
                       value={prefs.morningBriefingHour}
@@ -167,7 +167,7 @@ export function NotificationSettings() {
                     </select>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Habit Nudge</label>
+                    <label className="text-[11px] text-muted-foreground uppercase tracking-wider font-bold">Habit Nudge</label>
                     <select
                       className="w-full text-xs bg-muted/20 border border-border/30 rounded-lg px-2 py-1.5"
                       value={prefs.habitNudgeHour}

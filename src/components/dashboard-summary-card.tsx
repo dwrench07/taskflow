@@ -55,7 +55,7 @@ export function SummaryCard({
                     <span className="text-2xl font-black tracking-tighter text-foreground group-hover:scale-105 transition-transform duration-500">{value}</span>
                     {trend && trend.value !== 0 && (
                         <div className={cn(
-                            "text-[10px] font-bold flex items-center h-4 px-1.5 rounded-full gap-0.5",
+                            "text-[11px] font-bold flex items-center h-4 px-1.5 rounded-full gap-0.5",
                             (trend.value > 0 === trend.isGood) ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
                         )}>
                             {trend.value > 0 ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
@@ -63,10 +63,10 @@ export function SummaryCard({
                         </div>
                     )}
                 </div>
-                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/80">{title}</span>
+                <span className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/80">{title}</span>
             </div>
             
-            <span className="text-[10px] text-muted-foreground/50 font-medium italic truncate w-full">{subtitle}</span>
+            <span className="text-[11px] text-muted-foreground/50 font-medium truncate w-full">{subtitle}</span>
           </CardContent>
         </Card>
       </PopoverTrigger>

@@ -76,7 +76,7 @@ export function DashboardPushFunnel({ allTasks }: PushFunnelProps) {
           <Filter className="h-4 w-4 text-orange-500" />
           Push-to-Done Funnel
           {analysis.avgPushesBeforeDone > 0 && (
-            <span className="ml-auto text-[10px] text-muted-foreground">
+            <span className="ml-auto text-[11px] text-muted-foreground">
               Avg {analysis.avgPushesBeforeDone} pushes before done
             </span>
           )}
@@ -87,7 +87,7 @@ export function DashboardPushFunnel({ allTasks }: PushFunnelProps) {
         <div className="space-y-1.5">
           {analysis.funnel.map((step, i) => (
             <div key={step.label} className="space-y-0.5">
-              <div className="flex items-center justify-between text-[10px]">
+              <div className="flex items-center justify-between text-[11px]">
                 <span className={cn("font-medium", i === 0 ? "text-foreground" : "text-muted-foreground")}>{step.label}</span>
                 <span className="text-muted-foreground">{step.count} ({step.pct}%)</span>
               </div>
@@ -112,15 +112,15 @@ export function DashboardPushFunnel({ allTasks }: PushFunnelProps) {
           <div className="grid grid-cols-3 gap-2 pt-1 border-t border-border/30">
             <div className="text-center p-2 bg-emerald-500/5 rounded-lg">
               <p className="text-sm font-black text-emerald-400">{analysis.heavyDone}</p>
-              <p className="text-[9px] text-muted-foreground">Done</p>
+              <p className="text-[11px] text-muted-foreground">Done</p>
             </div>
             <div className="text-center p-2 bg-amber-500/5 rounded-lg">
               <p className="text-sm font-black text-amber-400">{analysis.heavyStillOpen}</p>
-              <p className="text-[9px] text-muted-foreground">Still open</p>
+              <p className="text-[11px] text-muted-foreground">Still open</p>
             </div>
             <div className="text-center p-2 bg-red-500/5 rounded-lg">
               <p className="text-sm font-black text-red-400">{analysis.heavyAbandoned}</p>
-              <p className="text-[9px] text-muted-foreground">Abandoned</p>
+              <p className="text-[11px] text-muted-foreground">Abandoned</p>
             </div>
           </div>
         )}
@@ -128,13 +128,13 @@ export function DashboardPushFunnel({ allTasks }: PushFunnelProps) {
         {/* Zombie tasks */}
         {analysis.zombieTasks.length > 0 && (
           <div className="space-y-1.5 pt-1 border-t border-border/30">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold flex items-center gap-1">
+            <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-bold flex items-center gap-1">
               <Skull className="h-3 w-3 text-red-400" /> Zombie tasks (5+ pushes, still open)
             </p>
             {analysis.zombieTasks.map(t => (
               <div key={t.id} className="flex items-center justify-between text-xs bg-red-500/5 rounded-lg px-3 py-1.5">
                 <span className="truncate font-medium">{t.title}</span>
-                <Badge variant="destructive" className="text-[10px] shrink-0">{t.pushCount}x</Badge>
+                <Badge variant="destructive" className="text-[11px] shrink-0">{t.pushCount}x</Badge>
               </div>
             ))}
           </div>

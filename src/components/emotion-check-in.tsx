@@ -68,7 +68,7 @@ export function EmotionCheckInModal({ open, onComplete, onSkip, title, descripti
                 )}
               >
                 <span className="text-2xl">{e.emoji}</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider">{e.label}</span>
+                <span className="text-[11px] font-bold uppercase tracking-wider">{e.label}</span>
               </button>
             ))}
           </div>
@@ -88,7 +88,7 @@ export function EmotionCheckInModal({ open, onComplete, onSkip, title, descripti
               max={10}
               step={1}
             />
-            <div className="flex justify-between text-[10px] text-muted-foreground/50 px-1">
+            <div className="flex justify-between text-[11px] text-muted-foreground/50 px-1">
               <span>Completely relaxed</span>
               <span>Maximum tension</span>
             </div>

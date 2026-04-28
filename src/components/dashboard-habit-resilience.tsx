@@ -118,9 +118,9 @@ export function DashboardHabitResilience({ allTasks }: HabitResilienceProps) {
               <div className="flex items-center justify-between text-xs">
                 <span className="font-medium truncate flex-1">{habit.title}</span>
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <span className="text-[10px] text-muted-foreground">{habit.totalBreaks} breaks</span>
+                  <span className="text-[11px] text-muted-foreground">{habit.totalBreaks} breaks</span>
                   <span className={cn(
-                    "font-bold text-[10px]",
+                    "font-bold text-[11px]",
                     habit.resilience >= 70 ? "text-blue-400" :
                     habit.resilience >= 40 ? "text-amber-400" : "text-red-400"
                   )}>

@@ -163,7 +163,7 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
                     <FormLabel className="text-xs uppercase tracking-wider text-muted-foreground">Blocked By</FormLabel>
                     <FormControl>
                       <div className="border rounded-md p-2 max-h-32 overflow-y-auto space-y-1 bg-muted/20">
-                        {allExistingTasks.length === 0 && <p className="text-[10px] text-muted-foreground p-1">No tasks.</p>}
+                        {allExistingTasks.length === 0 && <p className="text-[11px] text-muted-foreground p-1">No tasks.</p>}
                         {allExistingTasks.map(t => (
                           <label key={`blockedBy-${t.id}`} className="flex items-center space-x-2 text-xs">
                             <input 
@@ -193,7 +193,7 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
                     <FormLabel className="text-xs uppercase tracking-wider text-muted-foreground">Blocks</FormLabel>
                     <FormControl>
                       <div className="border rounded-md p-2 max-h-32 overflow-y-auto space-y-1 bg-muted/20">
-                        {allExistingTasks.length === 0 && <p className="text-[10px] text-muted-foreground p-1">No tasks.</p>}
+                        {allExistingTasks.length === 0 && <p className="text-[11px] text-muted-foreground p-1">No tasks.</p>}
                         {allExistingTasks.map(t => (
                           <label key={`blocks-${t.id}`} className="flex items-center space-x-2 text-xs">
                             <input 
@@ -347,7 +347,7 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
                     <FormLabel className="text-xs text-muted-foreground">Goal</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value || "none"}>
                       <FormControl>
-                        <SelectTrigger className="h-8 text-xs italic bg-transparent">
+                        <SelectTrigger className="h-8 text-xs bg-transparent">
                           <SelectValue placeholder="No goal" />
                         </SelectTrigger>
                       </FormControl>
@@ -370,7 +370,7 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
                     <FormLabel className="text-xs text-muted-foreground">Milestone</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value || "none"}>
                       <FormControl>
-                        <SelectTrigger className="h-8 text-xs italic bg-transparent">
+                        <SelectTrigger className="h-8 text-xs bg-transparent">
                           <SelectValue placeholder="No milestone" />
                         </SelectTrigger>
                       </FormControl>
@@ -395,7 +395,7 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
                 name="doDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[10px] uppercase font-bold text-primary">Drop Dead Date</FormLabel>
+                    <FormLabel className="text-[11px] uppercase font-bold text-primary">Drop Dead Date</FormLabel>
                     <FormControl>
                       <DateTimePicker 
                         date={field.value || undefined} 
@@ -411,7 +411,7 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
                 name="endDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[10px] uppercase text-muted-foreground">Final Deadline</FormLabel>
+                    <FormLabel className="text-[11px] uppercase text-muted-foreground">Final Deadline</FormLabel>
                     <FormControl>
                       <DateTimePicker 
                         date={field.value || undefined} 

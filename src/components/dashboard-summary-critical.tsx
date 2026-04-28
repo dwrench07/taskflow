@@ -60,7 +60,7 @@ export function CriticalDetail({ tasks }: { tasks: Task[] }) {
                 {task.title}
               </span>
               <Badge variant="outline" className={cn(
-                "text-[10px] px-1 py-0 h-4 capitalize shrink-0",
+                "text-[11px] px-1 py-0 h-4 capitalize shrink-0",
                 task.priority === 'urgent' ? "bg-red-500/10 text-red-600 border-red-200" : "bg-muted text-muted-foreground"
               )}>
                 {task.priority}

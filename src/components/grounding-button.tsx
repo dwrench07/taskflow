@@ -206,7 +206,7 @@ export function GroundingButton() {
                   className="min-h-[150px] resize-none"
                   autoFocus
                 />
-                <p className="text-[10px] text-muted-foreground text-center">
+                <p className="text-[11px] text-muted-foreground text-center">
                   This won&apos;t be saved anywhere. It&apos;s just for you, right now.
                 </p>
                 <Button onClick={() => setMode('done')} className="w-full">

@@ -69,14 +69,14 @@ export function GoalCelebration({ goal, focusSessions, open, onClose, onContinue
               <div className="p-3 bg-muted/20 rounded-xl text-center">
                 <Calendar className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
                 <p className="text-lg font-black">{durationDays}</p>
-                <p className="text-[10px] text-muted-foreground">Days</p>
+                <p className="text-[11px] text-muted-foreground">Days</p>
               </div>
             )}
             {sessionsWithEmotions.length > 0 && (
               <div className="p-3 bg-muted/20 rounded-xl text-center">
                 <Brain className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
                 <p className="text-lg font-black">{sessionsWithEmotions.length}</p>
-                <p className="text-[10px] text-muted-foreground">Tracked sessions</p>
+                <p className="text-[11px] text-muted-foreground">Tracked sessions</p>
               </div>
             )}
           </div>
@@ -114,7 +114,7 @@ export function GoalCelebration({ goal, focusSessions, open, onClose, onContinue
                 Stretch Goal
               </div>
               <p className="text-sm text-muted-foreground">{goal.stretchGoal}</p>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-[11px] text-muted-foreground">
                 You hit your target. Want to keep going? No pressure — the stretch is always optional.
               </p>
               {onContinueToStretch && (

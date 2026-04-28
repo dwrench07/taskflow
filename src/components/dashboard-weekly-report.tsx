@@ -99,7 +99,7 @@ export function DashboardWeeklyReport({ allTasks, focusSessions }: WeeklyReportP
           <FileText className="h-4 w-4 text-primary" />
           Weekly Report Card
           <WidgetInfo description={WIDGET_DESCRIPTIONS["weekly-report"]} />
-          <Badge variant="secondary" className="ml-auto text-[10px]">{report.weekLabel}</Badge>
+          <Badge variant="secondary" className="ml-auto text-[11px]">{report.weekLabel}</Badge>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -111,7 +111,7 @@ export function DashboardWeeklyReport({ allTasks, focusSessions }: WeeklyReportP
               <span className="text-xl font-black text-blue-400">{report.tasksCompleted}</span>
               <TrendIcon value={report.taskTrend} />
             </div>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Tasks done</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Tasks done</p>
           </div>
 
           {/* Focus */}
@@ -121,7 +121,7 @@ export function DashboardWeeklyReport({ allTasks, focusSessions }: WeeklyReportP
               <span className="text-xl font-black text-cyan-400">{report.focusHours}h</span>
               <TrendIcon value={report.focusTrend} />
             </div>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Focus time</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Focus time</p>
           </div>
 
           {/* Habits */}
@@ -130,7 +130,7 @@ export function DashboardWeeklyReport({ allTasks, focusSessions }: WeeklyReportP
               <Flame className="h-3.5 w-3.5 text-green-400" />
               <span className="text-xl font-black text-green-400">{report.habitsMaintained}/{report.habitsTotal}</span>
             </div>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Habits active</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Habits active</p>
           </div>
 
           {/* Frogs */}
@@ -139,7 +139,7 @@ export function DashboardWeeklyReport({ allTasks, focusSessions }: WeeklyReportP
               <Bug className="h-3.5 w-3.5 text-emerald-400" />
               <span className="text-xl font-black text-emerald-400">{report.frogsEaten}</span>
             </div>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Frogs eaten</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Frogs eaten</p>
           </div>
 
           {/* Pushes */}
@@ -148,7 +148,7 @@ export function DashboardWeeklyReport({ allTasks, focusSessions }: WeeklyReportP
               <ArrowRightCircle className="h-3.5 w-3.5 text-orange-400" />
               <span className="text-xl font-black text-orange-400">{report.pushes}</span>
             </div>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Pushes</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Pushes</p>
           </div>
         </div>
 

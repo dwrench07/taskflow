@@ -237,7 +237,7 @@ export function DailyReviewModal() {
 
             {selectedReason && (
               <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
+                <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground ml-1">
                   Commitment Reflection (Mandatory)
                 </p>
                 <Textarea 
@@ -288,7 +288,7 @@ export function DailyReviewModal() {
             >
               <CalendarDays className="h-5 w-5" />
               <span className="font-semibold">Do Today</span>
-              <span className="text-[10px] font-normal opacity-80">Move to today</span>
+              <span className="text-[11px] font-normal opacity-80">Move to today</span>
             </Button>
 
             <Button
@@ -299,7 +299,7 @@ export function DailyReviewModal() {
               <div className="flex flex-col items-center gap-1">
                 <ArrowRightCircle className="h-5 w-5" />
                 <span className="font-semibold">Push</span>
-                <span className="text-[10px] font-normal opacity-80">Move to tomorrow</span>
+                <span className="text-[11px] font-normal opacity-80">Move to tomorrow</span>
               </div>
             </Button>
 

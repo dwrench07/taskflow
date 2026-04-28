@@ -29,17 +29,17 @@ export function FocusDetail({ sessions }: { sessions: FocusSession[] }) {
     <div className="divide-y divide-white/5">
       <div className="p-4 grid grid-cols-2 gap-4 bg-white/5">
         <div className="flex flex-col bg-background/40 p-3 rounded-xl border border-white/5">
-            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1">Total Time</span>
+            <span className="text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-1">Total Time</span>
             <div className="flex items-end gap-1">
-                <span className="text-2xl font-black italic tracking-tighter text-primary">{totalMinutes}</span>
-                <span className="text-[10px] text-muted-foreground font-bold pb-1 underline decoration-primary/30">MINS</span>
+                <span className="text-2xl font-black tracking-tighter text-primary">{totalMinutes}</span>
+                <span className="text-[11px] text-muted-foreground font-bold pb-1 underline decoration-primary/30">MINS</span>
             </div>
         </div>
         <div className="flex flex-col bg-background/40 p-3 rounded-xl border border-white/5">
-            <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-1">Distractions</span>
+            <span className="text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-1">Distractions</span>
             <div className="flex items-end gap-1">
-                <span className="text-2xl font-black italic tracking-tighter text-cyan-400">{totalDistractions}</span>
-                <span className="text-[10px] text-muted-foreground font-bold pb-1 underline decoration-cyan-500/30">INCIDENTS</span>
+                <span className="text-2xl font-black tracking-tighter text-cyan-400">{totalDistractions}</span>
+                <span className="text-[11px] text-muted-foreground font-bold pb-1 underline decoration-cyan-500/30">INCIDENTS</span>
             </div>
         </div>
       </div>
@@ -53,12 +53,12 @@ export function FocusDetail({ sessions }: { sessions: FocusSession[] }) {
             )}
             <div className="flex items-center gap-2 mt-0.5">
                 <Clock className="w-3 h-3 text-muted-foreground/50" />
-                <span className="text-[10px] text-muted-foreground/70 font-bold uppercase">
+                <span className="text-[11px] text-muted-foreground/70 font-bold uppercase">
                     {format(parseISO(session.startTime), "h:mm a")} • {session.duration}m
                 </span>
             </div>
           </div>
-          <Badge variant="secondary" className="text-[9px] px-2 py-0 h-4 font-black uppercase tracking-tighter bg-primary/10 text-primary border-primary/20">
+          <Badge variant="secondary" className="text-[11px] px-2 py-0 h-4 font-black uppercase tracking-tighter bg-primary/10 text-primary border-primary/20">
             {session.status}
           </Badge>
         </div>

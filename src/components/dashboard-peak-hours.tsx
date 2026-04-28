@@ -97,7 +97,7 @@ export function DashboardPeakHours({ focusSessions }: PeakProductivityProps) {
           <Clock className="h-4 w-4 text-amber-500" />
           Peak Productivity Hours
           {analysis.peakHour && (
-            <span className="ml-auto text-[10px] text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full font-bold">
+            <span className="ml-auto text-[11px] text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full font-bold">
               <Zap className="h-3 w-3 inline mr-0.5" />
               Peak: {HOUR_LABELS[analysis.peakHour.hour]}
             </span>
@@ -127,14 +127,14 @@ export function DashboardPeakHours({ focusSessions }: PeakProductivityProps) {
                   title={`${HOUR_LABELS[h.hour]}: ${h.count} sessions, ${h.productivityRate}% high-productivity`}
                 >
                   {/* Tooltip on hover */}
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block z-10 whitespace-nowrap bg-popover text-popover-foreground border border-border rounded-md px-2 py-1 text-[9px] shadow-md">
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block z-10 whitespace-nowrap bg-popover text-popover-foreground border border-border rounded-md px-2 py-1 text-[11px] shadow-md">
                     <strong>{HOUR_LABELS[h.hour]}</strong>: {h.count} sessions · {h.productivityRate}% productive
                   </div>
                 </div>
               );
             })}
           </div>
-          <div className="flex justify-between text-[9px] text-muted-foreground/40 px-0.5">
+          <div className="flex justify-between text-[11px] text-muted-foreground/40 px-0.5">
             <span>6am</span>
             <span>12pm</span>
             <span>6pm</span>
@@ -143,7 +143,7 @@ export function DashboardPeakHours({ focusSessions }: PeakProductivityProps) {
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-3 text-[10px] text-muted-foreground pt-1">
+        <div className="flex items-center gap-3 text-[11px] text-muted-foreground pt-1">
           <div className="flex items-center gap-1">
             <div className="w-2.5 h-2.5 rounded-sm bg-amber-400/60" /> High productivity
           </div>
@@ -155,7 +155,7 @@ export function DashboardPeakHours({ focusSessions }: PeakProductivityProps) {
 
         {/* Top 3 peak hours */}
         <div className="space-y-1.5 pt-1 border-t border-border/30">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Best hours</p>
+          <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-bold">Best hours</p>
           {[...analysis.hourBuckets]
             .filter(h => h.count > 0)
             .sort((a, b) => b.productivityRate - a.productivityRate || b.count - a.count)
@@ -177,7 +177,7 @@ export function DashboardPeakHours({ focusSessions }: PeakProductivityProps) {
                     style={{ width: `${h.productivityRate}%`, minWidth: h.productivityRate > 0 ? '4px' : '0' }}
                   />
                 </div>
-                <span className="text-[10px] text-muted-foreground w-16 text-right">
+                <span className="text-[11px] text-muted-foreground w-16 text-right">
                   {h.productivityRate}% · {h.count}x
                 </span>
               </div>

@@ -84,7 +84,7 @@ export function AlignmentTreeView({ pillars, milestones, tasks }: AlignmentTreeV
                 {isExpanded && (
                   <div className="bg-background/50 border-t p-2 pl-10 space-y-2">
                     {pillarMilestones.length === 0 ? (
-                      <p className="text-sm text-muted-foreground py-2 italic">No milestones attached to this pillar.</p>
+                      <p className="text-sm text-muted-foreground py-2">No milestones attached to this pillar.</p>
                     ) : (
                       pillarMilestones.map(milestone => {
                         const mTasks = getTasksForMilestone(milestone.id);
@@ -116,7 +116,7 @@ export function AlignmentTreeView({ pillars, milestones, tasks }: AlignmentTreeV
                             {mExpanded && (
                               <div className="bg-muted/20 border-t p-2 pl-8 space-y-1">
                                 {mTasks.length === 0 ? (
-                                  <p className="text-sm text-muted-foreground py-1 italic">No tasks attached to this milestone.</p>
+                                  <p className="text-sm text-muted-foreground py-1">No tasks attached to this milestone.</p>
                                 ) : (
                                   mTasks.map(task => (
                                     <div key={task.id} className="flex items-center gap-3 p-2 hover:bg-background/80 rounded-md border border-transparent hover:border-border transition-colors">

@@ -331,7 +331,7 @@ function WorkflowCard({ workflow, defaultOpen = false }: { workflow: Workflow; d
             {workflow.steps.map((s, i) => (
               <div key={i} className="flex gap-3">
                 <div className="flex-shrink-0 mt-0.5">
-                  <div className={cn("h-6 w-6 rounded-full border-2 flex items-center justify-center text-[10px] font-black", workflow.color, "border-current")}>
+                  <div className={cn("h-6 w-6 rounded-full border-2 flex items-center justify-center text-[11px] font-black", workflow.color, "border-current")}>
                     {i + 1}
                   </div>
                 </div>
@@ -341,7 +341,7 @@ function WorkflowCard({ workflow, defaultOpen = false }: { workflow: Workflow; d
                   {s.tip && (
                     <div className="flex items-start gap-1.5 mt-1.5">
                       <Lightbulb className="h-3 w-3 text-yellow-500 mt-0.5 shrink-0" />
-                      <p className="text-[11px] text-yellow-600 dark:text-yellow-400 italic">{s.tip}</p>
+                      <p className="text-[11px] text-yellow-600 dark:text-yellow-400">{s.tip}</p>
                     </div>
                   )}
                 </div>
@@ -578,7 +578,7 @@ function BattlePlanCard({ plan }: { plan: BattlePlan }) {
               {plan.feelsLike.map((f, i) => (
                 <div key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
                   <Eye className="h-3 w-3 mt-0.5 shrink-0 text-muted-foreground/60" />
-                  <span className="italic">{f}</span>
+                  <span className="">{f}</span>
                 </div>
               ))}
             </div>
@@ -596,7 +596,7 @@ function BattlePlanCard({ plan }: { plan: BattlePlan }) {
             {plan.actions.map((a, i) => (
               <div key={i} className="flex gap-3">
                 <div className="flex-shrink-0 mt-0.5">
-                  <div className={cn("h-6 w-6 rounded-full border-2 flex items-center justify-center text-[10px] font-black", plan.color, "border-current")}>
+                  <div className={cn("h-6 w-6 rounded-full border-2 flex items-center justify-center text-[11px] font-black", plan.color, "border-current")}>
                     {i + 1}
                   </div>
                 </div>
@@ -604,7 +604,7 @@ function BattlePlanCard({ plan }: { plan: BattlePlan }) {
                   <p className="text-sm font-bold">{a.action}</p>
                   <div className="flex items-center gap-1.5 mb-1">
                     <ArrowRight className="h-2.5 w-2.5 text-muted-foreground/60" />
-                    <span className="text-[10px] font-mono text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded">{a.where}</span>
+                    <span className="text-[11px] font-mono text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded">{a.where}</span>
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">{a.detail}</p>
                 </div>
@@ -620,7 +620,7 @@ function BattlePlanCard({ plan }: { plan: BattlePlan }) {
 
           {/* Mantra */}
           <div className="text-center py-3">
-            <p className="text-sm font-black italic text-foreground/70">"{plan.mantra}"</p>
+            <p className="text-sm font-black text-foreground/70">"{plan.mantra}"</p>
           </div>
         </CardContent>
       )}
@@ -711,7 +711,7 @@ export default function GuidePage() {
                   </div>
                   <div className="space-y-1">
                     <CardTitle className="text-lg">{item.name}</CardTitle>
-                    <Badge variant="outline" className="text-[10px] uppercase font-bold tracking-widest bg-muted">Consumable</Badge>
+                    <Badge variant="outline" className="text-[11px] uppercase font-bold tracking-widest bg-muted">Consumable</Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -720,7 +720,7 @@ export default function GuidePage() {
                   </p>
                   <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
                     <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-1">How to Earn</p>
-                    <p className="text-xs text-foreground/70 italic">"{item.earn}"</p>
+                    <p className="text-xs text-foreground/70">"{item.earn}"</p>
                   </div>
                 </CardContent>
               </Card>
@@ -741,7 +741,7 @@ export default function GuidePage() {
                       <p className="text-foreground/80 leading-relaxed max-w-lg">{buff.effect}</p>
                       <div className="flex items-center gap-2 pt-2 justify-center md:justify-start">
                         <Zap className="h-4 w-4 text-primary" />
-                        <span className="text-sm font-bold text-primary italic">Trigger: {buff.trigger}</span>
+                        <span className="text-sm font-bold text-primary">Trigger: {buff.trigger}</span>
                       </div>
                    </div>
                 </CardContent>
@@ -804,7 +804,7 @@ export default function GuidePage() {
       </Tabs>
 
       <div className="pt-10 flex justify-center">
-         <p className="text-xs text-muted-foreground italic font-medium">"Growth is not linear. It is a spiral." — The Architect</p>
+         <p className="text-xs text-muted-foreground font-medium">"Growth is not linear. It is a spiral." — The Architect</p>
       </div>
     </div>
   );

@@ -478,7 +478,7 @@ export default function SubtasksPage() {
                                 {st.title}
                               </span>
                               {st.type === "chore" && (
-                                <Badge variant="outline" className="flex-shrink-0 gap-1 text-[10px]">
+                                <Badge variant="outline" className="flex-shrink-0 gap-1 text-[11px]">
                                   <Repeat className="h-3 w-3" />
                                   {frequencyLabel(st.frequency, st.intervalDays)}
                                 </Badge>

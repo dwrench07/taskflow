@@ -233,7 +233,7 @@ export default function GoalsPage() {
                                                         </div>
                                                     ))}
                                                     {goalTasks.filter(t => t.status !== 'done' && t.status !== 'abandoned').length > 3 && (
-                                                        <p className="text-xs text-muted-foreground italic pl-5">
+                                                        <p className="text-xs text-muted-foreground pl-5">
                                                             +{goalTasks.filter(t => t.status !== 'done' && t.status !== 'abandoned').length - 3} more...
                                                         </p>
                                                     )}

@@ -110,7 +110,7 @@ export function DashboardGoalCoverage({ allTasks }: GoalCoverageProps) {
               style={{ width: `${100 - analysis.alignmentRate}%` }}
             />
           </div>
-          <div className="flex justify-between text-[10px] text-muted-foreground">
+          <div className="flex justify-between text-[11px] text-muted-foreground">
             <span className="text-purple-400">{analysis.aligned} goal-linked</span>
             <span>{analysis.unaligned} goalless</span>
           </div>
@@ -120,18 +120,18 @@ export function DashboardGoalCoverage({ allTasks }: GoalCoverageProps) {
         <div className="grid grid-cols-2 gap-2 pt-1">
           <div className="text-center p-2 bg-muted/20 rounded-lg">
             <p className="text-sm font-black text-purple-400">{analysis.goalCompletionRate}%</p>
-            <p className="text-[9px] text-muted-foreground">Goal-linked done</p>
+            <p className="text-[11px] text-muted-foreground">Goal-linked done</p>
           </div>
           <div className="text-center p-2 bg-muted/20 rounded-lg">
             <p className="text-sm font-black text-muted-foreground">{analysis.noGoalCompletionRate}%</p>
-            <p className="text-[9px] text-muted-foreground">Goalless done</p>
+            <p className="text-[11px] text-muted-foreground">Goalless done</p>
           </div>
         </div>
 
         {/* Neglected goals */}
         {analysis.neglectedGoals.length > 0 && (
           <div className="space-y-1 pt-1 border-t border-border/30">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold flex items-center gap-1">
+            <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-bold flex items-center gap-1">
               <AlertCircle className="h-3 w-3 text-amber-400" /> Goals with no tasks
             </p>
             {analysis.neglectedGoals.slice(0, 3).map(g => (

@@ -98,7 +98,7 @@ export function DashboardTimeLimitAdherence({ allTasks, focusSessions }: TimeLim
         <CardTitle className="text-sm font-bold flex items-center gap-2">
           <Timer className="h-4 w-4 text-rose-500" />
           Time Limit Adherence
-          <Badge variant="secondary" className="ml-auto text-[10px]">
+          <Badge variant="secondary" className="ml-auto text-[11px]">
             {analysis.totalTimeboxed} timeboxed
           </Badge>
         </CardTitle>
@@ -110,11 +110,11 @@ export function DashboardTimeLimitAdherence({ allTasks, focusSessions }: TimeLim
             <div className="grid grid-cols-2 gap-3">
               <div className="text-center p-3 bg-muted/50 rounded-xl border border-border">
                 <p className="text-2xl font-black text-rose-500">{analysis.withinLimitRate}%</p>
-                <p className="text-[10px] text-muted-foreground mt-1">Within time limit</p>
+                <p className="text-[11px] text-muted-foreground mt-1">Within time limit</p>
               </div>
               <div className="text-center p-3 bg-muted/30 rounded-xl border border-border">
                 <p className="text-2xl font-black text-muted-foreground">{analysis.avgRatio}%</p>
-                <p className="text-[10px] text-muted-foreground mt-1">Avg time used</p>
+                <p className="text-[11px] text-muted-foreground mt-1">Avg time used</p>
               </div>
             </div>
 
@@ -130,7 +130,7 @@ export function DashboardTimeLimitAdherence({ allTasks, focusSessions }: TimeLim
                       ) : (
                         <XCircle className="h-3 w-3 text-red-500" />
                       )}
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-[11px] text-muted-foreground">
                         {formatMinutes(task.actualMinutes)} / {formatMinutes(task.timeLimit)}
                       </span>
                     </div>

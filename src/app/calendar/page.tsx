@@ -140,7 +140,7 @@ function CalendarEvent({ event }: { event: CalendarEventData }) {
       onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleClick(e as any)}
     >
       {event.isDueDayOnly && (
-        <span className="bg-red-500 text-[8px] text-white px-1 py-0 rounded font-bold uppercase shrink-0">
+        <span className="bg-red-500 text-[11px] text-white px-1 py-0 rounded font-bold uppercase shrink-0">
           Due
         </span>
       )}

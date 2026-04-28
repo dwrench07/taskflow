@@ -70,19 +70,19 @@ export function SubtaskDetail({ tasks }: { tasks: Task[] }) {
                 )}>
                     {item.title}
                 </span>
-                <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider mt-0.5">
+                <span className="text-[11px] text-muted-foreground/60 uppercase tracking-wider mt-0.5">
                     {item.parentTitle}
                 </span>
             </div>
             <Badge variant="outline" className={cn(
-                "text-[9px] px-1.5 py-0 h-4 capitalize shrink-0 font-black tracking-tighter",
+                "text-[11px] px-1.5 py-0 h-4 capitalize shrink-0 font-black tracking-tighter",
                 item.priority === 'urgent' ? "bg-red-500/10 text-red-500 border-red-500/20" : "bg-white/5 text-muted-foreground border-white/10"
             )}>
                 {item.priority}
             </Badge>
           </div>
           <div className="mt-2 flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-[10px] font-medium text-muted-foreground/80 bg-white/5 px-2 py-1 rounded-md border border-white/5">
+            <div className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground/80 bg-white/5 px-2 py-1 rounded-md border border-white/5">
                 <Clock className="w-3 h-3 text-primary" />
                 {item.date ? format(parseISO(item.date), "MMM d, h:mm a") : "No time set"}
             </div>

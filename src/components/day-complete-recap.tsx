@@ -126,7 +126,7 @@ export function DayCompleteRecap({
                   {stat.icon}
                 </div>
                 <p className="text-lg font-black">{stat.value}</p>
-                <p className="text-[10px] text-muted-foreground">{stat.label}</p>
+                <p className="text-[11px] text-muted-foreground">{stat.label}</p>
               </div>
             ))}
           </div>

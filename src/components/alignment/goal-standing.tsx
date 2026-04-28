@@ -112,11 +112,11 @@ export function GoalStanding({ pillars, goals, tasks }: GoalStandingProps) {
                 
                 <div className="grid grid-cols-2 gap-2 text-center">
                     <div className="bg-background/40 rounded-2xl p-2 border border-border/50">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase opacity-70">Goals</p>
+                        <p className="text-[11px] font-bold text-muted-foreground uppercase opacity-70">Goals</p>
                         <p className="text-lg font-black">{goals.filter(g => g.pillarId === pillar.id).length}</p>
                     </div>
                     <div className="bg-background/40 rounded-2xl p-2 border border-border/50">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase opacity-70">Velocity</p>
+                        <p className="text-[11px] font-bold text-muted-foreground uppercase opacity-70">Velocity</p>
                         <p className="text-lg font-black flex items-center justify-center gap-1">
                             <Target className="h-3 w-3 text-primary" />
                             {goals.filter(g => g.pillarId === pillar.id && g.status === 'completed').length}

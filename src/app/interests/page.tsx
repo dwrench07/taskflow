@@ -153,7 +153,7 @@ const InterestNode = ({ data }: NodeProps) => {
         </div>
         {category && (
           <span
-            className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+            className="text-[11px] font-medium px-2 py-0.5 rounded-full"
             style={{
               backgroundColor: `${color}20`,
               color: color,
@@ -781,7 +781,7 @@ export default function InterestsPage() {
                       <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         {category}
                       </span>
-                      <Badge variant="outline" className="text-[10px] h-4 px-1.5 ml-auto">
+                      <Badge variant="outline" className="text-[11px] h-4 px-1.5 ml-auto">
                         {items.length}
                       </Badge>
                     </div>

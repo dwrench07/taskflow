@@ -571,14 +571,14 @@ function HabitsPageContent() {
                                                 </Tooltip>
                                             </TooltipProvider>
                                             <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                                                <Badge variant={streak > 0 ? "default" : "secondary"} className={cn("flex items-center gap-1 sm:gap-1.5 px-1.5 py-0 h-5 sm:h-auto sm:px-2 sm:py-0.5 text-[10px] sm:text-xs whitespace-nowrap", isAtRisk(habit) && "bg-orange-600", isFrozen() && "bg-blue-400")}>
+                                                <Badge variant={streak > 0 ? "default" : "secondary"} className={cn("flex items-center gap-1 sm:gap-1.5 px-1.5 py-0 h-5 sm:h-auto sm:px-2 sm:py-0.5 text-[11px] sm:text-xs whitespace-nowrap", isAtRisk(habit) && "bg-orange-600", isFrozen() && "bg-blue-400")}>
                                                     <Flame className={cn("h-3 w-3 sm:h-4 sm:w-4", streak > 0 ? "text-orange-300" : "text-muted-foreground", isAtRisk(habit) && "text-white animate-bounce")} />
                                                     {isFrozen() ? "FROZEN" : `${streak} Day${streak !== 1 ? 's' : ''}`}
                                                 </Badge>
                                                 {streak > 0 && (() => {
                                                     const tier = getStreakTier(streak);
                                                     return tier.name ? (
-                                                        <span className={cn("text-[9px] sm:text-[10px] font-bold uppercase tracking-wider", tier.color)}>{tier.name}</span>
+                                                        <span className={cn("text-[11px] sm:text-[11px] font-bold uppercase tracking-wider", tier.color)}>{tier.name}</span>
                                                     ) : null;
                                                 })()}
                                                 <AlertDialog>
@@ -606,14 +606,14 @@ function HabitsPageContent() {
                                     </CardHeader>
                                     <CardContent className="p-3 sm:p-4 pt-2 sm:pt-4 flex-grow flex flex-col justify-end">
                                         <div className="flex justify-between items-center mb-2 sm:mb-4">
-                                            <Badge variant="outline" className="capitalize text-[10px] sm:text-xs py-0 sm:py-0.5 h-5 sm:h-auto px-1.5 sm:px-2.5 opacity-70 sm:opacity-100">
+                                            <Badge variant="outline" className="capitalize text-[11px] sm:text-xs py-0 sm:py-0.5 h-5 sm:h-auto px-1.5 sm:px-2.5 opacity-70 sm:opacity-100">
                                                 {habit.habitFrequency}
                                             </Badge>
                                             {habit.streakGoal && goalMet && <Trophy className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-500 animate-pulse" />}
                                         </div>
                                         {habit.streakGoal && (
                                             <div className="mb-3 sm:mb-4 space-y-1 sm:space-y-2">
-                                                <div className="flex justify-between items-center text-[10px] sm:text-sm text-muted-foreground">
+                                                <div className="flex justify-between items-center text-[11px] sm:text-sm text-muted-foreground">
                                                     <span>Goal: {habit.streakGoal} <span className="hidden sm:inline">days</span></span>
                                                     <span>{Math.round(progress)}%</span>
                                                 </div>

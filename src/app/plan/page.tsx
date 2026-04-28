@@ -137,11 +137,11 @@ function SortableTaskRow({
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium line-clamp-2 leading-snug">{renderTitle(item.title)}</p>
         <div className="flex items-center gap-1.5 mt-1">
-          <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 capitalize", priorityStyles[item.priority])}>
+          <Badge variant="outline" className={cn("text-[11px] px-1.5 py-0 capitalize", priorityStyles[item.priority])}>
             {item.priority}
           </Badge>
           {item.energyLevel && (
-            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+            <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground">
               {energyIcon(item.energyLevel)}
               {item.energyLevel}
             </span>

@@ -312,7 +312,7 @@ export default function ChoresPage() {
                   {chore.lastCompleted ? (
                     <span className="text-muted-foreground">Last: {format(new Date(chore.lastCompleted), "MMM d")}</span>
                   ) : (
-                    <span className="text-muted-foreground italic">Never done</span>
+                    <span className="text-muted-foreground">Never done</span>
                   )}
                   {isDueLabel(chore)}
                 </div>

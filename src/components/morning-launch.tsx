@@ -120,11 +120,11 @@ export function MorningLaunch({ allTasks, allChores = [], onDismiss }: MorningLa
         <Card className="border-2 border-amber-500/20 bg-amber-500/5 shadow-lg shadow-amber-500/5">
           <CardContent className="p-6 space-y-3">
             <div className="flex items-center gap-2">
-              <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[10px] uppercase font-bold tracking-wider">
+              <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-[11px] uppercase font-bold tracking-wider">
                 Start Here
               </Badge>
               {warmupTask.tShirtSize && (
-                <Badge variant="outline" className="text-[10px]">Size: {warmupTask.tShirtSize}</Badge>
+                <Badge variant="outline" className="text-[11px]">Size: {warmupTask.tShirtSize}</Badge>
               )}
             </div>
             <Link href={`/focus?taskId=${warmupTask.id}`} className="text-xl font-bold hover:text-primary transition-colors">{warmupTask.title}</Link>
@@ -157,10 +157,10 @@ export function MorningLaunch({ allTasks, allChores = [], onDismiss }: MorningLa
                   <div className="flex-1">
                     <Link href={`/focus?taskId=${task.id}`} className="font-semibold text-sm hover:text-primary transition-colors">{task.title}</Link>
                     <div className="flex gap-2 mt-1">
-                      <Badge variant="outline" className="text-[10px] capitalize">{task.priority}</Badge>
+                      <Badge variant="outline" className="text-[11px] capitalize">{task.priority}</Badge>
                       {task.energyLevel && (
                         <Badge variant="outline" className={cn(
-                          "text-[10px]",
+                          "text-[11px]",
                           energyMatch === 'match' && "text-green-400 border-green-500/30",
                           energyMatch === 'slight-mismatch' && "text-yellow-400 border-yellow-500/30",
                           energyMatch === 'mismatch' && "text-red-400 border-red-500/30"
@@ -192,7 +192,7 @@ export function MorningLaunch({ allTasks, allChores = [], onDismiss }: MorningLa
                 <div key={chore.id} className="flex items-center gap-3 py-1">
                   <ShoppingBag className="h-4 w-4 text-orange-400 opacity-60" />
                   <Link href="/chores" className="text-sm flex-1 hover:text-primary transition-colors">{chore.title}</Link>
-                  <Badge variant="outline" className="text-[10px] opacity-70 uppercase tracking-widest">{chore.frequency}</Badge>
+                  <Badge variant="outline" className="text-[11px] opacity-70 uppercase tracking-widest">{chore.frequency}</Badge>
                 </div>
               ))}
             </CardContent>

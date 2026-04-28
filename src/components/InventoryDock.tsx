@@ -64,7 +64,7 @@ export function InventoryDock() {
               <TooltipTrigger>
                 <div className="relative flex items-center justify-center p-2 hover:bg-muted rounded-xl transition-colors cursor-pointer group">
                   {item.icon}
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-[10px] bg-primary group-hover:scale-110 transition-transform">
+                  <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-[11px] bg-primary group-hover:scale-110 transition-transform">
                     {item.count}
                   </Badge>
                 </div>

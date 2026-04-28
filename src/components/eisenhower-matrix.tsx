@@ -73,7 +73,7 @@ export function EisenhowerMatrix({ tasks, goals, onSelectTask }: EisenhowerMatri
             <CardHeader className="py-3 px-4 flex flex-row items-center justify-between space-y-0 border-b border-border/50 bg-background/30">
               <div>
                 <CardTitle className="text-sm font-black uppercase tracking-widest">{q.title}</CardTitle>
-                <p className="text-[10px] text-muted-foreground font-medium italic">{q.subtitle}</p>
+                <p className="text-[11px] text-muted-foreground font-medium">{q.subtitle}</p>
               </div>
               {q.icon}
             </CardHeader>
@@ -90,7 +90,7 @@ export function EisenhowerMatrix({ tasks, goals, onSelectTask }: EisenhowerMatri
                         <div className="flex justify-between items-start gap-2">
                           <p className="text-sm font-semibold truncate flex-1">{task.title}</p>
                           {task.tShirtSize && (
-                            <Badge variant="outline" className="text-[10px] h-4 px-1 flex-shrink-0 border-primary/20 text-primary">
+                            <Badge variant="outline" className="text-[11px] h-4 px-1 flex-shrink-0 border-primary/20 text-primary">
                               {task.tShirtSize}
                             </Badge>
                           )}
@@ -105,7 +105,7 @@ export function EisenhowerMatrix({ tasks, goals, onSelectTask }: EisenhowerMatri
                           if (!linkedGoal) return null;
                           const progress = calculateGoalProgress(linkedGoal.id, tasks);
                           return (
-                            <div className="mt-2.5 flex items-center gap-1.5 text-[9px] text-muted-foreground w-full border-t border-border/30 pt-1.5">
+                            <div className="mt-2.5 flex items-center gap-1.5 text-[11px] text-muted-foreground w-full border-t border-border/30 pt-1.5">
                               <Target className="w-2.5 h-2.5 text-primary/70" />
                               <span className="truncate flex-1 font-medium">{linkedGoal.title}</span>
                               <span className="flex-shrink-0 font-medium tabular-nums">{progress}%</span>
@@ -119,7 +119,7 @@ export function EisenhowerMatrix({ tasks, goals, onSelectTask }: EisenhowerMatri
                     ))
                   ) : (
                     <div className="flex flex-col items-center justify-center py-10 text-center opacity-40">
-                      <p className="text-[10px] uppercase font-bold tracking-tighter italic">Clear</p>
+                      <p className="text-[11px] uppercase font-bold tracking-tighter">Clear</p>
                     </div>
                   )}
                 </div>

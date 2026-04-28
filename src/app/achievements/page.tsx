@@ -169,7 +169,7 @@ export default function AchievementsPage() {
                     </div>
                   </div>
                   {currentTier && (
-                    <Badge className={cn("text-[10px] uppercase font-bold", tierStyle?.text, tierStyle?.bg)}>
+                    <Badge className={cn("text-[11px] uppercase font-bold", tierStyle?.text, tierStyle?.bg)}>
                       {TIER_LABELS[currentTier.tier]}
                     </Badge>
                   )}
@@ -187,7 +187,7 @@ export default function AchievementsPage() {
                           "h-2.5 w-2.5 rounded-full border",
                           achieved ? `${style.bg} ${style.border} ${style.text}` : "border-border/30 bg-muted/20"
                         )} style={achieved ? { backgroundColor: tier.tier === 'gold' ? '#eab308' : tier.tier === 'silver' ? '#94a3b8' : '#b45309', opacity: 0.8 } : {}} />
-                        <span className={cn("text-[10px]", achieved ? style.text : "text-muted-foreground/40")}>
+                        <span className={cn("text-[11px]", achieved ? style.text : "text-muted-foreground/40")}>
                           {TIER_LABELS[tier.tier]}
                         </span>
                       </div>
@@ -199,20 +199,20 @@ export default function AchievementsPage() {
                 {nextTier ? (
                   <div className="space-y-1">
                     <Progress value={Math.min(100, Math.max(0, progressToNext))} className="h-1.5" />
-                    <div className="flex justify-between text-[10px] text-muted-foreground">
+                    <div className="flex justify-between text-[11px] text-muted-foreground">
                       <span>{earned.progress} / {nextTier.threshold}</span>
                       <span>{nextTier.label}</span>
                     </div>
                   </div>
                 ) : isUnlocked ? (
-                  <div className="flex items-center gap-1.5 text-[10px] text-yellow-400 font-bold">
+                  <div className="flex items-center gap-1.5 text-[11px] text-yellow-400 font-bold">
                     <Zap className="h-3 w-3" />
                     MAX TIER — All tiers unlocked
                   </div>
                 ) : (
                   <div className="space-y-1">
                     <Progress value={Math.round((earned.progress / def.tiers[0].threshold) * 100)} className="h-1.5" />
-                    <div className="flex justify-between text-[10px] text-muted-foreground">
+                    <div className="flex justify-between text-[11px] text-muted-foreground">
                       <span>{earned.progress} / {def.tiers[0].threshold}</span>
                       <span>{def.tiers[0].label}</span>
                     </div>
@@ -255,7 +255,7 @@ export default function AchievementsPage() {
               ))}
            </div>
          ) : (
-           <div className="text-sm text-muted-foreground italic px-2">Initializing inventory...</div>
+           <div className="text-sm text-muted-foreground px-2">Initializing inventory...</div>
          )}
        </div>
  

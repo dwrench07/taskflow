@@ -221,7 +221,7 @@ export default function JotsPage() {
                                             )}
                                         </p>
                                         {fearStats.resolved > 0 && (
-                                            <div className="flex gap-3 mt-2 text-[10px] font-bold uppercase tracking-wider">
+                                            <div className="flex gap-3 mt-2 text-[11px] font-bold uppercase tracking-wider">
                                                 <span className="text-green-400">Didn&apos;t happen: {fearStats.didntHappen}</span>
                                                 <span className="text-yellow-400">Partially: {fearStats.partially}</span>
                                                 <span className="text-red-400">Happened: {fearStats.happened}</span>
@@ -304,7 +304,7 @@ export default function JotsPage() {
                                         <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                                             {format(parseISO(group.date), 'EEEE, MMM d, yyyy')}
                                         </span>
-                                        <Badge variant="secondary" className="text-[10px]">{group.jots.length}</Badge>
+                                        <Badge variant="secondary" className="text-[11px]">{group.jots.length}</Badge>
                                     </div>
                                     <div className="space-y-2">
                                         {group.jots.map((jot, i) => {
@@ -333,17 +333,17 @@ export default function JotsPage() {
                                                             </span>
                                                         </div>
                                                         <div className="flex items-center gap-2 flex-wrap">
-                                                            <Badge variant="outline" className={cn("text-[10px] gap-1", config.color)}>
+                                                            <Badge variant="outline" className={cn("text-[11px] gap-1", config.color)}>
                                                                 {config.icon}
                                                                 {config.label}
                                                             </Badge>
                                                             {jot.timestamp && (
-                                                                <span className="text-[10px] font-mono text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded">
+                                                                <span className="text-[11px] font-mono text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded">
                                                                     {jot.timestamp}
                                                                 </span>
                                                             )}
                                                             {jot.taskTitle && (
-                                                                <span className="text-[10px] text-muted-foreground truncate max-w-[200px]">
+                                                                <span className="text-[11px] text-muted-foreground truncate max-w-[200px]">
                                                                     {jot.taskTitle}
                                                                 </span>
                                                             )}
@@ -356,7 +356,7 @@ export default function JotsPage() {
                                                             <Button
                                                                 variant="ghost"
                                                                 size="sm"
-                                                                className="h-7 px-2 text-[10px] text-violet-400 hover:text-violet-300"
+                                                                className="h-7 px-2 text-[11px] text-violet-400 hover:text-violet-300"
                                                                 onClick={() => handleMoveToDeepStore(jot)}
                                                                 title="Move to Deep Store"
                                                             >
@@ -368,7 +368,7 @@ export default function JotsPage() {
                                                             <Button
                                                                 variant="ghost"
                                                                 size="sm"
-                                                                className="h-7 px-2 text-[10px] text-blue-400 hover:text-blue-300"
+                                                                className="h-7 px-2 text-[11px] text-blue-400 hover:text-blue-300"
                                                                 onClick={() => handleConvertToTask(jot)}
                                                                 title="Convert to task"
                                                             >

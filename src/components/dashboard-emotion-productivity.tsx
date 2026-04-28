@@ -86,7 +86,7 @@ export function DashboardEmotionProductivity({ focusSessions }: EmotionProductiv
         <CardTitle className="text-sm font-bold flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-pink-500" />
           Emotion → Productivity
-          <span className="ml-auto text-[10px] text-muted-foreground">{analysis.totalSessions} sessions</span>
+          <span className="ml-auto text-[11px] text-muted-foreground">{analysis.totalSessions} sessions</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -102,7 +102,7 @@ export function DashboardEmotionProductivity({ focusSessions }: EmotionProductiv
                     <span className="font-medium">{config.label}</span>
                     <span className="text-muted-foreground/40">({entry.total})</span>
                   </span>
-                  <span className={cn("font-bold text-[10px]", PROD_COLORS.high)}>
+                  <span className={cn("font-bold text-[11px]", PROD_COLORS.high)}>
                     {entry.highRate}% high
                   </span>
                 </div>
@@ -126,7 +126,7 @@ export function DashboardEmotionProductivity({ focusSessions }: EmotionProductiv
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+        <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
           <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-sm bg-emerald-400/70" /> High</div>
           <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-sm bg-amber-400/50" /> Med</div>
           <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-sm bg-red-400/40" /> Low</div>

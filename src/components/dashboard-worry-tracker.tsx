@@ -93,21 +93,21 @@ export function DashboardWorryTracker({ focusSessions, allTasks }: WorryTrackerP
               <XCircle className="h-3 w-3 text-green-400" />
               <span className="text-lg font-black text-green-400">{analysis.didntHappen}</span>
             </div>
-            <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-0.5">Didn&apos;t happen</p>
+            <p className="text-[11px] text-muted-foreground uppercase tracking-wider mt-0.5">Didn&apos;t happen</p>
           </div>
           <div className="text-center p-2 bg-muted/20 rounded-lg">
             <div className="flex items-center justify-center gap-1">
               <HelpCircle className="h-3 w-3 text-yellow-400" />
               <span className="text-lg font-black text-yellow-400">{analysis.partially}</span>
             </div>
-            <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-0.5">Partially</p>
+            <p className="text-[11px] text-muted-foreground uppercase tracking-wider mt-0.5">Partially</p>
           </div>
           <div className="text-center p-2 bg-muted/20 rounded-lg">
             <div className="flex items-center justify-center gap-1">
               <CheckCircle2 className="h-3 w-3 text-red-400" />
               <span className="text-lg font-black text-red-400">{analysis.happened}</span>
             </div>
-            <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-0.5">Happened</p>
+            <p className="text-[11px] text-muted-foreground uppercase tracking-wider mt-0.5">Happened</p>
           </div>
         </div>
 
@@ -128,7 +128,7 @@ export function DashboardWorryTracker({ focusSessions, allTasks }: WorryTrackerP
                 style={{ width: `${(analysis.happened / analysis.totalResolved) * 100}%` }}
               />
             </div>
-            <p className="text-[10px] text-muted-foreground text-center">
+            <p className="text-[11px] text-muted-foreground text-center">
               {analysis.totalResolved} resolved · {analysis.unresolved} pending follow-up
             </p>
           </div>
@@ -136,7 +136,7 @@ export function DashboardWorryTracker({ focusSessions, allTasks }: WorryTrackerP
 
         {/* Coaching insight */}
         {analysis.neverHappenedRate >= 70 && (
-          <p className="text-xs text-violet-300/80 italic border-t border-border/30 pt-2">
+          <p className="text-xs text-violet-300/80 border-t border-border/30 pt-2">
             Most of your fears are false alarms. Remember this next time anxiety spikes.
           </p>
         )}

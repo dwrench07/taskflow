@@ -520,7 +520,7 @@ export default function DashboardPage() {
             size="sm"
             onClick={() => setViewMode('schedule')}
             className={cn(
-              "h-9 w-full px-2 sm:px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
+              "h-9 w-full px-2 sm:px-4 text-[11px] font-black uppercase tracking-widest transition-all duration-300",
               viewMode === 'schedule' ? "bg-background text-foreground shadow-sm hover:bg-background hover:text-foreground" : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -533,7 +533,7 @@ export default function DashboardPage() {
             size="sm"
             onClick={() => setViewMode('quick')}
             className={cn(
-              "h-9 w-full px-2 sm:px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
+              "h-9 w-full px-2 sm:px-4 text-[11px] font-black uppercase tracking-widest transition-all duration-300",
               viewMode === 'quick' ? "bg-background text-foreground shadow-sm hover:bg-background hover:text-foreground" : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -546,7 +546,7 @@ export default function DashboardPage() {
             size="sm"
             onClick={() => setViewMode('detailed')}
             className={cn(
-              "h-9 w-full px-2 sm:px-4 text-[10px] font-black uppercase tracking-widest transition-all duration-300",
+              "h-9 w-full px-2 sm:px-4 text-[11px] font-black uppercase tracking-widest transition-all duration-300",
               viewMode === 'detailed' ? "bg-background text-foreground shadow-sm hover:bg-background hover:text-foreground" : "text-muted-foreground hover:text-foreground"
             )}
           >
@@ -636,7 +636,7 @@ export default function DashboardPage() {
             })()}
 
             {/* Stats strip */}
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] sm:text-xs text-muted-foreground pl-1">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] sm:text-xs text-muted-foreground pl-1">
               <span className="whitespace-nowrap"><span className="text-emerald-500 font-semibold">{stats.frogsRemaining}</span> frogs</span>
               <span className="opacity-30">·</span>
               <span className="whitespace-nowrap"><span className="text-red-400 font-semibold">{stats.criticalTasks}</span> urgent</span>
@@ -670,7 +670,7 @@ export default function DashboardPage() {
                   )}
                 </span>
                 <div className="flex items-center gap-2">
-                  {todayList.length === 0 && <span className="text-[10px] font-normal uppercase tracking-wider bg-muted-foreground/10 px-1.5 py-0.5 rounded">Empty</span>}
+                  {todayList.length === 0 && <span className="text-[11px] font-normal uppercase tracking-wider bg-muted-foreground/10 px-1.5 py-0.5 rounded">Empty</span>}
                   <ChevronDown className={cn("h-4 w-4 transition-transform", planOpen && "rotate-180")} />
                 </div>
               </button>
@@ -694,7 +694,7 @@ export default function DashboardPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="w-full h-7 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary gap-1.5"
+                        className="w-full h-7 text-[11px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary gap-1.5"
                         onClick={() => {
                           const incomplete = todayList.filter(i => !i.completed);
                           const pick = incomplete[Math.floor(Math.random() * incomplete.length)];
@@ -710,7 +710,7 @@ export default function DashboardPage() {
                   {todayList.length === 0 && (
                     <div className="py-6 px-4 text-center">
                       <p className="text-xs text-muted-foreground mb-3 font-medium">Your plan is empty for today.</p>
-                      <Button variant="outline" size="sm" asChild className="h-8 text-[10px] font-bold uppercase tracking-widest">
+                      <Button variant="outline" size="sm" asChild className="h-8 text-[11px] font-bold uppercase tracking-widest">
                         <a href="/plan">Set up your day →</a>
                       </Button>
                     </div>
@@ -732,7 +732,7 @@ export default function DashboardPage() {
                     <span className="text-xs text-muted-foreground font-normal">{habitsDone}/{habits.length} done</span>
                     {(() => {
                       const atRisk = habits.filter(h => isHabitAtRisk(h)).length;
-                      return atRisk > 0 ? <span className="text-[10px] text-orange-400 font-bold">{atRisk} at risk</span> : null;
+                      return atRisk > 0 ? <span className="text-[11px] text-orange-400 font-bold">{atRisk} at risk</span> : null;
                     })()}
                   </span>
                   <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", habitsOpen && "rotate-180")} />
@@ -830,7 +830,7 @@ export default function DashboardPage() {
                 {completedTasks.length > 0 && incompleteTasks.length > 0 && (
                   <div className="flex items-center gap-3 py-3">
                     <div className="h-px flex-1 bg-border" />
-                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-semibold">Done</span>
+                    <span className="text-[11px] uppercase tracking-widest text-muted-foreground/50 font-semibold">Done</span>
                     <div className="h-px flex-1 bg-border" />
                   </div>
                 )}
@@ -849,10 +849,10 @@ export default function DashboardPage() {
                     <div key={key} className={cn("rounded-xl border p-3 space-y-1.5 min-h-[120px]", color)}>
                       <div className="mb-2">
                         <p className="text-xs font-bold uppercase tracking-wide">{label}</p>
-                        <p className="text-[10px] text-muted-foreground">{sub}</p>
+                        <p className="text-[11px] text-muted-foreground">{sub}</p>
                       </div>
                       {items.length === 0 ? (
-                        <p className="text-[11px] text-muted-foreground/40 italic">Empty</p>
+                        <p className="text-[11px] text-muted-foreground/40">Empty</p>
                       ) : items.map(item => <TaskItem key={item.id} item={item} />)}
                     </div>
                   );
@@ -874,7 +874,7 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-2 mb-2">
                         {icon}
                         <span className="text-xs font-semibold capitalize">{level} Energy</span>
-                        {isCurrent && <span className="text-[10px] text-primary font-semibold ml-1">← You're here</span>}
+                        {isCurrent && <span className="text-[11px] text-primary font-semibold ml-1">← You're here</span>}
                       </div>
                       {levelItems.map(item => <TaskItem key={item.id} item={item} />)}
                     </div>
@@ -898,12 +898,12 @@ export default function DashboardPage() {
             >
               <div className="space-y-2">
                 {allTasks.filter(t => t.isFrog && t.status !== 'done').slice(0, 3).map(t => (
-                  <div key={t.id} className="text-[10px] flex items-center gap-2">
+                  <div key={t.id} className="text-[11px] flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                     <span className="truncate opacity-80">{t.title}</span>
                   </div>
                 ))}
-                {stats.frogsRemaining === 0 && <p className="text-[10px] text-emerald-500 font-bold">All frogs eaten! 🐸🏆</p>}
+                {stats.frogsRemaining === 0 && <p className="text-[11px] text-emerald-500 font-bold">All frogs eaten! 🐸🏆</p>}
               </div>
             </SummaryCard>
             <SummaryCard

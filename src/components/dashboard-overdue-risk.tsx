@@ -139,7 +139,7 @@ export function DashboardOverdueRisk({ allTasks }: OverdueRiskProps) {
           <AlertTriangle className="h-4 w-4 text-red-500" />
           Overdue Risk
           {analysis.criticalCount > 0 && (
-            <Badge variant="destructive" className="ml-auto text-[10px] animate-pulse">
+            <Badge variant="destructive" className="ml-auto text-[11px] animate-pulse">
               {analysis.criticalCount} critical
             </Badge>
           )}
@@ -157,19 +157,19 @@ export function DashboardOverdueRisk({ allTasks }: OverdueRiskProps) {
           >
             <div className="flex items-center justify-between gap-2">
               <span className="font-medium text-xs truncate">{task.title}</span>
-              <Badge variant="outline" className={cn("text-[10px] shrink-0 font-black", RISK_STYLES[task.riskLabel])}>
+              <Badge variant="outline" className={cn("text-[11px] shrink-0 font-black", RISK_STYLES[task.riskLabel])}>
                 {task.risk}%
               </Badge>
             </div>
             <div className="flex flex-wrap gap-1 mt-1.5">
               {task.factors.map((f, i) => (
-                <span key={i} className="text-[9px] bg-background/30 rounded px-1.5 py-0.5">{f}</span>
+                <span key={i} className="text-[11px] bg-background/30 rounded px-1.5 py-0.5">{f}</span>
               ))}
             </div>
           </Link>
         ))}
 
-        <p className="text-[10px] text-muted-foreground text-center pt-1">
+        <p className="text-[11px] text-muted-foreground text-center pt-1">
           {analysis.total} active tasks scored · {analysis.highCount + analysis.criticalCount} at risk
         </p>
       </CardContent>

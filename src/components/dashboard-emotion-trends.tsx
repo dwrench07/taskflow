@@ -136,7 +136,7 @@ export function DashboardEmotionTrends({ focusSessions }: EmotionTrendsProps) {
         <div className="grid grid-cols-3 gap-3">
           <div className="text-center p-3 bg-muted/20 rounded-xl">
             <p className="text-2xl font-black text-violet-400">{analysis.improvementRate}%</p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">Feel better after</p>
+            <p className="text-[11px] text-muted-foreground uppercase tracking-wider mt-1">Feel better after</p>
           </div>
           <div className="text-center p-3 bg-muted/20 rounded-xl">
             <p className="text-2xl font-black">
@@ -146,13 +146,13 @@ export function DashboardEmotionTrends({ focusSessions }: EmotionTrendsProps) {
                 <span className="text-muted-foreground">0</span>
               )}
             </p>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">Avg tension drop</p>
+            <p className="text-[11px] text-muted-foreground uppercase tracking-wider mt-1">Avg tension drop</p>
           </div>
           <div className="text-center p-3 bg-muted/20 rounded-xl">
             {analysis.topPreEmotion && (
               <>
                 <p className="text-2xl">{getEmotionConfig(analysis.topPreEmotion.emotion).emoji}</p>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">
+                <p className="text-[11px] text-muted-foreground uppercase tracking-wider mt-1">
                   Top pre-emotion
                 </p>
               </>
@@ -169,7 +169,7 @@ export function DashboardEmotionTrends({ focusSessions }: EmotionTrendsProps) {
               .map(([emotion, count]) => {
                 const config = getEmotionConfig(emotion as EmotionLabel);
                 return (
-                  <Badge key={emotion} variant="outline" className={cn("text-[10px] gap-1", config.color)}>
+                  <Badge key={emotion} variant="outline" className={cn("text-[11px] gap-1", config.color)}>
                     {config.emoji} {config.label} ×{count}
                   </Badge>
                 );

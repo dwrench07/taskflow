@@ -126,7 +126,7 @@ export default function PillarDashboardPage() {
           </div>
           <div className="p-4 space-y-4 flex-1 overflow-y-auto max-h-[500px]">
             {milestones.length === 0 ? (
-              <p className="text-muted-foreground text-sm text-center py-8 italic">No milestones map to this pillar yet.</p>
+              <p className="text-muted-foreground text-sm text-center py-8">No milestones map to this pillar yet.</p>
             ) : (
               milestones.map(m => {
                 const mTasks = tasks.filter(t => t.milestoneId === m.id);

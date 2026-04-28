@@ -88,7 +88,7 @@ export function PwaInstallPrompt() {
           </Button>
         </div>
 
-        <div className="mt-4 flex items-center justify-center gap-4 text-[10px] text-muted-foreground font-medium uppercase tracking-widest opacity-50">
+        <div className="mt-4 flex items-center justify-center gap-4 text-[11px] text-muted-foreground font-medium uppercase tracking-widest opacity-50">
            <div className="flex items-center gap-1.5"><Laptop className="h-3 w-3" /> Desktop</div>
            <div className="h-1 w-1 rounded-full bg-muted-foreground" />
            <div className="flex items-center gap-1.5"><Smartphone className="h-3 w-3" /> Mobile</div>

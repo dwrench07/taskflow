@@ -92,7 +92,7 @@ export function DashboardPushAnalytics({ allTasks }: DashboardPushAnalyticsProps
         <CardTitle className="text-sm font-bold flex items-center gap-2">
           <ArrowRightCircle className="h-4 w-4 text-orange-500" />
           Push Analytics
-          <Badge variant="secondary" className="ml-auto text-[10px]">{analytics.totalPushes} total pushes</Badge>
+          <Badge variant="secondary" className="ml-auto text-[11px]">{analytics.totalPushes} total pushes</Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -161,11 +161,11 @@ export function DashboardPushAnalytics({ allTasks }: DashboardPushAnalyticsProps
                   <Link href={`/focus?taskId=${task.id}`} className="truncate font-medium hover:text-primary transition-colors">{task.title}</Link>
                   <div className="flex items-center gap-1.5 shrink-0">
                     {reasonConfig && (
-                      <Badge variant="outline" className={`text-[10px] ${reasonConfig.color}`}>
+                      <Badge variant="outline" className={`text-[11px] ${reasonConfig.color}`}>
                         {reasonConfig.label}
                       </Badge>
                     )}
-                    <Badge variant="destructive" className="text-[10px]">{task.pushCount}x</Badge>
+                    <Badge variant="destructive" className="text-[11px]">{task.pushCount}x</Badge>
                   </div>
                 </div>
               );

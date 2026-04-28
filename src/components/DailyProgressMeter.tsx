@@ -67,7 +67,7 @@ export function DailyProgressMeter({ totalItems, completedItems }: DailyProgress
           pct === 100 ? "text-emerald-500" : pct >= 75 ? "text-primary" : "text-foreground"
         )}>
           {pct}%
-          <span className="text-[10px] font-medium text-muted-foreground ml-1.5">
+          <span className="text-[11px] font-medium text-muted-foreground ml-1.5">
             {completedItems}/{totalItems}
           </span>
         </span>
@@ -82,7 +82,7 @@ export function DailyProgressMeter({ totalItems, completedItems }: DailyProgress
       />
 
       <p className={cn(
-        "text-[10px] mt-1.5 font-medium",
+        "text-[11px] mt-1.5 font-medium",
         pct === 100 ? "text-emerald-500/80" : "text-muted-foreground/70"
       )}>
         {label}

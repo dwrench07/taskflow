@@ -66,7 +66,7 @@ export function DashboardPointOfNoReturn({ allTasks }: { allTasks: Task[] }) {
                                             <p className={cn("font-bold text-base transition-colors", isOverdue ? "text-red-600" : "group-hover:text-primary")}>
                                                 {task.title}
                                             </p>
-                                            <Badge variant="outline" className={cn("capitalize text-[10px] font-bold", priorityStyles[task.priority])}>
+                                            <Badge variant="outline" className={cn("capitalize text-[11px] font-bold", priorityStyles[task.priority])}>
                                                 {task.priority}
                                             </Badge>
                                         </div>

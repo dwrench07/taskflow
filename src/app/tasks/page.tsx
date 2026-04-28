@@ -145,7 +145,7 @@ function TaskListItem({ task, allTasks, goals, onSelect, isSelected }: { task: T
         if (!linkedGoal) return null;
         const progress = calculateGoalProgress(linkedGoal.id, allTasks);
         return (
-          <div className="mt-2.5 flex items-center gap-2 text-[10px] text-muted-foreground w-full">
+          <div className="mt-2.5 flex items-center gap-2 text-[11px] text-muted-foreground w-full">
             <Target className="w-3 h-3 text-primary/70" />
             <span className="truncate flex-1 font-medium">{linkedGoal.title}</span>
             <span className="flex-shrink-0 font-medium tabular-nums">{progress}%</span>
@@ -1089,16 +1089,14 @@ function TasksPageContent() {
 
                       <CardContent className="px-0">
                         <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 mb-8 relative">
-                          <div className="lg:col-span-3 self-start flex items-center gap-2 bg-muted/20 px-3 py-2 rounded-xl border border-border/50">
-                            <Tag className="w-4 h-4 text-primary/70 shrink-0" />
-                            <TagInput
-                              tags={selectedTask.tags || []}
-                              allTags={allTags}
-                              onUpdateTags={handleUpdateTaskTags}
-                              placeholder="Add or select tags..."
-                              className="flex-1"
-                            />
-                          </div>
+                          {selectedTask.tags && selectedTask.tags.length > 0 && (
+                            <div className="lg:col-span-3 self-start flex items-center gap-2 flex-wrap bg-muted/20 px-3 py-2 rounded-xl border border-border/50">
+                              <Tag className="w-4 h-4 text-primary/70 shrink-0" />
+                              {selectedTask.tags.map(tag => (
+                                <Badge key={tag} variant="secondary" className="text-[11px]">{tag}</Badge>
+                              ))}
+                            </div>
+                          )}
                           <div className="xl:col-span-2 space-y-4 bg-muted/20 p-5 rounded-2xl border border-border/50 shadow-sm transition-all hover:shadow-md">
                             <div className="space-y-3">
                               <h4 className="text-sm font-semibold flex items-center gap-2 text-foreground/80">
@@ -1107,15 +1105,15 @@ function TasksPageContent() {
                               </h4>
                               <div className="grid gap-4 pt-2">
                                 <div className="flex flex-col gap-2">
-                                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Earliest Start</span>
+                                  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Earliest Start</span>
                                   <DateTimePicker date={selectedTask.startDate} setDate={(date) => handleDateChange('startDate', date)} />
                                 </div>
                                 <div className="flex flex-col gap-2 p-3 bg-primary/5 rounded-xl border border-primary/20">
-                                  <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Drop Dead Date (Point of no return)</span>
+                                  <span className="text-[11px] font-bold text-primary uppercase tracking-wider">Drop Dead Date (Point of no return)</span>
                                   <DateTimePicker date={selectedTask.doDate} setDate={(date) => handleDateChange('doDate', date)} label="Must do by..." />
                                 </div>
                                 <div className="flex flex-col gap-2">
-                                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Final Deadline</span>
+                                  <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Final Deadline</span>
                                   <DateTimePicker date={selectedTask.endDate} setDate={(date) => handleDateChange('endDate', date)} label="Hard deadline" />
                                 </div>
                               </div>
@@ -1187,7 +1185,7 @@ function TasksPageContent() {
                                           <div className="flex items-center gap-1.5 shrink-0">
                                             <DropdownMenu>
                                               <DropdownMenuTrigger asChild>
-                                                <Badge variant="outline" className={cn("text-[10px] h-5 px-1.5 py-0 capitalize font-bold cursor-pointer", subtask.priority && priorityStyles[subtask.priority])}>
+                                                <Badge variant="outline" className={cn("text-[11px] h-5 px-1.5 py-0 capitalize font-bold cursor-pointer", subtask.priority && priorityStyles[subtask.priority])}>
                                                   {subtask.priority ? subtask.priority[0].toUpperCase() : "P"}
                                                 </Badge>
                                               </DropdownMenuTrigger>
@@ -1203,7 +1201,7 @@ function TasksPageContent() {
 
                                             <DropdownMenu>
                                               <DropdownMenuTrigger asChild>
-                                                <Badge variant="secondary" className="text-[10px] h-5 px-1.5 py-0 font-normal border cursor-pointer opacity-70 hover:opacity-100">
+                                                <Badge variant="secondary" className="text-[11px] h-5 px-1.5 py-0 font-normal border cursor-pointer opacity-70 hover:opacity-100">
                                                   {subtask.energyLevel ? subtask.energyLevel[0].toUpperCase() : "E"}
                                                 </Badge>
                                               </DropdownMenuTrigger>
@@ -1224,7 +1222,7 @@ function TasksPageContent() {
                                     <div className="flex flex-col gap-2 mt-2 p-3 bg-muted/20 rounded-lg border border-border/40 overflow-hidden">
                                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div className="flex flex-col gap-1.5">
-                                          <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-1">
+                                          <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-1">
                                             <Play className="w-2.5 h-2.5" /> Start
                                           </span>
                                           <DateTimePicker
@@ -1236,7 +1234,7 @@ function TasksPageContent() {
                                         </div>
 
                                         <div className="flex flex-col gap-1.5">
-                                          <span className="text-[9px] font-black uppercase tracking-widest text-primary/80 flex items-center gap-1">
+                                          <span className="text-[11px] font-black uppercase tracking-widest text-primary/80 flex items-center gap-1">
                                             <AlarmClock className="w-2.5 h-2.5" /> Deadline
                                           </span>
                                           <DateTimePicker
@@ -1250,7 +1248,7 @@ function TasksPageContent() {
 
                                       {subtask.completed && subtask.completedAt && (
                                         <div className="flex flex-col gap-1.5 pt-2 border-t border-border/30">
-                                          <span className="text-[9px] font-black uppercase tracking-widest text-green-500/80 flex items-center gap-1">
+                                          <span className="text-[11px] font-black uppercase tracking-widest text-green-500/80 flex items-center gap-1">
                                             <CheckCircle2 className="w-2.5 h-2.5" /> Resolved At
                                           </span>
                                           <div className="h-9 flex items-center px-3 text-xs font-medium text-green-500/90 bg-green-500/5 rounded-md border border-green-500/20">
@@ -1260,7 +1258,7 @@ function TasksPageContent() {
                                       )}
 
                                       <div className="flex flex-col gap-1.5 pt-2 border-t border-border/30">
-                                        <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-1">
+                                        <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-1">
                                           <Tag className="w-2.5 h-2.5" /> Labels
                                         </span>
                                         <TagInput
@@ -1335,7 +1333,7 @@ function TasksPageContent() {
                 key={opt.label}
                 variant="outline"
                 size="sm"
-                className={cn("flex-1 text-[10px] font-bold h-8", opt.color)}
+                className={cn("flex-1 text-[11px] font-bold h-8", opt.color)}
                 onClick={() => setFrogReflection({ taskTitle: '', show: false })}
               >
                 {opt.label}

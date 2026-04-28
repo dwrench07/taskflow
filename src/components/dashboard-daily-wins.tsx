@@ -91,7 +91,7 @@ export function DashboardDailyWins() {
           Today&apos;s Wins
           <WidgetInfo description={WIDGET_DESCRIPTIONS["daily-wins"]} />
           {todayXP > 0 && (
-            <Badge variant="secondary" className="ml-auto text-[10px] bg-primary/10 text-primary">
+            <Badge variant="secondary" className="ml-auto text-[11px] bg-primary/10 text-primary">
               +{todayXP} XP
             </Badge>
           )}
@@ -130,7 +130,7 @@ export function DashboardDailyWins() {
             <div className="pt-3 border-t border-border/40 space-y-2">
               <div className="flex items-center gap-1.5">
                 <Trophy className="h-3.5 w-3.5 text-amber-400" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Personal Bests</span>
+                <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Personal Bests</span>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {records.map(r => (
@@ -138,7 +138,7 @@ export function DashboardDailyWins() {
                     <span className="text-muted-foreground">{r.label}</span>
                     <span className="font-black flex items-center gap-1">
                       {r.value}
-                      {r.isNew && <Badge variant="default" className="text-[8px] px-1 py-0 h-3.5">NEW</Badge>}
+                      {r.isNew && <Badge variant="default" className="text-[11px] px-1 py-0 h-3.5">NEW</Badge>}
                     </span>
                   </div>
                 ))}
@@ -151,12 +151,12 @@ export function DashboardDailyWins() {
         <div className="pt-3 border-t border-border/40 space-y-2">
           <div className="flex items-center gap-1.5">
             <PenLine className="h-3.5 w-3.5 text-primary/70" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Daily Win Log</span>
+            <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Daily Win Log</span>
           </div>
 
           {saved && existingEntry && !editing ? (
             <div
-              className="text-xs text-foreground/80 italic bg-primary/5 border border-primary/15 rounded-lg px-3 py-2.5 leading-relaxed cursor-pointer hover:border-primary/30 transition-colors"
+              className="text-xs text-foreground/80 bg-primary/5 border border-primary/15 rounded-lg px-3 py-2.5 leading-relaxed cursor-pointer hover:border-primary/30 transition-colors"
               onClick={() => { setEditing(true); setWinText(existingEntry); setTimeout(() => inputRef.current?.focus(), 50); }}
               title="Click to edit"
             >
@@ -164,7 +164,7 @@ export function DashboardDailyWins() {
             </div>
           ) : (
             <div className="space-y-2">
-              <p className="text-[11px] text-muted-foreground/80 italic leading-snug">{prompt}</p>
+              <p className="text-[11px] text-muted-foreground/80 leading-snug">{prompt}</p>
               <textarea
                 ref={inputRef}
                 value={winText}
@@ -181,7 +181,7 @@ export function DashboardDailyWins() {
                 onClick={handleSave}
                 disabled={!winText.trim()}
                 className={cn(
-                  "flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg transition-all",
+                  "flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg transition-all",
                   winText.trim()
                     ? "bg-primary/10 text-primary hover:bg-primary/20"
                     : "text-muted-foreground/40 cursor-not-allowed"
@@ -195,7 +195,7 @@ export function DashboardDailyWins() {
 
         {/* XP / Level bar */}
         <div className="pt-2 border-t border-border/50 space-y-1.5">
-          <div className="flex items-center justify-between text-[10px]">
+          <div className="flex items-center justify-between text-[11px]">
             <span className="font-bold text-muted-foreground uppercase tracking-wider">
               Level {level.level}
             </span>
@@ -204,7 +204,7 @@ export function DashboardDailyWins() {
             </span>
           </div>
           <Progress value={level.progress} className="h-1.5" />
-          <div className="text-[10px] text-muted-foreground text-right">
+          <div className="text-[11px] text-muted-foreground text-right">
             {totalXP.toLocaleString()} XP total
           </div>
         </div>

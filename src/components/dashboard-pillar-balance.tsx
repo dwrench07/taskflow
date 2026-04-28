@@ -107,7 +107,7 @@ export function DashboardPillarBalance({ allTasks, focusSessions }: PillarBalanc
           Pillar Balance
         </CardTitle>
         {analysis.hasMeaningfulData && (
-          <CardDescription className="text-[10px]">
+          <CardDescription className="text-[11px]">
             {analysis.totalTasks} tasks across {pillars.length} life pillars
           </CardDescription>
         )}
@@ -133,7 +133,7 @@ export function DashboardPillarBalance({ allTasks, focusSessions }: PillarBalanc
                           />
                           {pillar.title}
                         </span>
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-[11px] text-muted-foreground">
                           {pillar.tasks} tasks · {pillar.focusHours}h · {pct}%
                         </span>
                       </div>

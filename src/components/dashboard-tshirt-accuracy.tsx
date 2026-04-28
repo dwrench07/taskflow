@@ -97,7 +97,7 @@ export function DashboardTShirtAccuracy({ allTasks }: TShirtAccuracyProps) {
           <Badge
             variant="outline"
             className={cn(
-              "ml-auto text-[10px] gap-1",
+              "ml-auto text-[11px] gap-1",
               analysis.calibrated
                 ? "text-green-400 border-green-500/30 bg-green-500/10"
                 : "text-amber-400 border-amber-500/30 bg-amber-500/10"
@@ -122,7 +122,7 @@ export function DashboardTShirtAccuracy({ allTasks }: TShirtAccuracyProps) {
             <div key={size} className="space-y-1">
               <div className="flex items-center justify-between text-xs">
                 <span className="flex items-center gap-2">
-                  <Badge variant="outline" className={cn("text-[10px] font-black px-1.5", SIZE_CONFIG[size].color)}>
+                  <Badge variant="outline" className={cn("text-[11px] font-black px-1.5", SIZE_CONFIG[size].color)}>
                     {size}
                   </Badge>
                   <span className="text-muted-foreground">{SIZE_CONFIG[size].expectedDays}</span>
@@ -153,7 +153,7 @@ export function DashboardTShirtAccuracy({ allTasks }: TShirtAccuracyProps) {
             : "⚠️ Your sizes don't scale linearly. An \"M\" might be taking as long as an \"L\". Consider re-calibrating."}
         </div>
 
-        <p className="text-[10px] text-muted-foreground text-center">{analysis.total} completed tasks analyzed</p>
+        <p className="text-[11px] text-muted-foreground text-center">{analysis.total} completed tasks analyzed</p>
       </CardContent>
     </Card>
   );

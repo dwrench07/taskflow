@@ -35,11 +35,11 @@ export function HabitDetail({ tasks }: { tasks: Task[] }) {
             <div className="flex flex-col gap-1 min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <span className={cn("font-bold text-sm truncate", isDoneToday && "text-primary")}>{habit.title}</span>
-                <Badge variant="outline" className="text-[8px] px-1 py-0 h-3 uppercase tracking-tighter opacity-50">
+                <Badge variant="outline" className="text-[11px] px-1 py-0 h-3 uppercase tracking-tighter opacity-50">
                     {habit.habitFrequency || "daily"}
                 </Badge>
               </div>
-              <div className="flex items-center gap-3 text-[10px] font-medium">
+              <div className="flex items-center gap-3 text-[11px] font-medium">
                 <span className="flex items-center gap-1 text-orange-400 bg-orange-400/10 px-1.5 py-0.5 rounded border border-orange-400/20">
                     <Flame className="w-2.5 h-2.5" />
                     {streak}D STREAK

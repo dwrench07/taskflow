@@ -315,7 +315,7 @@ export default function BackOfMindPage() {
                 </div>
                 <p className="text-lg font-medium">{stripAllMetadata(surfacedItem.content)}</p>
                 <div className="flex items-center gap-2 pt-1">
-                  <Badge variant="outline" className={cn("text-[10px]", getCategoryConfig(surfacedItem.category).color)}>
+                  <Badge variant="outline" className={cn("text-[11px]", getCategoryConfig(surfacedItem.category).color)}>
                     {getCategoryConfig(surfacedItem.category).label}
                   </Badge>
                   <span className="text-xs text-muted-foreground">
@@ -476,7 +476,7 @@ export default function BackOfMindPage() {
                   <p className="text-sm leading-relaxed">{stripAllMetadata(item.content)}</p>
 
                   <div className="flex items-center justify-between pt-1">
-                    <Badge variant="outline" className={cn("text-[10px]", catConfig.color)}>
+                    <Badge variant="outline" className={cn("text-[11px]", catConfig.color)}>
                       {catConfig.label}
                     </Badge>
                     <div className="flex items-center gap-2">
@@ -494,7 +494,7 @@ export default function BackOfMindPage() {
                     </div>
                   </div>
 
-                  <p className="text-[10px] text-muted-foreground/60">
+                  <p className="text-[11px] text-muted-foreground/60">
                     {formatDistanceToNow(parseISO(item.createdAt), { addSuffix: true })}
                   </p>
                 </CardContent>
@@ -646,7 +646,7 @@ export default function BackOfMindPage() {
                 max={10}
                 step={1}
               />
-              <p className="text-[10px] text-muted-foreground">How much mental space is this taking up?</p>
+              <p className="text-[11px] text-muted-foreground">How much mental space is this taking up?</p>
             </div>
           </div>
           <div className="flex justify-end gap-2">

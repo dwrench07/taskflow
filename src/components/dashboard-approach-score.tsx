@@ -102,7 +102,7 @@ export function DashboardApproachScore({ allTasks, focusSessions }: ApproachScor
           Approach vs Avoidance
           <WidgetInfo description={WIDGET_DESCRIPTIONS["approach-score"]} />
           {analysis.approachStreak > 0 && (
-            <Badge className="ml-auto bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[10px] gap-1">
+            <Badge className="ml-auto bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[11px] gap-1">
               <Flame className="h-3 w-3" /> {analysis.approachStreak}-day streak
             </Badge>
           )}
@@ -123,12 +123,12 @@ export function DashboardApproachScore({ allTasks, focusSessions }: ApproachScor
                   <div className="flex items-center gap-1.5">
                     <TrendingUp className="h-4 w-4 text-emerald-400" />
                     <span className="text-lg font-black text-emerald-400">{analysis.todayScore.approach}</span>
-                    <span className="text-[10px] text-muted-foreground">approach</span>
+                    <span className="text-[11px] text-muted-foreground">approach</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <TrendingDown className="h-4 w-4 text-red-400" />
                     <span className="text-lg font-black text-red-400">{analysis.todayScore.avoidance}</span>
-                    <span className="text-[10px] text-muted-foreground">avoid</span>
+                    <span className="text-[11px] text-muted-foreground">avoid</span>
                   </div>
                 </div>
               </div>
@@ -144,7 +144,7 @@ export function DashboardApproachScore({ allTasks, focusSessions }: ApproachScor
 
             {/* 14-day mini chart */}
             <div className="space-y-1.5">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold">Last 14 days</p>
+              <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-bold">Last 14 days</p>
               <div className="flex items-end gap-0.5 h-12">
                 {analysis.dailyScores.map((d, i) => {
                   const maxVal = Math.max(
@@ -173,7 +173,7 @@ export function DashboardApproachScore({ allTasks, focusSessions }: ApproachScor
                   );
                 })}
               </div>
-              <div className="flex justify-between text-[9px] text-muted-foreground/40">
+              <div className="flex justify-between text-[11px] text-muted-foreground/40">
                 <span>14d ago</span>
                 <span>today</span>
               </div>
@@ -183,11 +183,11 @@ export function DashboardApproachScore({ allTasks, focusSessions }: ApproachScor
             <div className="grid grid-cols-2 gap-3 pt-1">
               <div className="text-center p-2.5 bg-emerald-500/5 rounded-xl border border-emerald-500/10">
                 <p className="text-xl font-black text-emerald-400">{analysis.totalApproach}</p>
-                <p className="text-[10px] text-muted-foreground">Times you faced discomfort</p>
+                <p className="text-[11px] text-muted-foreground">Times you faced discomfort</p>
               </div>
               <div className="text-center p-2.5 bg-red-500/5 rounded-xl border border-red-500/10">
                 <p className="text-xl font-black text-red-400">{analysis.totalAvoidance}</p>
-                <p className="text-[10px] text-muted-foreground">Times you avoided</p>
+                <p className="text-[11px] text-muted-foreground">Times you avoided</p>
               </div>
             </div>
 
