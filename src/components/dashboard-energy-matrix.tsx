@@ -150,7 +150,7 @@ export function DashboardEnergyMatrix({ focusSessions }: EnergyMatrixProps) {
         </div>
 
         {/* Axis labels */}
-        <div className="flex justify-between text-[11px] text-muted-foreground/40">
+        <div className="flex justify-between text-[11px] text-muted-foreground">
           <span>← Energy</span>
           <span>Output →</span>
         </div>

@@ -577,7 +577,7 @@ function BattlePlanCard({ plan }: { plan: BattlePlan }) {
             <div className="space-y-1.5">
               {plan.feelsLike.map((f, i) => (
                 <div key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
-                  <Eye className="h-3 w-3 mt-0.5 shrink-0 text-muted-foreground/60" />
+                  <Eye className="h-3 w-3 mt-0.5 shrink-0 text-muted-foreground" />
                   <span className="">{f}</span>
                 </div>
               ))}
@@ -603,7 +603,7 @@ function BattlePlanCard({ plan }: { plan: BattlePlan }) {
                 <div className="flex-1 space-y-1">
                   <p className="text-sm font-bold">{a.action}</p>
                   <div className="flex items-center gap-1.5 mb-1">
-                    <ArrowRight className="h-2.5 w-2.5 text-muted-foreground/60" />
+                    <ArrowRight className="h-2.5 w-2.5 text-muted-foreground" />
                     <span className="text-[11px] font-mono text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded">{a.where}</span>
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">{a.detail}</p>

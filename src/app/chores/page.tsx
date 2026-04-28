@@ -328,7 +328,7 @@ export default function ChoresPage() {
             </div>
             {archivedChores.length > 0 && (
               <div className="space-y-3">
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground/60">Completed One-time</h2>
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Completed One-time</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {archivedChores.map(c => renderChoreCard(c, true))}
                 </div>

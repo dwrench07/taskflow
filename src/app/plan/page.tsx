@@ -131,7 +131,7 @@ function SortableTaskRow({
       <div className="flex-shrink-0">
         {item.type === 'habit' && <Repeat className="h-4 w-4 text-primary/70" />}
         {item.type === 'chore' && <ShoppingBag className="h-4 w-4 text-orange-400/70" />}
-        {item.type === 'task' && <CheckCircle2 className="h-4 w-4 text-muted-foreground/50" />}
+        {item.type === 'task' && <CheckCircle2 className="h-4 w-4 text-muted-foreground" />}
       </div>
 
       <div className="flex-1 min-w-0">
@@ -439,7 +439,7 @@ export default function PlanPage() {
           <div className="pt-1">
             <button
               onClick={() => setShowCompleted(v => !v)}
-              className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground/60 hover:text-muted-foreground transition-colors mb-2 w-full"
+              className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-muted-foreground transition-colors mb-2 w-full"
             >
               <div className="flex-1 h-px bg-border/50" />
               <span className="flex items-center gap-1.5 shrink-0">

@@ -17,7 +17,7 @@ export function WidgetInfo({ description }: WidgetInfoProps) {
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="inline-flex items-center justify-center rounded-full p-0.5 text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/50 transition-colors duration-200 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="inline-flex items-center justify-center rounded-full p-0.5 text-muted-foreground hover:text-muted-foreground hover:bg-muted/50 transition-colors duration-200 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           aria-label="Widget information"
         >
           <Info className="h-3.5 w-3.5" />

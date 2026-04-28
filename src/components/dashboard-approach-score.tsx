@@ -173,7 +173,7 @@ export function DashboardApproachScore({ allTasks, focusSessions }: ApproachScor
                   );
                 })}
               </div>
-              <div className="flex justify-between text-[11px] text-muted-foreground/40">
+              <div className="flex justify-between text-[11px] text-muted-foreground">
                 <span>14d ago</span>
                 <span>today</span>
               </div>

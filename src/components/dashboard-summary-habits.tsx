@@ -44,7 +44,7 @@ export function HabitDetail({ tasks }: { tasks: Task[] }) {
                     <Flame className="w-2.5 h-2.5" />
                     {streak}D STREAK
                 </span>
-                <span className="text-muted-foreground/60 flex items-center gap-1 uppercase tracking-widest">
+                <span className="text-muted-foreground flex items-center gap-1 uppercase tracking-widest">
                     <Clock className="w-2.5 h-2.5" />
                     {lastCompletion ? `Last: ${format(lastCompletion, "MMM d")}` : "Never"}
                 </span>

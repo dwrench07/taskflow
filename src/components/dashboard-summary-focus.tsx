@@ -52,8 +52,8 @@ export function FocusDetail({ sessions }: { sessions: FocusSession[] }) {
               <span className="text-sm font-bold truncate group-hover/session:text-primary transition-colors">{session.taskTitle || "General Focus"}</span>
             )}
             <div className="flex items-center gap-2 mt-0.5">
-                <Clock className="w-3 h-3 text-muted-foreground/50" />
-                <span className="text-[11px] text-muted-foreground/70 font-bold uppercase">
+                <Clock className="w-3 h-3 text-muted-foreground" />
+                <span className="text-[11px] text-muted-foreground font-bold uppercase">
                     {format(parseISO(session.startTime), "h:mm a")} • {session.duration}m
                 </span>
             </div>

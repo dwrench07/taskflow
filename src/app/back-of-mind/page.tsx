@@ -494,7 +494,7 @@ export default function BackOfMindPage() {
                     </div>
                   </div>
 
-                  <p className="text-[11px] text-muted-foreground/60">
+                  <p className="text-[11px] text-muted-foreground">
                     {formatDistanceToNow(parseISO(item.createdAt), { addSuffix: true })}
                   </p>
                 </CardContent>

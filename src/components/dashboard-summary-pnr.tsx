@@ -46,7 +46,7 @@ export function PNRDetail({ tasks }: { tasks: Task[] }) {
                 <span className={cn("font-medium", isOverdue ? "text-red-500" : "text-muted-foreground")}>
                     {format(doDate, "MMM d, h:mm a")}
                 </span>
-                <span className="text-muted-foreground/50">•</span>
+                <span className="text-muted-foreground">•</span>
                 <span className="text-muted-foreground">{task.priority}</span>
             </div>
           </Link>

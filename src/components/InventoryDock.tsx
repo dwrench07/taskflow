@@ -26,7 +26,7 @@ export function InventoryDock() {
 
   if (items.length === 0 && activeBuffs.length === 0) {
     return (
-      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-popover/40 backdrop-blur-md border border-border/30 rounded-2xl p-2 px-4 flex items-center gap-2 z-50 text-muted-foreground/50 text-xs font-semibold select-none">
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-popover/40 backdrop-blur-md border border-border/30 rounded-2xl p-2 px-4 flex items-center gap-2 z-50 text-muted-foreground text-xs font-semibold select-none">
         <Sparkles className="w-3 h-3" />
         Inventory Empty
       </div>

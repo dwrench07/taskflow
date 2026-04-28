@@ -830,7 +830,7 @@ export default function DashboardPage() {
                 {completedTasks.length > 0 && incompleteTasks.length > 0 && (
                   <div className="flex items-center gap-3 py-3">
                     <div className="h-px flex-1 bg-border" />
-                    <span className="text-[11px] uppercase tracking-widest text-muted-foreground/50 font-semibold">Done</span>
+                    <span className="text-[11px] uppercase tracking-widest text-muted-foreground font-semibold">Done</span>
                     <div className="h-px flex-1 bg-border" />
                   </div>
                 )}
@@ -852,7 +852,7 @@ export default function DashboardPage() {
                         <p className="text-[11px] text-muted-foreground">{sub}</p>
                       </div>
                       {items.length === 0 ? (
-                        <p className="text-[11px] text-muted-foreground/40">Empty</p>
+                        <p className="text-[11px] text-muted-foreground">Empty</p>
                       ) : items.map(item => <TaskItem key={item.id} item={item} />)}
                     </div>
                   );

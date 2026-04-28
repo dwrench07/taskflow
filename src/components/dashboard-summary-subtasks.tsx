@@ -70,7 +70,7 @@ export function SubtaskDetail({ tasks }: { tasks: Task[] }) {
                 )}>
                     {item.title}
                 </span>
-                <span className="text-[11px] text-muted-foreground/60 uppercase tracking-wider mt-0.5">
+                <span className="text-[11px] text-muted-foreground uppercase tracking-wider mt-0.5">
                     {item.parentTitle}
                 </span>
             </div>

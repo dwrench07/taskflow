@@ -66,7 +66,7 @@ export function SummaryCard({
                 <span className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/80">{title}</span>
             </div>
             
-            <span className="text-[11px] text-muted-foreground/50 font-medium truncate w-full">{subtitle}</span>
+            <span className="text-[11px] text-muted-foreground font-medium truncate w-full">{subtitle}</span>
           </CardContent>
         </Card>
       </PopoverTrigger>

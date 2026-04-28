@@ -80,7 +80,7 @@ export function BonsaiTree() {
             Level {level}
           </div>
         </div>
-        <CardDescription className="text-xs uppercase font-bold tracking-widest text-muted-foreground/60">
+        <CardDescription className="text-xs uppercase font-bold tracking-widest text-muted-foreground">
           Digital Bonsai
         </CardDescription>
       </CardHeader>
@@ -126,7 +126,7 @@ export function BonsaiTree() {
 
         {/* Feeding Section */}
         <div className="space-y-3">
-          <div className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/70 mb-1">
+          <div className="text-[11px] font-black uppercase tracking-widest text-muted-foreground mb-1">
             Feed your artifacts
           </div>
           <div className="grid grid-cols-2 gap-2 sm:gap-3">

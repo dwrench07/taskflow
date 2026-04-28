@@ -83,7 +83,7 @@ export function DailyProgressMeter({ totalItems, completedItems }: DailyProgress
 
       <p className={cn(
         "text-[11px] mt-1.5 font-medium",
-        pct === 100 ? "text-emerald-500/80" : "text-muted-foreground/70"
+        pct === 100 ? "text-emerald-500/80" : "text-muted-foreground"
       )}>
         {label}
       </p>

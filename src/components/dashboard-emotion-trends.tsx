@@ -188,10 +188,10 @@ export function DashboardEmotionTrends({ focusSessions }: EmotionTrendsProps) {
               return (
                 <div key={i} className="flex items-center gap-2 text-xs bg-muted/20 rounded-lg px-3 py-2">
                   <span title={pre.label}>{pre.emoji}</span>
-                  <span className="text-muted-foreground/40">{s.preEmotion!.bodyTension}/10</span>
+                  <span className="text-muted-foreground">{s.preEmotion!.bodyTension}/10</span>
                   <ArrowRight className="h-3 w-3 text-muted-foreground/30" />
                   <span title={post.label}>{post.emoji}</span>
-                  <span className="text-muted-foreground/40">{s.postEmotion!.bodyTension}/10</span>
+                  <span className="text-muted-foreground">{s.postEmotion!.bodyTension}/10</span>
                   {tensionChange > 0 && (
                     <span className="ml-auto text-green-400 flex items-center gap-0.5">
                       <TrendingDown className="h-3 w-3" /> -{tensionChange}

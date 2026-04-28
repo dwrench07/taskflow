@@ -187,7 +187,7 @@ export default function AchievementsPage() {
                           "h-2.5 w-2.5 rounded-full border",
                           achieved ? `${style.bg} ${style.border} ${style.text}` : "border-border/30 bg-muted/20"
                         )} style={achieved ? { backgroundColor: tier.tier === 'gold' ? '#eab308' : tier.tier === 'silver' ? '#94a3b8' : '#b45309', opacity: 0.8 } : {}} />
-                        <span className={cn("text-[11px]", achieved ? style.text : "text-muted-foreground/40")}>
+                        <span className={cn("text-[11px]", achieved ? style.text : "text-muted-foreground")}>
                           {TIER_LABELS[tier.tier]}
                         </span>
                       </div>

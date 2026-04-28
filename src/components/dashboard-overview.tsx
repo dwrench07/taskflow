@@ -29,7 +29,7 @@ export function DashboardOverview({ allTasks }: { allTasks: Task[] }) {
         </CardHeader>
         <CardContent className="px-4 pb-3">
           <div className="text-xl font-black tracking-tighter">{todoCount}</div>
-          <p className="text-[11px] text-muted-foreground/60 font-medium truncate">Pending obj</p>
+          <p className="text-[11px] text-muted-foreground font-medium truncate">Pending obj</p>
         </CardContent>
       </Card>
       <Card className="bg-card border-border transition-all duration-300 animate-fade-in hover:shadow-md" style={{ animationDelay: '50ms' }}>
@@ -39,7 +39,7 @@ export function DashboardOverview({ allTasks }: { allTasks: Task[] }) {
         </CardHeader>
         <CardContent className="px-4 pb-3">
           <div className="text-xl font-black tracking-tighter">{inProgressCount}</div>
-          <p className="text-[11px] text-muted-foreground/60 font-medium truncate">Active focus</p>
+          <p className="text-[11px] text-muted-foreground font-medium truncate">Active focus</p>
         </CardContent>
       </Card>
       <Card className="bg-card border-border transition-all duration-300 animate-fade-in hover:shadow-md" style={{ animationDelay: '100ms' }}>
@@ -49,7 +49,7 @@ export function DashboardOverview({ allTasks }: { allTasks: Task[] }) {
         </CardHeader>
         <CardContent className="px-4 pb-3">
           <div className="text-xl font-black tracking-tighter">{tasksDueToday}</div>
-          <p className="text-[11px] text-muted-foreground/60 font-medium truncate">Deadlines near</p>
+          <p className="text-[11px] text-muted-foreground font-medium truncate">Deadlines near</p>
         </CardContent>
       </Card>
       <Card className="bg-card border-border transition-all duration-300 animate-fade-in hover:shadow-md" style={{ animationDelay: '150ms' }}>
@@ -59,7 +59,7 @@ export function DashboardOverview({ allTasks }: { allTasks: Task[] }) {
         </CardHeader>
         <CardContent className="px-4 pb-3">
           <div className="text-xl font-black tracking-tighter">{habitGoalsMet}/{totalHabitsWithGoals}</div>
-          <p className="text-[11px] text-muted-foreground/60 font-medium truncate">Hit goals</p>
+          <p className="text-[11px] text-muted-foreground font-medium truncate">Hit goals</p>
         </CardContent>
       </Card>
       <Card className="bg-card border-border transition-all duration-300 animate-fade-in hover:shadow-md" style={{ animationDelay: '200ms' }}>
@@ -69,7 +69,7 @@ export function DashboardOverview({ allTasks }: { allTasks: Task[] }) {
         </CardHeader>
         <CardContent className="px-4 pb-3">
           <div className="text-xl font-black tracking-tighter">{activeStreaksCount}</div>
-          <p className="text-[11px] text-muted-foreground/60 font-medium truncate">Streaks &gt; 3 days</p>
+          <p className="text-[11px] text-muted-foreground font-medium truncate">Streaks &gt; 3 days</p>
         </CardContent>
       </Card>
       <Card className="bg-card border-border transition-all duration-300 animate-fade-in hover:shadow-md" style={{ animationDelay: '250ms' }}>
@@ -79,7 +79,7 @@ export function DashboardOverview({ allTasks }: { allTasks: Task[] }) {
         </CardHeader>
         <CardContent className="px-4 pb-3">
           <div className="text-xl font-black tracking-tighter">{avoidedCount}</div>
-          <p className="text-[11px] text-muted-foreground/60 font-medium truncate">Tasks pushed</p>
+          <p className="text-[11px] text-muted-foreground font-medium truncate">Tasks pushed</p>
         </CardContent>
       </Card>
     </div>

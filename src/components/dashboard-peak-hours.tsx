@@ -134,7 +134,7 @@ export function DashboardPeakHours({ focusSessions }: PeakProductivityProps) {
               );
             })}
           </div>
-          <div className="flex justify-between text-[11px] text-muted-foreground/40 px-0.5">
+          <div className="flex justify-between text-[11px] text-muted-foreground px-0.5">
             <span>6am</span>
             <span>12pm</span>
             <span>6pm</span>

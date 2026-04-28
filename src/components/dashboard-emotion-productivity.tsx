@@ -100,7 +100,7 @@ export function DashboardEmotionProductivity({ focusSessions }: EmotionProductiv
                   <span className="flex items-center gap-1.5">
                     <span>{config.emoji}</span>
                     <span className="font-medium">{config.label}</span>
-                    <span className="text-muted-foreground/40">({entry.total})</span>
+                    <span className="text-muted-foreground">({entry.total})</span>
                   </span>
                   <span className={cn("font-bold text-[11px]", PROD_COLORS.high)}>
                     {entry.highRate}% high

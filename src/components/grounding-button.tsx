@@ -166,7 +166,7 @@ export function GroundingButton() {
                   </p>
                 </div>
 
-                <p className="text-xs text-muted-foreground/50">Take your time. Say them out loud or in your head.</p>
+                <p className="text-xs text-muted-foreground">Take your time. Say them out loud or in your head.</p>
 
                 <Button
                   onClick={() => {

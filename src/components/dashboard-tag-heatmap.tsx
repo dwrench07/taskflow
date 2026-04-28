@@ -104,7 +104,7 @@ export function DashboardTagHeatmap({ allTasks }: TagHeatmapProps) {
                     )}>
                       #{entry.tag}
                     </span>
-                    <span className="text-muted-foreground/50">({entry.total})</span>
+                    <span className="text-muted-foreground">({entry.total})</span>
                   </span>
                   <span className="flex items-center gap-2 text-[11px] text-muted-foreground">
                     {entry.avgDays !== null && <span>{entry.avgDays}d avg</span>}

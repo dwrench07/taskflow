@@ -624,7 +624,7 @@ export default function FocusPage() {
                                                     value={taskSearch}
                                                     onChange={(e) => setTaskSearch(e.target.value)}
                                                     autoFocus
-                                                    className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground/50"
+                                                    className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground"
                                                 />
                                                 <button onClick={() => { setShowTaskPicker(false); setTaskSearch(""); }} className="text-muted-foreground hover:text-foreground transition-colors">
                                                     <X className="h-4 w-4" />
@@ -659,7 +659,7 @@ export default function FocusPage() {
                                                         if (items.length === 0) return null;
                                                         return (
                                                             <div key={label}>
-                                                                <div className="px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60 flex items-center gap-1.5">
+                                                                <div className="px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                                                                     {icon} {label}
                                                                 </div>
                                                                 {items.slice(0, 5).map(t => (
@@ -900,7 +900,7 @@ export default function FocusPage() {
                                                 </div>
                                             ))}
                                             {(!reminderSettings?.reminders || reminderSettings.reminders.length === 0) && (
-                                                <p className="text-xs text-muted-foreground/60 text-center py-2">No reminders yet. Add one below.</p>
+                                                <p className="text-xs text-muted-foreground text-center py-2">No reminders yet. Add one below.</p>
                                             )}
                                         </div>
 

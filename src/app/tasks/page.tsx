@@ -1360,7 +1360,7 @@ function TasksPageContent() {
                                     <div className="flex flex-col gap-2 mt-2 p-3 bg-muted/20 rounded-lg border border-border/40 overflow-hidden">
                                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div className="flex flex-col gap-1.5">
-                                          <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-1">
+                                          <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1">
                                             <Play className="w-2.5 h-2.5" /> Start
                                           </span>
                                           <DateTimePicker
@@ -1396,7 +1396,7 @@ function TasksPageContent() {
                                       )}
 
                                       <div className="flex flex-col gap-1.5 pt-2 border-t border-border/30">
-                                        <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-1">
+                                        <span className="text-[11px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-1">
                                           <Tag className="w-2.5 h-2.5" /> Labels
                                         </span>
                                         <TagInput
@@ -1433,7 +1433,7 @@ function TasksPageContent() {
 
                             <div className="mt-6">
                               <div className="flex items-center gap-3 bg-background border px-4 py-1 rounded-xl shadow-sm focus-within:ring-2 focus-within:ring-primary/40 focus-within:border-primary/50 transition-all">
-                                <PlusCircle className="w-4 h-4 text-muted-foreground/50 shrink-0" />
+                                <PlusCircle className="w-4 h-4 text-muted-foreground shrink-0" />
                                 <Input
                                   placeholder="Add an actionable step..."
                                   value={newSubtaskTitle}
