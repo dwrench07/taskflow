@@ -37,7 +37,7 @@ export function DashboardUpcomingPNRs({ allTasks }: { allTasks: Task[] }) {
     }, [allTasks]);
 
     return (
-        <Card className="transition-all duration-500 ease-in-out animate-fade-in hover:shadow-md border-orange-500/20 bg-orange-500/5" style={{ animationDelay: '250ms', animationFillMode: 'both' }}>
+        <Card className="transition-all duration-500 ease-in-out animate-fade-in hover:shadow-md border-border/50" style={{ animationDelay: '250ms', animationFillMode: 'both' }}>
             <CardHeader>
                 <CardTitle className="text-orange-600 dark:text-orange-400 flex items-center gap-2">
                     <Clock className="w-5 h-5" />

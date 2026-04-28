@@ -26,7 +26,12 @@ export interface DailyStatus {
 export interface Subtask {
   id: string;
   title: string;
+  description?: string;
   completed: boolean;
+  type?: 'task' | 'chore';
+  frequency?: ChoreFrequency;
+  intervalDays?: number;
+  lastCompleted?: string;
   startDate?: string;
   endDate?: string;
   completedAt?: string; // New field tracking actual completion time

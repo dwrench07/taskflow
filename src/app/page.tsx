@@ -967,7 +967,7 @@ export default function DashboardPage() {
 
           {!isZenMode && (
             <Tabs defaultValue="overview" className="w-full space-y-6">
-              <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto md:w-[600px] bg-muted/30 p-1">
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 h-auto bg-muted/70 border border-border/60 p-1">
                 <TabsTrigger value="overview" className="py-2">Performance</TabsTrigger>
                 <TabsTrigger value="deep-work" className="py-2">Deep Work</TabsTrigger>
                 <TabsTrigger value="strategic" className="py-2">Strategic</TabsTrigger>
@@ -977,11 +977,9 @@ export default function DashboardPage() {
 
               <TabsContent value="overview" className="space-y-6 animate-fade-in">
                 <DashboardCompletionChart allTasks={allTasks} />
-                <div className="grid gap-6 sm:grid-cols-2">
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
                   <DashboardPriorityChart allTasks={allTasks} />
                   <DashboardStatusChart allTasks={allTasks} />
-                </div>
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 auto-rows-fr">
                   <DashboardWeeklyReport allTasks={allTasks} focusSessions={focusSessions} />
                   <DashboardDailyWins />
                   <DashboardPointOfNoReturn allTasks={allTasks} />

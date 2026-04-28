@@ -48,7 +48,7 @@ export function DashboardHabitHeatmap({ allTasks }: { allTasks: Task[] }) {
     };
 
     return (
-        <Card className="col-span-1 lg:col-span-2 border-border/50 shadow-sm transition-all hover:shadow-md animate-fade-in">
+        <Card className="col-span-1 border-border/50 shadow-sm transition-all hover:shadow-md animate-fade-in">
             <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-sm font-bold">
                     <Flame className="h-5 w-5 text-orange-500" /> Habit Consistency (Last 30 Days)

@@ -93,7 +93,7 @@ export function DashboardWeeklyReport({ allTasks, focusSessions }: WeeklyReportP
   };
 
   return (
-    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+    <Card className="border-border/50">
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-bold flex items-center gap-2">
           <FileText className="h-4 w-4 text-primary" />

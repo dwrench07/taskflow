@@ -13,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { getFrogDecayLevel } from "@/lib/habits";
-import { ListTodo, FileText, Calendar as CalendarIcon, Clock, PlusCircle, Edit, Trash2, Tag, ChevronDown, ClipboardList, ArrowUpDown, ArrowLeft, Search, XCircle, Save, Loader2, Timer, Check, ArrowUp, ArrowDown, Lock, Target, Play, AlarmClock, CheckCircle2, Sparkles, Shield } from "lucide-react";
+import { ListTodo, FileText, Calendar as CalendarIcon, Clock, PlusCircle, Edit, Trash2, Tag, ChevronDown, ChevronRight, ClipboardList, ArrowUpDown, ArrowLeft, Search, XCircle, Save, Loader2, Timer, Check, ArrowUp, ArrowDown, Lock, Target, Play, AlarmClock, CheckCircle2, Sparkles, Shield } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -296,6 +296,14 @@ function TasksPageContent() {
   const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
   const [editingSubtask, setEditingSubtask] = useState<Subtask | null>(null);
+  const [expandedSubtaskIds, setExpandedSubtaskIds] = useState<Set<string>>(new Set());
+  const toggleSubtaskExpanded = (id: string) => {
+    setExpandedSubtaskIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { celebrate, refreshGamification, userProgress, refreshProgress } = useGamification();
@@ -1081,19 +1089,15 @@ function TasksPageContent() {
 
                       <CardContent className="px-0">
                         <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 mb-8 relative">
-                          <div className="lg:col-span-3 space-y-3 bg-muted/20 p-5 rounded-2xl border border-border/50 shadow-sm transition-all hover:shadow-md">
-                            <h4 className="text-sm font-semibold flex items-center gap-2 text-foreground/80">
-                              <Tag className="w-4 h-4 text-primary/70" />
-                              Labels & Categories
-                            </h4>
-                            <div className="pt-2">
-                              <TagInput
-                                tags={selectedTask.tags || []}
-                                allTags={allTags}
-                                onUpdateTags={handleUpdateTaskTags}
-                                placeholder="Add or select tags..."
-                              />
-                            </div>
+                          <div className="lg:col-span-3 self-start flex items-center gap-2 bg-muted/20 px-3 py-2 rounded-xl border border-border/50">
+                            <Tag className="w-4 h-4 text-primary/70 shrink-0" />
+                            <TagInput
+                              tags={selectedTask.tags || []}
+                              allTags={allTags}
+                              onUpdateTags={handleUpdateTaskTags}
+                              placeholder="Add or select tags..."
+                              className="flex-1"
+                            />
                           </div>
                           <div className="xl:col-span-2 space-y-4 bg-muted/20 p-5 rounded-2xl border border-border/50 shadow-sm transition-all hover:shadow-md">
                             <div className="space-y-3">
@@ -1131,15 +1135,15 @@ function TasksPageContent() {
                             </Badge>
                           </div>
 
-                          <div className="space-y-4">
+                          <div className="space-y-1.5">
                             {selectedTask?.subtasks?.map((subtask, index) => (
                               <div key={subtask.id} className={cn(
-                                "flex flex-col gap-3 group p-3 rounded-xl border transition-all duration-300",
-                                subtask.completed ? "bg-muted/30 border-border/40" : "bg-card hover:border-primary/40 hover:shadow-sm"
+                                "flex flex-col group px-3 py-2 rounded-lg border transition-all duration-200",
+                                subtask.completed ? "bg-muted/30 border-border/40" : "bg-card hover:border-primary/40"
                               )}>
-                                <div className="flex items-start gap-3 w-full">
+                                <div className="flex items-center gap-2 w-full">
                                   <div className={cn(
-                                    "relative flex items-center justify-center w-5 h-5 rounded border-2 transition-colors mt-0.5 shrink-0",
+                                    "relative flex items-center justify-center w-4 h-4 rounded border-2 transition-colors shrink-0",
                                     subtask.completed ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground/30 bg-background group-hover:border-primary/50"
                                   )}>
                                     <Checkbox
@@ -1148,10 +1152,10 @@ function TasksPageContent() {
                                       onCheckedChange={(checked) => handleSubtaskCompletion(subtask.id, !!checked)}
                                       className="w-full h-full opacity-0 absolute cursor-pointer"
                                     />
-                                    {subtask.completed && <Check className="w-3.5 h-3.5" />}
+                                    {subtask.completed && <Check className="w-3 h-3" />}
                                   </div>
                                   <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
+                                    <div className="flex items-center gap-2">
                                       {editingSubtask?.id === subtask.id ? (
                                         <Input
                                           type="text"
@@ -1216,7 +1220,8 @@ function TasksPageContent() {
                                         </>
                                       )}
                                     </div>
-                                    <div className="flex flex-col gap-2 mt-3 p-3 bg-muted/20 rounded-xl border border-border/40 overflow-hidden">
+                                    {expandedSubtaskIds.has(subtask.id) && (
+                                    <div className="flex flex-col gap-2 mt-2 p-3 bg-muted/20 rounded-lg border border-border/40 overflow-hidden">
                                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div className="flex flex-col gap-1.5">
                                           <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 flex items-center gap-1">
@@ -1267,17 +1272,23 @@ function TasksPageContent() {
                                         />
                                       </div>
                                     </div>
+                                    )}
                                   </div>
 
-                                  <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Button variant="ghost" size="icon" className="h-7 w-7 rounded-sm text-muted-foreground hover:text-primary hover:bg-primary/10" disabled={index === 0} onClick={() => handleMoveSubtaskUp(index)}>
-                                      <ArrowUp className="h-3.5 w-3.5" />
-                                    </Button>
-                                    <Button variant="ghost" size="icon" className="h-7 w-7 rounded-sm text-muted-foreground hover:text-primary hover:bg-primary/10" disabled={index === selectedTask.subtasks.length - 1} onClick={() => handleMoveSubtaskDown(index)}>
-                                      <ArrowDown className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="ghost" size="icon" className="h-7 w-7 rounded-sm text-destructive/70 hover:text-destructive hover:bg-destructive/10" onClick={() => handleDeleteSubtask(subtask.id)}>
-                                      <Trash2 className="h-3.5 w-3.5" />
+                                  <div className="flex items-center gap-0.5 shrink-0">
+                                    <div className="hidden group-hover:flex items-center gap-0.5">
+                                      <Button variant="ghost" size="icon" className="h-6 w-6 rounded-sm text-muted-foreground hover:text-primary hover:bg-primary/10" disabled={index === 0} onClick={() => handleMoveSubtaskUp(index)}>
+                                        <ArrowUp className="h-3 w-3" />
+                                      </Button>
+                                      <Button variant="ghost" size="icon" className="h-6 w-6 rounded-sm text-muted-foreground hover:text-primary hover:bg-primary/10" disabled={index === selectedTask.subtasks.length - 1} onClick={() => handleMoveSubtaskDown(index)}>
+                                        <ArrowDown className="h-3 w-3" />
+                                      </Button>
+                                      <Button variant="ghost" size="icon" className="h-6 w-6 rounded-sm text-destructive/70 hover:text-destructive hover:bg-destructive/10" onClick={() => handleDeleteSubtask(subtask.id)}>
+                                        <Trash2 className="h-3 w-3" />
+                                      </Button>
+                                    </div>
+                                    <Button variant="ghost" size="icon" className="h-6 w-6 rounded-sm text-muted-foreground hover:text-primary hover:bg-primary/10" onClick={() => toggleSubtaskExpanded(subtask.id)} title={expandedSubtaskIds.has(subtask.id) ? "Collapse" : "Expand"}>
+                                      <ChevronRight className={cn("h-3.5 w-3.5 transition-transform", expandedSubtaskIds.has(subtask.id) && "rotate-90")} />
                                     </Button>
                                   </div>
                                 </div>

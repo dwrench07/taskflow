@@ -13,13 +13,14 @@ import {
   Timer,
   StickyNote,
   Map,
-  CheckSquare,
   Sparkles,
   BookOpen,
   Zap,
   Trophy,
   Brain,
-  HelpCircle
+  HelpCircle,
+  ListChecks,
+  CheckSquare
 } from "lucide-react";
 
 import {
@@ -43,6 +44,7 @@ import { Button } from "./ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { LogOut } from "lucide-react";
 import { PullToRefresh } from "@/components/pull-to-refresh";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -67,6 +69,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 {[
                   { href: "/", label: "Dashboard", icon: LayoutDashboard },
                   { href: "/tasks", label: "Tasks", icon: ListTodo },
+                  { href: "/subtasks", label: "Subtasks", icon: ListChecks },
                   { href: "/focus", label: "Focus", icon: Timer },
                   { href: "/frogs", label: "Frogs", icon: Zap },
                   { href: "/habits", label: "Habits", icon: Repeat },
@@ -158,9 +161,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <span className="text-sm font-medium truncate">{user.name || 'User'}</span>
                 <span className="text-xs text-muted-foreground truncate">{user.email}</span>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => logout()} title="Log Out">
-                <LogOut className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-1">
+                <ThemeToggle />
+                <Button variant="ghost" size="icon" onClick={() => logout()} title="Log Out">
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </SidebarFooter>
         )}
