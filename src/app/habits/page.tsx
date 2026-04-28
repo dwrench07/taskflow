@@ -575,12 +575,6 @@ function HabitsPageContent() {
                                                     <Flame className={cn("h-3 w-3 sm:h-4 sm:w-4", streak > 0 ? "text-orange-300" : "text-muted-foreground", isAtRisk(habit) && "text-white animate-bounce")} />
                                                     {isFrozen() ? "FROZEN" : `${streak} Day${streak !== 1 ? 's' : ''}`}
                                                 </Badge>
-                                                {streak > 0 && (() => {
-                                                    const tier = getStreakTier(streak);
-                                                    return tier.name ? (
-                                                        <span className={cn("text-[11px] sm:text-[11px] font-bold uppercase tracking-wider", tier.color)}>{tier.name}</span>
-                                                    ) : null;
-                                                })()}
                                                 <AlertDialog>
                                                     <AlertDialogTrigger asChild>
                                                         <Button variant="ghost" size="icon" className="h-5 w-5 sm:h-8 sm:w-8" onClick={e => e.stopPropagation()}>
@@ -605,11 +599,19 @@ function HabitsPageContent() {
                                         <CardDescription className="pt-1 sm:pt-2 line-clamp-1 sm:line-clamp-2 text-[11px] sm:text-sm text-left min-w-0">{habit.description}</CardDescription>
                                     </CardHeader>
                                     <CardContent className="p-3 sm:p-4 pt-2 sm:pt-4 flex-grow flex flex-col justify-end">
-                                        <div className="flex justify-between items-center mb-2 sm:mb-4">
+                                        <div className="flex justify-between items-center mb-2 sm:mb-4 gap-2">
                                             <Badge variant="outline" className="capitalize text-[11px] sm:text-xs py-0 sm:py-0.5 h-5 sm:h-auto px-1.5 sm:px-2.5 opacity-70 sm:opacity-100">
                                                 {habit.habitFrequency}
                                             </Badge>
-                                            {habit.streakGoal && goalMet && <Trophy className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-500 animate-pulse" />}
+                                            <div className="flex items-center gap-2 ml-auto">
+                                                {streak > 0 && (() => {
+                                                    const tier = getStreakTier(streak);
+                                                    return tier.name ? (
+                                                        <span className={cn("text-[11px] sm:text-[11px] font-bold uppercase tracking-wider", tier.color)}>{tier.name}</span>
+                                                    ) : null;
+                                                })()}
+                                                {habit.streakGoal && goalMet && <Trophy className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-500 animate-pulse" />}
+                                            </div>
                                         </div>
                                         {habit.streakGoal && (
                                             <div className="mb-3 sm:mb-4 space-y-1 sm:space-y-2">
