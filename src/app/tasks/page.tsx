@@ -3,9 +3,9 @@
 
 import React from "react";
 import { useState, useMemo, useEffect } from "react";
-import { getAllTemplates, getAllTasks, addTask, updateTask as updateTaskInData, deleteTask as deleteTaskInData, getAllGoals } from "@/lib/data";
+import { getAllTemplates, getAllTasks, addTask, updateTask as updateTaskInData, deleteTask as deleteTaskInData, getAllGoals, getAllMilestones, getAllPillars } from "@/lib/data";
 import { useRefresh } from "@/context/RefreshContext";
-import { type Task, type Priority, type Subtask, type TaskTemplate, type Status, type Goal } from "@/lib/types";
+import { type Task, type Priority, type Subtask, type TaskTemplate, type Status, type Goal, type Milestone, type Pillar } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { getFrogDecayLevel } from "@/lib/habits";
-import { ListTodo, FileText, Calendar as CalendarIcon, Clock, PlusCircle, Edit, Trash2, Tag, ChevronDown, ChevronRight, ClipboardList, ArrowUpDown, ArrowLeft, Search, XCircle, Save, Loader2, Timer, Check, ArrowUp, ArrowDown, Lock, Target, Play, AlarmClock, CheckCircle2, Sparkles, Shield } from "lucide-react";
+import { ListTodo, FileText, Calendar as CalendarIcon, Clock, PlusCircle, Edit, Trash2, Tag, ChevronDown, ChevronRight, ClipboardList, ArrowUpDown, ArrowLeft, Search, XCircle, Save, Loader2, Timer, Check, ArrowUp, ArrowDown, ArrowRight, Lock, Target, Play, AlarmClock, CheckCircle2, Sparkles, Shield, Layers, Repeat } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -287,9 +287,99 @@ function NotesSection({ task, onUpdateTask }: { task: Task, onUpdateTask: (task:
   )
 }
 
+function ConnectionsPanel({
+  task, allTasks, goals, milestones, pillars, className,
+}: {
+  task: Task;
+  allTasks: Task[];
+  goals: Goal[];
+  milestones: Milestone[];
+  pillars: Pillar[];
+  className?: string;
+}) {
+  const linkedGoal = task.goalId ? goals.find(g => g.id === task.goalId) : null;
+  const linkedMilestone = task.milestoneId ? milestones.find(m => m.id === task.milestoneId) : null;
+  const linkedPillar = linkedGoal?.pillarId ? pillars.find(p => p.id === linkedGoal.pillarId) : null;
+  const goalPct = linkedGoal ? calculateGoalProgress(linkedGoal.id, allTasks) : 0;
+  const blockedBy = (task.blockedBy || []).map(id => allTasks.find(t => t.id === id)).filter((t): t is Task => !!t && t.status !== 'done');
+  const blocks = (task.blocks || []).map(id => allTasks.find(t => t.id === id)).filter((t): t is Task => !!t);
+
+  const hasAny = linkedGoal || linkedMilestone || linkedPillar || blockedBy.length > 0 || blocks.length > 0 || task.isHabit;
+
+  return (
+    <div className={cn("bg-muted/20 px-4 py-3 rounded-xl border border-border/50", className)}>
+      <h4 className="text-sm font-semibold flex items-center gap-2 text-foreground/80 mb-2">
+        <Target className="w-4 h-4 text-primary/70" />
+        Connections
+      </h4>
+      {!hasAny ? (
+        <p className="text-[11px] text-muted-foreground">Nothing linked yet. Use Edit to connect this task to a goal, milestone, or other tasks.</p>
+      ) : (
+        <div className="space-y-2.5">
+          {linkedPillar && (
+            <div className="flex items-center gap-2">
+              <Layers className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+              <span className="text-[11px] uppercase tracking-wider text-muted-foreground">Pillar</span>
+              <span className="text-sm font-medium truncate">{linkedPillar.title}</span>
+            </div>
+          )}
+          {linkedGoal && (
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <Target className="w-3.5 h-3.5 text-primary shrink-0" />
+                <span className="text-[11px] uppercase tracking-wider text-muted-foreground">Goal</span>
+                <span className="text-sm font-medium truncate flex-1">{linkedGoal.title}</span>
+                <span className="text-[11px] text-muted-foreground">{goalPct}%</span>
+              </div>
+              <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden ml-5">
+                <div className="h-full bg-primary/70" style={{ width: `${goalPct}%` }} />
+              </div>
+            </div>
+          )}
+          {linkedMilestone && (
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span className="text-[11px] uppercase tracking-wider text-muted-foreground">Milestone</span>
+              <span className="text-sm font-medium truncate">{linkedMilestone.title}</span>
+            </div>
+          )}
+          {task.isHabit && (
+            <div className="flex items-center gap-2">
+              <Repeat className="w-3.5 h-3.5 text-green-400 shrink-0" />
+              <span className="text-[11px] uppercase tracking-wider text-muted-foreground">Type</span>
+              <span className="text-sm font-medium">Habit{task.habitFrequency ? ` · ${task.habitFrequency}` : ''}{task.streak ? ` · ${task.streak}🔥` : ''}</span>
+            </div>
+          )}
+          {blockedBy.length > 0 && (
+            <div className="flex items-start gap-2">
+              <Lock className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
+              <span className="text-[11px] uppercase tracking-wider text-muted-foreground mt-0.5">Blocked by</span>
+              <div className="flex-1 flex flex-wrap gap-1">
+                {blockedBy.slice(0, 3).map(t => (
+                  <Badge key={t.id} variant="outline" className="text-[11px] border-red-500/30 text-red-500">{t.title}</Badge>
+                ))}
+                {blockedBy.length > 3 && <Badge variant="outline" className="text-[11px]">+{blockedBy.length - 3}</Badge>}
+              </div>
+            </div>
+          )}
+          {blocks.length > 0 && (
+            <div className="flex items-center gap-2">
+              <ArrowRight className="w-3.5 h-3.5 text-orange-400 shrink-0" />
+              <span className="text-[11px] uppercase tracking-wider text-muted-foreground">Blocks</span>
+              <span className="text-sm font-medium">{blocks.length} task{blocks.length === 1 ? '' : 's'}</span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function TasksPageContent() {
   const [allTasks, setAllTasks] = useState<Task[]>([]);
   const [goals, setGoals] = useState<Goal[]>([]);
+  const [milestones, setMilestones] = useState<Milestone[]>([]);
+  const [pillars, setPillars] = useState<Pillar[]>([]);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isEditingFormOpen, setIsEditingFormOpen] = useState(false);
@@ -322,9 +412,16 @@ function TasksPageContent() {
 
   const refreshTasks = async (showLoader = false) => {
     if (showLoader) setLoading(true);
-    const [tasks, fetchedGoals] = await Promise.all([getAllTasks(), getAllGoals()]);
+    const [tasks, fetchedGoals, fetchedMilestones, fetchedPillars] = await Promise.all([
+      getAllTasks(),
+      getAllGoals(),
+      getAllMilestones().catch(() => []),
+      getAllPillars().catch(() => []),
+    ]);
     setAllTasks(tasks || []);
     setGoals(fetchedGoals || []);
+    setMilestones(fetchedMilestones || []);
+    setPillars(fetchedPillars || []);
     if (showLoader) setLoading(false);
     return tasks;
   };
@@ -1089,20 +1186,61 @@ function TasksPageContent() {
 
                       <CardContent className="px-0">
                         <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 mb-8 relative">
-                          {selectedTask.tags && selectedTask.tags.length > 0 && (
-                            <div className="lg:col-span-3 self-start flex items-center gap-2 flex-wrap bg-muted/20 px-3 py-2 rounded-xl border border-border/50">
-                              <Tag className="w-4 h-4 text-primary/70 shrink-0" />
-                              {selectedTask.tags.map(tag => (
-                                <Badge key={tag} variant="secondary" className="text-[11px]">{tag}</Badge>
-                              ))}
-                            </div>
-                          )}
+                          {(() => {
+                            const subs = selectedTask.subtasks || [];
+                            const total = subs.length;
+                            const done = subs.filter(s => s.completed).length;
+                            const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+                            const frogs = subs.filter(s => s.isFrog).length;
+                            const urgent = subs.filter(s => s.priority === 'urgent' || s.priority === 'high').length;
+                            const open = total - done;
+                            return (
+                              <div className="hidden md:flex xl:col-span-3 flex-col gap-4">
+                                <div className="bg-muted/20 px-4 py-3 rounded-xl border border-border/50">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <h4 className="text-sm font-semibold flex items-center gap-2 text-foreground/80">
+                                      <ListTodo className="w-4 h-4 text-primary/70" />
+                                      Subtask Progress
+                                    </h4>
+                                    <span className="text-[11px] font-bold text-muted-foreground">{done}/{total}</span>
+                                  </div>
+                                  <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                                    <div className="h-full bg-primary transition-all duration-500" style={{ width: `${pct}%` }} />
+                                  </div>
+                                  {total > 0 && (
+                                    <div className="flex flex-wrap gap-1.5 mt-3">
+                                      <Badge variant="outline" className="text-[11px]">{open} open</Badge>
+                                      {urgent > 0 && <Badge variant="outline" className="text-[11px] border-red-500/30 text-red-500">{urgent} high/urgent</Badge>}
+                                      {frogs > 0 && <Badge variant="outline" className="text-[11px] border-emerald-500/30 text-emerald-500">{frogs} frog{frogs === 1 ? '' : 's'}</Badge>}
+                                    </div>
+                                  )}
+                                </div>
+                                <ConnectionsPanel
+                                  task={selectedTask}
+                                  allTasks={allTasks}
+                                  goals={goals}
+                                  milestones={milestones}
+                                  pillars={pillars}
+                                  className="flex-1"
+                                />
+                              </div>
+                            );
+                          })()}
                           <div className="xl:col-span-2 space-y-4 bg-muted/20 p-5 rounded-2xl border border-border/50 shadow-sm transition-all hover:shadow-md">
                             <div className="space-y-3">
-                              <h4 className="text-sm font-semibold flex items-center gap-2 text-foreground/80">
-                                <CalendarIcon className="w-4 h-4 text-primary/70" />
-                                Schedule
-                              </h4>
+                              <div className="flex items-center justify-between gap-2 flex-wrap">
+                                <h4 className="text-sm font-semibold flex items-center gap-2 text-foreground/80">
+                                  <CalendarIcon className="w-4 h-4 text-primary/70" />
+                                  Schedule
+                                </h4>
+                                {selectedTask.tags && selectedTask.tags.length > 0 && (
+                                  <div className="flex items-center gap-1 flex-wrap">
+                                    {selectedTask.tags.map(tag => (
+                                      <Badge key={tag} variant="secondary" className="text-[11px]">{tag}</Badge>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
                               <div className="grid gap-4 pt-2">
                                 <div className="flex flex-col gap-2">
                                   <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">Earliest Start</span>
@@ -1309,6 +1447,15 @@ function TasksPageContent() {
                         </div>
                       </CardContent>
                     </Card>
+
+                    <ConnectionsPanel
+                      task={selectedTask}
+                      allTasks={allTasks}
+                      goals={goals}
+                      milestones={milestones}
+                      pillars={pillars}
+                      className="md:hidden"
+                    />
 
                     <NotesSection task={selectedTask} onUpdateTask={handleUpdateTask} />
                   </div>
