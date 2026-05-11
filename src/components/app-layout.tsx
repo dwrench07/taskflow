@@ -20,7 +20,8 @@ import {
   Brain,
   HelpCircle,
   ListChecks,
-  CheckSquare
+  CheckSquare,
+  Network
 } from "lucide-react";
 
 import {
@@ -69,6 +70,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 {[
                   { href: "/", label: "Dashboard", icon: LayoutDashboard },
                   { href: "/tasks", label: "Tasks", icon: ListTodo },
+                  { href: "/tasks/dependencies", label: "Dependencies", icon: Network },
                   { href: "/subtasks", label: "Subtasks", icon: ListChecks },
                   { href: "/focus", label: "Focus", icon: Timer },
                   { href: "/frogs", label: "Frogs", icon: Zap },
