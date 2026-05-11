@@ -26,7 +26,10 @@ import { TagInput } from "@/components/tag-input";
 import { DateTimePicker } from "@/components/date-time-picker";
 import { Textarea } from "@/components/ui/textarea";
 import { EisenhowerMatrix } from "@/components/eisenhower-matrix";
-import { LayoutGrid, LayoutList } from "lucide-react";
+import { TaskDependencyGraph } from "@/components/tasks/task-dependency-graph";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { LayoutGrid, LayoutList, Network } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -404,7 +407,8 @@ function TasksPageContent() {
   const [statusFilter, setStatusFilter] = useState<Status[]>([]);
   const [priorityFilter, setPriorityFilter] = useState<Priority[]>([]);
   const [energyFilter, setEnergyFilter] = useState<string[]>([]);
-  const [viewMode, setViewMode] = useState<"list" | "eisenhower">("list");
+  const [viewMode, setViewMode] = useState<"list" | "eisenhower" | "graph">("list");
+  const [graphHideCompleted, setGraphHideCompleted] = useState(true);
 
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -917,13 +921,22 @@ function TasksPageContent() {
                 >
                   <LayoutList className="h-4 w-4" />
                 </Button>
-                <Button 
-                  variant={viewMode === 'eisenhower' ? 'secondary' : 'ghost'} 
-                  size="icon" 
+                <Button
+                  variant={viewMode === 'eisenhower' ? 'secondary' : 'ghost'}
+                  size="icon"
                   className="h-8 w-8 rounded-md"
                   onClick={() => setViewMode('eisenhower')}
                 >
                   <LayoutGrid className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'graph' ? 'secondary' : 'ghost'}
+                  size="icon"
+                  className="h-8 w-8 rounded-md"
+                  onClick={() => setViewMode('graph')}
+                  title="Dependency graph"
+                >
+                  <Network className="h-4 w-4" />
                 </Button>
               </div>
               </div>
@@ -1023,13 +1036,41 @@ function TasksPageContent() {
                   />
                 ))}
               </div>
-            ) : (
+            ) : viewMode === 'eisenhower' ? (
               <div className="pb-8">
                 <EisenhowerMatrix
-                  tasks={sortedAndFilteredTasks} 
+                  tasks={sortedAndFilteredTasks}
                   goals={goals}
-                  onSelectTask={handleSelectTask} 
+                  onSelectTask={handleSelectTask}
                 />
+              </div>
+            ) : (
+              <div className="pb-4">
+                <div className="flex items-center justify-end gap-2 px-1 pb-2">
+                  <Switch
+                    id="graph-hide-done"
+                    checked={graphHideCompleted}
+                    onCheckedChange={setGraphHideCompleted}
+                  />
+                  <Label htmlFor="graph-hide-done" className="text-xs">Hide completed</Label>
+                </div>
+                <div className="h-[70vh] rounded-md border border-border/50 bg-background/50 overflow-hidden">
+                  {loading ? (
+                    <div className="h-full flex items-center justify-center">
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : (
+                    <TaskDependencyGraph
+                      tasks={sortedAndFilteredTasks}
+                      hideCompleted={graphHideCompleted}
+                      onSelect={(id) => {
+                        if (!id) return;
+                        const t = sortedAndFilteredTasks.find((x) => x.id === id);
+                        if (t) handleSelectTask(t);
+                      }}
+                    />
+                  )}
+                </div>
               </div>
             )}
           </div>
