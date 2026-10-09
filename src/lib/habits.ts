@@ -6,6 +6,7 @@ import {
   differenceInDays,
   endOfMonth,
   endOfWeek,
+  format,
   isToday,
   isYesterday,
   isWithinInterval,
@@ -103,9 +104,12 @@ export function getFrogDecayLevel(task: Task): 'fresh' | 'aging' | 'rotting' {
 }
 
 export function isHabitAtRisk(habit: Task): boolean {
-  const hour = new Date().getHours();
+  const now = new Date();
+  const hour = now.getHours();
   if (hour < 18) return false; // Only after 6 PM
-  const todayStr = new Date().toISOString().substring(0, 10);
+  // Use the local calendar date (not UTC) so the "done today" check lines up
+  // with the user's clock near midnight, matching calculateStreak's handling.
+  const todayStr = format(now, 'yyyy-MM-dd');
   const toDateStr = (d: string) => d.length === 10 ? d : d.substring(0, 10);
   const doneToday = habit.completionHistory?.some(d => toDateStr(d) === todayStr) ?? false;
   return !doneToday && calculateStreak(habit) > 0; // Only at-risk if there's a streak to lose

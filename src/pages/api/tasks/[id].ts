@@ -28,10 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         if (!decoded || !userId) {
-            return res.status(401).json({
-                error: 'Invalid token',
-                debug: { decodedPayload: decoded, finalUserId: userId || "empty" }
-            });
+            return res.status(401).json({ error: 'Invalid token' });
         }
 
         if (req.method === 'GET') {

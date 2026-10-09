@@ -1,10 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getInterestsAsync, addInterestAsync } from '../../../lib/data-service';
+import { getUserIdFromRequest } from '../../../lib/api-auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { userId } = req.query as { userId?: string };
-
   try {
+    const userId = await getUserIdFromRequest(req);
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+
     if (req.method === 'GET') {
       const interests = await getInterestsAsync(userId);
       return res.status(200).json(interests);

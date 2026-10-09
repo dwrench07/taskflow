@@ -410,7 +410,7 @@ export function checkAndExecuteSeasonReset(progress: UserProgress, badges: Earne
   }
 
   const diffDays = differenceInDays(new Date(), new Date(progress.seasonStartDate));
-  if (diffDays >= 30) {    
+  if (diffDays >= 90) {
     // Convert current top tier badges into legacy badges
     const newLegacy = badges.map(b => {
       const def = BADGE_DEFINITIONS.find(d => d.id === b.id);
@@ -541,8 +541,9 @@ export function evaluateGamificationTriggers(
         const alreadyActive = progress.activeBuffs.some(b => b.type === 'zenMode');
         if (!alreadyActive) {
             progress.activeBuffs.push({ type: 'zenMode', expiresAt });
-            progress.xp += 50 * xpMultiplier;
-            updates.push({ message: 'Morning Lark Buff!', detail: `Zen Mode activated for 3 hours. +${50 * xpMultiplier} XP` });
+            const xp = Math.round(50 * xpMultiplier);
+            progress.xp += xp;
+            updates.push({ message: 'Morning Lark Buff!', detail: `Zen Mode activated for 3 hours. +${xp} XP` });
         }
     }
 
@@ -551,7 +552,7 @@ export function evaluateGamificationTriggers(
     if (task.subtasks && task.subtasks.length > 0) {
       const allSubsDone = task.subtasks.every(s => s.completed);
       if (allSubsDone) {
-        const xp = 50 * xpMultiplier;
+        const xp = Math.round(50 * xpMultiplier);
         progress.xp += xp;
         const expiresAt = new Date(now.getTime() + 4 * 60 * 60 * 1000).toISOString();
         progress.activeBuffs.push({ type: 'momentumSurge', expiresAt });
@@ -570,7 +571,7 @@ export function evaluateGamificationTriggers(
         const top3 = oldTasks.slice(0, 3).map(t => t.id);
         if (top3.includes(task.id)) {
            progress.inventory.anchorWeights += 1;
-           const xp = 75 * xpMultiplier;
+           const xp = Math.round(75 * xpMultiplier);
            progress.xp += xp;
            updates.push({ message: 'Anchor Earned', detail: `Cleared an old backlog task. +${xp} XP` });
         }
@@ -581,7 +582,7 @@ export function evaluateGamificationTriggers(
     if (task.tShirtSize === 'L' || task.tShirtSize === 'XL') {
       if (!task.pushCount || task.pushCount === 0) {
         progress.inventory.stretchTokens += 1;
-        const xp = 100 * xpMultiplier;
+        const xp = Math.round(100 * xpMultiplier);
         progress.xp += xp;
         updates.push({ message: 'Pinnacle Push', detail: `Major task finished without pushing. +${xp} XP` });
       }
@@ -589,7 +590,7 @@ export function evaluateGamificationTriggers(
 
     // 5. Silent Architect
     if (task.isPrivate) {
-      const xp = 30 * xpMultiplier;
+      const xp = Math.round(30 * xpMultiplier);
       progress.xp += xp;
       updates.push({ message: 'Silent Architect', detail: `Private execution rewarded. +${xp} XP` });
     }
@@ -599,7 +600,7 @@ export function evaluateGamificationTriggers(
       const streak = calculateStreak(task);
       if (streak % 10 === 0 && streak > 0) {
         progress.inventory.streakShields += 1;
-        const xp = 50 * xpMultiplier;
+        const xp = Math.round(50 * xpMultiplier);
         progress.xp += xp;
         updates.push({ message: 'Streak Shield Earned', detail: `${streak}-day streak! Shield added to inventory. +${xp} XP` });
       }

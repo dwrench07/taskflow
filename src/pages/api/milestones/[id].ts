@@ -1,11 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { deleteMilestoneAsync, updateMilestoneAsync } from '../../../lib/data-service';
+import { getUserIdFromRequest } from '../../../lib/api-auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query as { id: string };
-  const { userId } = req.query as { userId?: string };
 
   try {
+    const userId = await getUserIdFromRequest(req);
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+
     if (req.method === 'DELETE') {
       const success = await deleteMilestoneAsync(id, userId);
       return res.status(success ? 200 : 404).json({ success });
