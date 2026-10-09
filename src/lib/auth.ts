@@ -1,10 +1,24 @@
 import * as jose from 'jose';
 import bcrypt from 'bcryptjs';
 
-const JWT_SECRET = new TextEncoder().encode(
-    process.env.JWT_SECRET || 'fallback-super-secret-key-for-dev-only-change-in-prod'
-);
 const ALG = 'HS256';
+
+/**
+ * Resolves the signing secret. In production a real JWT_SECRET is mandatory —
+ * the dev fallback would let anyone forge tokens — so we fail fast instead of
+ * silently using it. Resolved lazily (not at import) so a prod build without
+ * the env var set doesn't crash at build time.
+ */
+function getJwtSecret(): Uint8Array {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+        if (process.env.NODE_ENV === 'production') {
+            throw new Error('JWT_SECRET environment variable is required in production');
+        }
+        return new TextEncoder().encode('fallback-super-secret-key-for-dev-only-change-in-prod');
+    }
+    return new TextEncoder().encode(secret);
+}
 
 export interface SessionPayload {
     userId: string;
@@ -36,7 +50,7 @@ export async function signToken(payload: Omit<SessionPayload, 'exp'>): Promise<s
         .setProtectedHeader({ alg: ALG })
         .setIssuedAt()
         .setExpirationTime('7d') // 1 week
-        .sign(JWT_SECRET);
+        .sign(getJwtSecret());
 }
 
 /**
@@ -47,7 +61,7 @@ export async function verifyToken(token: string): Promise<SessionPayload | null>
         return { userId: "user-1", email: "dev@example.com", name: "Developer" };
     }
     try {
-        const { payload } = await jose.jwtVerify(token, JWT_SECRET);
+        const { payload } = await jose.jwtVerify(token, getJwtSecret());
         return payload as unknown as SessionPayload;
     } catch (error) {
         return null;

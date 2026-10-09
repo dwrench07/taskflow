@@ -1,10 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { updateMistakeLogEntryAsync, deleteMistakeLogEntryAsync } from '../../../lib/data-service';
+import { getUserIdFromRequest } from '../../../lib/api-auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { id, userId } = req.query as { id: string; userId?: string };
+  const { id } = req.query as { id: string };
 
   try {
+    const userId = await getUserIdFromRequest(req);
+    if (!userId) return res.status(401).json({ error: 'Not authenticated' });
+
     if (req.method === 'PUT') {
       await updateMistakeLogEntryAsync({ ...req.body, id }, userId);
       return res.status(200).json({ success: true });

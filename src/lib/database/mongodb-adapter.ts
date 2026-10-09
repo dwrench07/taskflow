@@ -138,11 +138,14 @@ export class MongoDBAdapter implements DatabaseAdapter {
     async updateTask(task: Task, userId: string | null = null): Promise<Task> {
         this.ensureConnected();
         try {
-            const taskToUpdate = this.convertToMongo(task);
+            const taskToUpdate = this.convertToMongo({ ...task, userId });
             const { _id, ...updateData } = taskToUpdate;
 
+            const query: any = { _id: task.id };
+            if (userId) query.userId = userId;
+
             const result = await this.tasksCollection!.updateOne(
-                { _id: task.id },
+                query,
                 {
                     $set: {
                         ...updateData,
@@ -949,7 +952,15 @@ export class MongoDBAdapter implements DatabaseAdapter {
     async getUser(id: string): Promise<User | null> {
         this.ensureConnected();
         try {
-            const user = await this.usersCollection!.findOne({ _id: id });
+            // User _ids may be app-generated strings or Mongo-generated ObjectIds
+            // (createUser lets Mongo assign one when id is empty). convertFromMongo
+            // stringifies the ObjectId, so a later lookup arrives as a hex string
+            // and must be matched against both forms.
+            const or: any[] = [{ _id: id }];
+            if (ObjectId.isValid(id)) {
+                or.push({ _id: new ObjectId(id) });
+            }
+            const user = await this.usersCollection!.findOne({ $or: or });
             return user ? this.convertFromMongo(user) : null;
         } catch (error) {
             this.logger.error('Failed to get user', { id, error });
