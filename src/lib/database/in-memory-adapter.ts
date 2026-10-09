@@ -1,6 +1,7 @@
 
 import type { DatabaseAdapter, DatabaseLogger } from './types';
 import type { User, Pillar, Milestone, Chore, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry } from '../types';
+import { computeActiveDurationMinutes } from '../focus';
 
 // Initial mock data for development
 const initialTasks = [
@@ -242,11 +243,8 @@ export class MemoryAdapter implements DatabaseAdapter {
                         timestamp: updatedSession.expectedEndTime
                     });
 
-                    const startEvent = updatedSession.events.find((e: any) => e.type === 'start');
-                    if (startEvent) {
-                        const ms = new Date(updatedSession.expectedEndTime).getTime() - new Date(startEvent.timestamp).getTime();
-                        updatedSession.duration = Math.floor(ms / 60000);
-                    }
+                    // Active time only (pauses excluded), closed at the expected end time.
+                    updatedSession.duration = computeActiveDurationMinutes(updatedSession.events, updatedSession.expectedEndTime);
 
                     this.focusSessions.set(id, updatedSession);
                 }

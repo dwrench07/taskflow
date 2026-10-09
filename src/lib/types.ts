@@ -57,6 +57,7 @@ export interface Task {
   notes: string[];
   startDate?: string;
   endDate?: string;
+  completedAt?: string; // Actual completion timestamp (set when status becomes 'done')
   tags?: string[];
   isHabit?: boolean;
   completionHistory?: string[]; // Array of ISO date strings
@@ -269,6 +270,10 @@ export interface UserProgress {
   userId: string;
   xp: number;
   level: number;
+  // Base XP (recomputed from task/focus history) earned before the current
+  // season. Subtracted from the live base XP so a season reset actually lowers
+  // the displayed level. Defaults to 0 (no reset has happened yet).
+  seasonBaselineXP?: number;
   inventory: {
     streakShields: number;
     predictionCrystals: number;

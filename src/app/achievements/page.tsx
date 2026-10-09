@@ -27,7 +27,7 @@ const TIER_LABELS: Record<BadgeTier, string> = {
 };
 
 export default function AchievementsPage() {
-  const { badges, totalXP, todayXP, level, userProgress, refreshProgress, refreshGamification } = useGamification();
+  const { badges, totalXP, baseTotalXP, todayXP, level, userProgress, refreshProgress, refreshGamification } = useGamification();
   const [soundOn, setSoundOn] = useState(() => isSoundEnabled());
   const { toast } = useToast();
 
@@ -35,7 +35,7 @@ export default function AchievementsPage() {
     // Check for season reset randomly when loading the achievements page
     const checkSeason = async () => {
       if (userProgress && badges.length > 0) {
-        const didReset = checkAndExecuteSeasonReset(userProgress, badges);
+        const didReset = checkAndExecuteSeasonReset(userProgress, badges, baseTotalXP);
         if (didReset) {
           await saveUserProgress(userProgress);
           await refreshGamification();
@@ -47,7 +47,7 @@ export default function AchievementsPage() {
       }
     };
     checkSeason();
-  }, [userProgress, badges, refreshGamification, toast]);
+  }, [userProgress, badges, baseTotalXP, refreshGamification, toast]);
 
   const campfireStatus = userProgress ? getCampfireStatus(userProgress) : 'burning';
 

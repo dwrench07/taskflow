@@ -767,7 +767,13 @@ function TasksPageContent() {
 
   const handleStatusChange = async (status: Status) => {
     if (selectedTask) {
-      const updatedTask = { ...selectedTask, status };
+      const updatedTask = {
+        ...selectedTask,
+        status,
+        completedAt: status === 'done'
+          ? (selectedTask.completedAt || new Date().toISOString())
+          : undefined,
+      };
       await handleUpdateTask(updatedTask);
 
       if (status === 'done') {

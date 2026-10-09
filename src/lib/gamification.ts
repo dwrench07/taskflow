@@ -42,6 +42,19 @@ export function calculateTotalXP(allTasks: Task[], focusSessions: FocusSession[]
   return xp;
 }
 
+/**
+ * Was this task completed on the given day? Prefers the real completedAt
+ * timestamp; falls back to the doDate/endDate proxy for legacy tasks saved
+ * before completedAt existed.
+ */
+function taskCompletedOn(task: Task, day: Date): boolean {
+  if (task.completedAt) return isSameDay(parseISO(task.completedAt), day);
+  return Boolean(
+    (task.doDate && isSameDay(parseISO(task.doDate), day)) ||
+    (task.endDate && isSameDay(parseISO(task.endDate), day))
+  );
+}
+
 export function calculateTodayXP(allTasks: Task[], focusSessions: FocusSession[]): number {
   const today = startOfToday();
   let xp = 0;
@@ -51,12 +64,7 @@ export function calculateTodayXP(allTasks: Task[], focusSessions: FocusSession[]
       const completedToday = task.completionHistory?.some(d => isSameDay(parseISO(d), today));
       if (completedToday) xp += XP_VALUES.habitComplete;
     } else if (task.status === 'done') {
-      // Approximate: count tasks completed "today" — no completedAt field, so check subtasks
-      // We'll count all done tasks for total XP but today's XP is harder without timestamps
-      // For now, check if endDate or doDate is today and status is done
-      const isToday = (task.doDate && isSameDay(parseISO(task.doDate), today)) ||
-                      (task.endDate && isSameDay(parseISO(task.endDate), today));
-      if (isToday) {
+      if (taskCompletedOn(task, today)) {
         xp += calculateTaskXP(task);
       }
     }
@@ -280,9 +288,7 @@ export function calculateDailyWins(allTasks: Task[], focusSessions: FocusSession
   const today = startOfToday();
 
   const tasksCompletedToday = allTasks.filter(t =>
-    !t.isHabit && t.status === 'done' &&
-    ((t.doDate && isSameDay(parseISO(t.doDate), today)) ||
-     (t.endDate && isSameDay(parseISO(t.endDate), today)))
+    !t.isHabit && t.status === 'done' && taskCompletedOn(t, today)
   );
 
   const habitsCompletedToday = allTasks.filter(t =>
@@ -306,7 +312,9 @@ export function calculateDailyWins(allTasks: Task[], focusSessions: FocusSession
   allTasks.forEach(t => {
     if (!t.isHabit) {
       t.subtasks?.forEach(sub => {
-        if (sub.completed && sub.doDate && isSameDay(parseISO(sub.doDate), today)) {
+        // Prefer the real completion timestamp; fall back to doDate for legacy subtasks.
+        const when = sub.completedAt || sub.doDate;
+        if (sub.completed && when && isSameDay(parseISO(when), today)) {
           subtasksCompleted++;
         }
       });
@@ -403,7 +411,7 @@ export function getCampfireStatus(progress: UserProgress): 'burning' | 'frozen' 
  * Mutates progress directly.
  * Returns true if a season reset occurred.
  */
-export function checkAndExecuteSeasonReset(progress: UserProgress, badges: EarnedBadge[]): boolean {
+export function checkAndExecuteSeasonReset(progress: UserProgress, badges: EarnedBadge[], currentBaseXP: number = 0): boolean {
   if (!progress.seasonStartDate) {
     progress.seasonStartDate = new Date().toISOString();
     return false;
@@ -424,7 +432,10 @@ export function checkAndExecuteSeasonReset(progress: UserProgress, badges: Earne
 
     progress.legacyBadges = [...(progress.legacyBadges || []), ...newLegacy];
     
-    // Reset XP and level
+    // Reset XP and level. Base XP is recomputed from task/focus history and
+    // can't be deleted, so record it as the new baseline — the live total
+    // subtracts it, which is what actually drops the displayed level to 1.
+    progress.seasonBaselineXP = currentBaseXP;
     progress.xp = 0;
     progress.level = 1;
     progress.seasonStartDate = new Date().toISOString();

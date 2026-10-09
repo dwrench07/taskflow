@@ -5,6 +5,7 @@
 import { MongoClient, Db, Collection, ObjectId } from 'mongodb';
 import type { DatabaseAdapter, DatabaseConfig, DatabaseLogger, DatabaseError, DailyPlan } from './types';
 import type { Task, TaskTemplate, User, FocusSession, Goal, Pillar, Milestone, Chore, Interest, InterestConnection, BackOfMindItem, MistakeLogEntry, FocusReminders } from '../types';
+import { computeActiveDurationMinutes } from '../focus';
 
 export class MongoDBAdapter implements DatabaseAdapter {
     private client: MongoClient | null = null;
@@ -376,20 +377,15 @@ export class MongoDBAdapter implements DatabaseAdapter {
                 session.status = 'completed';
                 session.endTime = session.expectedEndTime;
 
-                // Add an artificial stop event 
+                // Add an artificial stop event at the expected end time
                 if (!session.events) session.events = [];
                 session.events.push({
                     type: 'stop',
                     timestamp: session.expectedEndTime!
                 });
 
-                // Compute exact duration based on events... this can be complex, 
-                // but as a fallback, we know it's roughly the expected duration.
-                const startEvent = session.events.find(e => e.type === 'start');
-                if (startEvent && session.expectedEndTime) {
-                    const ms = new Date(session.expectedEndTime).getTime() - new Date(startEvent.timestamp).getTime();
-                    session.duration = Math.floor(ms / 60000);
-                }
+                // Active time only (pauses excluded), closed at the expected end time.
+                session.duration = computeActiveDurationMinutes(session.events, session.expectedEndTime);
 
                 await this.updateFocusSession(session, userId);
             }

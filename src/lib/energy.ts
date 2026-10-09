@@ -1,4 +1,5 @@
 import { EnergyLevel } from './types';
+import { format } from 'date-fns';
 
 const ENERGY_LOG_KEY = 'dash-energy-log';
 
@@ -25,7 +26,8 @@ function saveEnergyLog(log: EnergyEntry[]): void {
 export function logEnergy(level: EnergyLevel): void {
   const now = new Date();
   const entry: EnergyEntry = {
-    date: now.toISOString().split('T')[0],
+    // Local calendar date so it matches the local clock time stored below.
+    date: format(now, 'yyyy-MM-dd'),
     time: `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`,
     level,
   };
@@ -35,7 +37,7 @@ export function logEnergy(level: EnergyLevel): void {
 }
 
 export function getTodayEnergy(): EnergyLevel | null {
-  const today = new Date().toISOString().split('T')[0];
+  const today = format(new Date(), 'yyyy-MM-dd');
   const log = getEnergyLog();
   const todayEntries = log.filter(e => e.date === today);
   if (todayEntries.length === 0) return null;
@@ -83,7 +85,9 @@ export function getEnergyPatterns(): EnergyPattern | null {
     if (!hourCounts[hour]) hourCounts[hour] = { high: 0, medium: 0, low: 0 };
     hourCounts[hour][entry.level]++;
 
-    const dayOfWeek = new Date(entry.date).getDay();
+    // Parse as local midnight so getDay() reflects the local weekday
+    // (new Date('YYYY-MM-DD') would parse as UTC and can shift the day).
+    const dayOfWeek = new Date(`${entry.date}T00:00:00`).getDay();
     const score = levelToNum[entry.level];
     if (dayOfWeek === 0 || dayOfWeek === 6) {
       weekendScores.push(score);

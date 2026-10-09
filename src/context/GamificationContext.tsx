@@ -23,6 +23,7 @@ import { useAuth } from "@/context/AuthContext";
 interface GamificationContextType {
   // Data
   totalXP: number;
+  baseTotalXP: number;
   todayXP: number;
   level: ReturnType<typeof getLevel>;
   badges: EarnedBadge[];
@@ -51,9 +52,12 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
   const [confettiTrigger, setConfettiTrigger] = useState(0);
   const [confettiIntensity, setConfettiIntensity] = useState<'small' | 'medium' | 'big'>('medium');
 
-  // Base XP calculated from tasks, then we can add bonus XP stored in UserProgress
+  // Base XP calculated from tasks, then we can add bonus XP stored in UserProgress.
+  // seasonBaselineXP is the base XP captured at the last season reset; subtracting
+  // it is what makes a reset actually lower the level (base XP can't be deleted).
   const baseTotalXP = calculateTotalXP(allTasks, focusSessions);
-  const totalXP = baseTotalXP + (userProgress?.xp || 0);
+  const seasonBaseline = userProgress?.seasonBaselineXP || 0;
+  const totalXP = Math.max(0, baseTotalXP - seasonBaseline) + (userProgress?.xp || 0);
 
   const todayXP = calculateTodayXP(allTasks, focusSessions);
   const level = getLevel(totalXP);
@@ -78,10 +82,10 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
       ]);
       setAllTasks(tasks || []);
       setFocusSessions(sessions || []);
-      await refreshProgress();
 
-      // Update personal bests
+      // Fetch progress once and reuse it for both state and personal-bests.
       const progress = await getUserProgress();
+      setUserProgress(progress);
       if (progress) {
         const wins = calculateDailyWins(tasks || [], sessions || []);
         const habits = (tasks || []).filter(t => t.isHabit);
@@ -132,6 +136,7 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
     <GamificationContext.Provider
       value={{
         totalXP,
+        baseTotalXP,
         todayXP,
         level,
         badges,

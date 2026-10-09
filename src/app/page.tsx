@@ -472,7 +472,11 @@ export default function DashboardPage() {
       } else {
         const task = allTasks.find(t => t.id === item.id);
         if (!task) return;
-        await updateTask({ ...task, status: newCompleted ? 'done' : 'in-progress' });
+        await updateTask({
+          ...task,
+          status: newCompleted ? 'done' : 'in-progress',
+          completedAt: newCompleted ? (task.completedAt || new Date().toISOString()) : undefined,
+        });
       }
     } catch {
       await refreshScheduleData();

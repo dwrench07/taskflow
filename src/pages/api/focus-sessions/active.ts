@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getActiveFocusSessionAsync, updateFocusSessionAsync, addFocusSessionAsync, finalizeOrphanedSessionsAsync } from '../../../lib/data-service';
 import { verifyToken } from '../../../lib/auth';
+import { computeActiveDurationMinutes } from '../../../lib/focus';
 import type { FocusSession } from '../../../lib/types';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -52,12 +53,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         if (!activeSession.events) activeSession.events = [];
                         activeSession.events.push({ type: 'stop', timestamp });
 
-                        // Recalculate duration 
-                        const startEvent = activeSession.events.find(e => e.type === 'start');
-                        if (startEvent) {
-                            const ms = new Date(timestamp).getTime() - new Date(startEvent.timestamp).getTime();
-                            activeSession.duration = Math.max(0, Math.floor(ms / 60000));
-                        }
+                        // Active time only (pauses excluded)
+                        activeSession.duration = computeActiveDurationMinutes(activeSession.events);
                         await updateFocusSessionAsync(activeSession, userId);
                     }
 
@@ -95,12 +92,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         activeSession.status = 'completed';
                         activeSession.endTime = timestamp;
 
-                        // Recalculate ultimate duration based on start and stop
-                        const startEvent = activeSession.events.find(e => e.type === 'start');
-                        if (startEvent) {
-                            const ms = new Date(timestamp).getTime() - new Date(startEvent.timestamp).getTime();
-                            activeSession.duration = Math.max(0, Math.floor(ms / 60000));
-                        }
+                        // Active time only (pauses excluded); the 'stop' event was just pushed above
+                        activeSession.duration = computeActiveDurationMinutes(activeSession.events);
 
                         // Append any extra payload data like productivity score
                         if (payload?.productivityScore) activeSession.productivityScore = payload.productivityScore;
