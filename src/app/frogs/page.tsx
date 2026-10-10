@@ -91,11 +91,11 @@ export default function FrogsPage() {
 
     return (
         <div className="flex flex-col gap-8 max-w-5xl mx-auto py-4 md:py-8">
-            <div className="text-center space-y-2">
-                <h1 className="text-4xl font-black tracking-tighter flex items-center justify-center gap-3">
-                    <span className="text-5xl">🐸</span> Eat the Frog
+            <div className="space-y-2">
+                <h1 className="text-xl font-semibold tracking-tight flex items-center gap-3">
+                    <span className="text-2xl">🐸</span> Eat the Frog
                 </h1>
-                <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+                <p className="text-sm text-muted-foreground">
                     Mark Twain said: "Eat a live frog first thing in the morning and nothing worse will happen to you the rest of the day."
                 </p>
             </div>
@@ -129,7 +129,7 @@ export default function FrogsPage() {
                                     </Badge>
                                 )}
                             </div>
-                            <CardTitle className="text-3xl font-black tracking-tight">{frogs[0].title}</CardTitle>
+                            <CardTitle className="text-xl font-semibold tracking-tight">{frogs[0].title}</CardTitle>
                             <CardDescription className="text-lg line-clamp-2">{frogs[0].description}</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">

@@ -103,8 +103,8 @@ export default function GoalsPage() {
         <div className="h-full max-w-7xl mx-auto p-4 md:p-8 animate-fade-in pb-20">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-                        <TargetIcon className="h-8 w-8 text-primary" />
+                    <h1 className="text-xl font-semibold tracking-tight flex items-center gap-2">
+                        <TargetIcon className="h-5 w-5 text-primary" />
                         Goals & Objectives
                     </h1>
                     <p className="text-muted-foreground mt-1">Define long-term objectives and track their completion.</p>

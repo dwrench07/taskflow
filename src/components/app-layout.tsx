@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { LogOut, Search, Moon, Sun, User as UserIcon } from "lucide-react";
+import { LogOut, Search, Moon, Sun, User as UserIcon, Loader2 } from "lucide-react";
 
 import {
   SidebarProvider,
@@ -233,8 +233,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   // sidebar and page content never flash for someone who isn't signed in.
   if (isLoading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-sm text-muted-foreground">Loading…</div>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-background">
+        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary/70 text-sm font-bold text-primary-foreground ring-1 ring-primary/30">
+          D
+        </span>
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
       </div>
     );
   }

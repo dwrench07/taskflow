@@ -632,11 +632,11 @@ export default function GuidePage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="space-y-2">
-        <h1 className="text-4xl font-black tracking-tight text-foreground flex items-center gap-3">
-          <HelpCircle className="h-10 w-10 text-primary" />
+        <h1 className="text-xl font-semibold tracking-tight text-foreground flex items-center gap-3">
+          <HelpCircle className="h-5 w-5 text-primary" />
           The Strategy Guide
         </h1>
-        <p className="text-muted-foreground text-lg">
+        <p className="text-sm text-muted-foreground">
           Your complete guide to mastering every workflow, mechanic, and hidden feature.
         </p>
       </div>

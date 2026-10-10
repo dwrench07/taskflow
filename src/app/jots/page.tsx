@@ -176,7 +176,7 @@ export default function JotsPage() {
         <div className="flex flex-col gap-6 max-w-5xl mx-auto px-4 py-4">
             {/* Header */}
             <div>
-                <h1 className="text-3xl font-bold tracking-tight">Jots & Notes</h1>
+                <h1 className="text-xl font-semibold tracking-tight">Jots & Notes</h1>
                 <p className="text-muted-foreground">Thoughts captured during focus sessions, organized and actionable.</p>
             </div>
 

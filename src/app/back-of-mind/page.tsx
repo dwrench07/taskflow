@@ -263,7 +263,7 @@ export default function BackOfMindPage() {
             <div className="h-10 w-10 rounded-xl bg-violet-600 flex items-center justify-center shadow-sm">
               <Brain className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-3xl font-black tracking-tight text-foreground">Deep Store</h1>
+            <h1 className="text-xl font-semibold tracking-tight text-foreground">Deep Store</h1>
           </div>
           <p className="text-muted-foreground text-sm pl-1">
             Capture thoughts so they stop looping, and distill lessons to evolve.
