@@ -57,9 +57,6 @@ export async function signToken(payload: Omit<SessionPayload, 'exp'>): Promise<s
  * Verifies and decodes a JWT token
  */
 export async function verifyToken(token: string): Promise<SessionPayload | null> {
-    if (token === 'dev-mode') {
-        return { userId: "user-1", email: "dev@example.com", name: "Developer" };
-    }
     try {
         const { payload } = await jose.jwtVerify(token, getJwtSecret());
         return payload as unknown as SessionPayload;
