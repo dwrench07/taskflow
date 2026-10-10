@@ -115,9 +115,9 @@ export default function AchievementsPage() {
 
       {/* Badge Grid Status Banner */}
       {campfireStatus === 'frozen' && (
-        <div className="bg-slate-900 border border-slate-700 p-4 rounded-xl flex items-center justify-center gap-3 shadow-lg my-2 mx-auto w-full max-w-3xl">
-          <Moon className="w-5 h-5 text-slate-400" />
-          <p className="font-bold text-slate-300">The Campfire is Frozen. Complete any task to reignite your badges!</p>
+        <div className="bg-card border border-border p-4 rounded-xl flex items-center justify-center gap-3 shadow-sm my-2 mx-auto w-full max-w-3xl">
+          <Moon className="w-5 h-5 text-info" />
+          <p className="font-semibold text-foreground">The Campfire is Frozen. Complete any task to reignite your badges!</p>
         </div>
       )}
 
@@ -238,7 +238,7 @@ export default function AchievementsPage() {
                { id: 'predictionCrystals', icon: <Gem className="w-8 h-8 text-purple-400 mb-3" />, count: userProgress.inventory.predictionCrystals, label: "Prediction Crystals", desc: "Your worries didn't come true. This physical manifestation of anxiety turned to dust." },
                { id: 'freshStartTokens', icon: <Sparkles className="w-8 h-8 text-green-400 mb-3" />, count: userProgress.inventory.freshStartTokens, label: "Fresh Start Tokens", desc: "Amnesty for your past. Cleanse overdue metrics and reset." },
                { id: 'composureCoins', icon: <div className="w-8 h-8 mb-3 rounded-full border-[3px] border-yellow-500 bg-yellow-500/20 shadow-[0_0_10px_rgba(234,179,8,0.5)]" />, count: userProgress.inventory.composureCoins, label: "Composure Coins", desc: "Kept a cool head under pressure. Use to snooze 1 deadline respectfully." },
-               { id: 'anchorWeights', icon: <Anchor className="w-8 h-8 text-slate-400 mb-3" />, count: userProgress.inventory.anchorWeights, label: "Anchor Weights", desc: "Dug up the oldest tasks in your backlog and vanquished them." },
+               { id: 'anchorWeights', icon: <Anchor className="w-8 h-8 text-muted-foreground mb-3" />, count: userProgress.inventory.anchorWeights, label: "Anchor Weights", desc: "Dug up the oldest tasks in your backlog and vanquished them." },
                { id: 'stretchTokens', icon: <Zap className="w-8 h-8 text-orange-400 mb-3" />, count: userProgress.inventory.stretchTokens, label: "Stretch Tokens", desc: "Completed Large or Extra Large goals natively without pushing." },
                { id: 'timeBenderHourglasses', icon: <Clock className="w-8 h-8 text-amber-500 mb-3" />, count: userProgress.inventory.timeBenderHourglasses, label: "Time Bender Hourglass", desc: "Estimated focus-time flawlessly to the minute. A master of time." },
                { id: 'goldenBookmarks', icon: <BookOpen className="w-8 h-8 text-yellow-300 mb-3" />, count: userProgress.inventory.goldenBookmarks, label: "Golden Bookmarks", desc: "Synthesizing and logging ideas directly from the deep work pipeline." },
@@ -271,7 +271,7 @@ export default function AchievementsPage() {
            <Card className="border-border/50 bg-card overflow-hidden">
              <CardHeader className="pb-2">
                <CardTitle className="text-base flex items-center gap-2">
-                 <Moon className="w-4 h-4 text-slate-400" />
+                 <Moon className="w-4 h-4 text-muted-foreground" />
                  Midnight Obsidian Theme
                </CardTitle>
                <CardDescription>Permanently unlock the ultra-premium dark aesthetic.</CardDescription>

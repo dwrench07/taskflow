@@ -58,7 +58,7 @@ export function SubtaskDetail({ tasks }: { tasks: Task[] }) {
           href={`/focus?taskId=${item.parentId}`}
           key={item.id}
           className={cn(
-              "block p-4 hover:bg-white/5 transition-colors group/item",
+              "block p-4 hover:bg-accent transition-colors group/item",
               item.completed && "opacity-50"
           )}
         >
@@ -76,13 +76,13 @@ export function SubtaskDetail({ tasks }: { tasks: Task[] }) {
             </div>
             <Badge variant="outline" className={cn(
                 "text-[11px] px-1.5 py-0 h-4 capitalize shrink-0 font-black tracking-tighter",
-                item.priority === 'urgent' ? "bg-red-500/10 text-red-500 border-red-500/20" : "bg-white/5 text-muted-foreground border-white/10"
+                item.priority === 'urgent' ? "bg-red-500/10 text-red-500 border-red-500/20" : "bg-muted/50 text-muted-foreground border-border"
             )}>
                 {item.priority}
             </Badge>
           </div>
           <div className="mt-2 flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground/80 bg-white/5 px-2 py-1 rounded-md border border-white/5">
+            <div className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground/80 bg-muted/50 px-2 py-1 rounded-md border border-border">
                 <Clock className="w-3 h-3 text-primary" />
                 {item.date ? format(parseISO(item.date), "MMM d, h:mm a") : "No time set"}
             </div>

@@ -41,7 +41,7 @@ const CATEGORIES = [
   { value: "question", label: "Question", icon: HelpCircle, color: "text-blue-500 border-blue-500/20 bg-blue-500/5" },
   { value: "someday", label: "Someday", icon: Sparkles, color: "text-purple-500 border-purple-500/20 bg-purple-500/5" },
   { value: "task-idea", label: "Task Idea", icon: ListTodo, color: "text-green-500 border-green-500/20 bg-green-500/5" },
-  { value: "other", label: "Other", icon: Brain, color: "text-zinc-500 border-zinc-500/20 bg-zinc-500/5" },
+  { value: "other", label: "Other", icon: Brain, color: "text-muted-foreground border-zinc-500/20 bg-zinc-500/5" },
 ];
 
 function getCategoryConfig(cat?: string) {
@@ -396,7 +396,7 @@ export default function BackOfMindPage() {
           className={cn(
             "px-3 py-1.5 rounded-full text-xs font-medium border transition-all",
             filterCategory === "all"
-              ? "bg-white/10 text-white border-white/20"
+              ? "bg-primary/15 text-primary border-primary/30"
               : "text-muted-foreground border-border/50 hover:border-border"
           )}
         >

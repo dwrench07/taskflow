@@ -214,7 +214,7 @@ export function AlignmentGraphView({ pillars, milestones, tasks }: AlignmentGrap
   if (!isClient) return null; // Avoid SSR react-flow mismatch
 
   return (
-    <div className="w-full h-full bg-slate-50/50 dark:bg-slate-950/50">
+    <div className="w-full h-full bg-muted/30">
       <ReactFlow
         nodes={nodes}
         edges={edges}

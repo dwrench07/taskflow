@@ -13,7 +13,7 @@ const EMOTIONS: { value: EmotionLabel; label: string; emoji: string; color: stri
   { value: 'resistance', label: 'Resistance', emoji: '😤', color: 'border-amber-500/40 bg-amber-500/10 text-amber-400' },
   { value: 'overwhelm', label: 'Overwhelm', emoji: '🌊', color: 'border-purple-500/40 bg-purple-500/10 text-purple-400' },
   { value: 'calm', label: 'Calm', emoji: '😌', color: 'border-green-500/40 bg-green-500/10 text-green-400' },
-  { value: 'neutral', label: 'Neutral', emoji: '😐', color: 'border-zinc-500/40 bg-zinc-500/10 text-zinc-400' },
+  { value: 'neutral', label: 'Neutral', emoji: '😐', color: 'border-zinc-500/40 bg-zinc-500/10 text-muted-foreground' },
   { value: 'excited', label: 'Excited', emoji: '🔥', color: 'border-cyan-500/40 bg-cyan-500/10 text-cyan-400' },
 ];
 
