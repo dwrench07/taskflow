@@ -19,23 +19,51 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const AUTH_PATHS = ["/login", "/register"];
+export const isAuthPath = (pathname: string | null) =>
+  !!pathname && AUTH_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
 
-  // Hydrate user session on mount
+  // Hydrate user session on mount from the server (HttpOnly token cookie).
   useEffect(() => {
-    // DEVELOPMENT OVERRIDE: automatically log in
-    document.cookie = "token=dev-mode; path=/;";
-    setUser({ id: "user-1", email: "dev@example.com", name: "Developer", roles: ["user", "admin"] });
-    setIsLoading(false);
+    let active = true;
+
+    (async () => {
+      try {
+        const res = await fetch("/api/auth/me", { credentials: "same-origin" });
+        if (!active) return;
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data.user ?? null);
+        } else {
+          setUser(null);
+        }
+      } catch {
+        if (active) setUser(null);
+      } finally {
+        if (active) setIsLoading(false);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
-  // Enforce redirects if session is invalid or expired
+  // Enforce redirects once the session state is known.
   useEffect(() => {
-    // DEVELOPMENT OVERRIDE: disabled redirects
+    if (isLoading) return;
+
+    if (!user && !isAuthPath(pathname)) {
+      router.replace("/login");
+    } else if (user && isAuthPath(pathname)) {
+      router.replace("/");
+    }
   }, [isLoading, user, pathname, router]);
 
   const login = (userData: User) => {

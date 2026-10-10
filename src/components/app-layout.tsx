@@ -41,14 +41,31 @@ import {
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { Button } from "./ui/button";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth, isAuthPath } from "@/context/AuthContext";
 import { LogOut } from "lucide-react";
 import { PullToRefresh } from "@/components/pull-to-refresh";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading } = useAuth();
+
+  // Auth pages (login / register) render full-screen, without the app chrome.
+  if (isAuthPath(pathname)) {
+    return <>{children}</>;
+  }
+
+  // For protected routes, don't render the app shell until we have an
+  // authenticated user. While the session resolves — or for logged-out users
+  // (whom AuthProvider redirects to /login) — show a minimal placeholder so the
+  // sidebar and page content never flash for someone who isn't signed in.
+  if (isLoading || !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-sm text-muted-foreground">Loading…</div>
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider>
