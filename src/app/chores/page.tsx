@@ -138,7 +138,7 @@ export default function ChoresPage() {
     <div className="container mx-auto px-4 py-8 max-w-4xl space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Chores</h1>
+          <h1 className="text-xl font-semibold tracking-tight">Chores</h1>
           <p className="text-muted-foreground mt-1">
             Routine maintenance and standalone tasks separated from your milestones.
           </p>

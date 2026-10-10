@@ -10,7 +10,9 @@ import { Trophy, Star, Zap, Shield, Sparkles, Anchor, Gem, BookOpen, Clock, Flam
 import { cn } from "@/lib/utils";
 import { isSoundEnabled, setSoundEnabled } from "@/lib/sounds";
 import { Button } from "@/components/ui/button";
-import { Volume2, VolumeX, Moon, Shield as ShieldIcon } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
+import { StatTile } from "@/components/ui/stat-tile";
+import { Volume2, VolumeX, Moon, Shield as ShieldIcon, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -63,54 +65,41 @@ export default function AchievementsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-8 max-w-5xl mx-auto py-4 md:py-8 px-4">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <h1 className="text-4xl font-black tracking-tighter flex items-center justify-center gap-3">
-          <Trophy className="h-10 w-10 text-primary" /> Achievements
-        </h1>
-        <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Every action counts. Here&apos;s proof of your progress.
-        </p>
-      </div>
+    <div className="mx-auto flex max-w-6xl flex-col gap-6">
+      <PageHeader
+        icon={Trophy}
+        title="Achievements"
+        description="Every action counts — here's proof of your progress."
+        actions={
+          <Button variant="ghost" size="sm" onClick={toggleSound} className="gap-2 text-xs text-muted-foreground">
+            {soundOn ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
+            Sounds {soundOn ? 'On' : 'Off'}
+          </Button>
+        }
+      />
 
       {/* XP Overview */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="border-primary/20 bg-primary/5">
-          <CardContent className="pt-6 text-center">
-            <div className="text-4xl font-black text-primary">{totalXP.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider mt-1">Total XP</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6 text-center space-y-2">
-            <div className="text-4xl font-black">
-              <span className="text-primary">Lv. {level.level}</span>
-            </div>
-            <Progress value={level.progress} className="h-2" />
-            <p className="text-xs text-muted-foreground">
-              {level.currentXP} / {level.nextLevelXP} XP to next level
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6 text-center">
-            <div className="text-4xl font-black text-green-400">+{todayXP}</div>
-            <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider mt-1">XP Today</p>
-          </CardContent>
-        </Card>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <StatTile label="Total XP" value={totalXP.toLocaleString()} icon={Sparkles} accent="primary" />
+        <div data-slot="stat" className="rounded-lg border border-border bg-card p-4">
+          <div className="flex items-center justify-between gap-2">
+            <span className="truncate text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Level</span>
+          </div>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-2xl font-semibold tabular-nums tracking-tight text-primary">Lv. {level.level}</span>
+          </div>
+          <Progress value={level.progress} className="mt-2 h-1.5" />
+          <p className="mt-1 text-xs text-muted-foreground">
+            {level.currentXP} / {level.nextLevelXP} XP to next level
+          </p>
+        </div>
+        <StatTile label="XP Today" value={`+${todayXP}`} icon={TrendingUp} accent="success" />
       </div>
 
       {/* Stats bar */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Star className="h-4 w-4 text-primary" />
-          <span className="text-sm font-bold">{earnedCount} / {BADGE_DEFINITIONS.length} badges unlocked</span>
-        </div>
-        <Button variant="ghost" size="sm" onClick={toggleSound} className="gap-2 text-xs text-muted-foreground">
-          {soundOn ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
-          Sounds {soundOn ? 'On' : 'Off'}
-        </Button>
+      <div className="flex items-center gap-2">
+        <Star className="h-4 w-4 text-primary" />
+        <span className="text-sm font-semibold">{earnedCount} / {BADGE_DEFINITIONS.length} badges unlocked</span>
       </div>
 
       {/* Badge Grid Status Banner */}

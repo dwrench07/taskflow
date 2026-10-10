@@ -60,6 +60,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { isSameDay, parseISO, startOfDay, format, differenceInDays } from "date-fns";
 import { getTodayEnergy } from "@/lib/energy";
 import { isChoreDue } from "@/lib/chores";
+import { StatTile } from "@/components/ui/stat-tile";
+import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
 import { useGamification } from "@/context/GamificationContext";
 import { InventoryDock } from "@/components/InventoryDock";
@@ -633,17 +635,36 @@ export default function DashboardPage() {
               return <DailyProgressMeter totalItems={meterTotal} completedItems={meterDone} />;
             })()}
 
-            {/* Stats strip */}
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] sm:text-xs text-muted-foreground pl-1">
-              <span className="whitespace-nowrap"><span className="text-emerald-500 font-semibold">{stats.frogsRemaining}</span> frogs</span>
-              <span className="opacity-30">·</span>
-              <span className="whitespace-nowrap"><span className="text-red-400 font-semibold">{stats.criticalTasks}</span> urgent</span>
-              <span className="opacity-30">·</span>
-              <span className="whitespace-nowrap"><span className="text-green-400 font-semibold">{habitsDone}/{habits.length}</span> habits</span>
-              <span className="opacity-30">·</span>
-              <span className="whitespace-nowrap"><span className="text-blue-400 font-semibold">{choresDoneToday}/{todayChores.length}</span> chores</span>
-              <span className="opacity-30">·</span>
-              <span className="whitespace-nowrap">{format(today, 'EEE, MMM d')}</span>
+            {/* KPI row */}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <StatTile
+                label="Frogs Left"
+                value={stats.frogsRemaining}
+                icon={Zap}
+                accent={stats.frogsRemaining > 0 ? "warning" : "success"}
+                hint={stats.frogsRemaining > 0 ? "Eat them first" : "All clear"}
+              />
+              <StatTile
+                label="Urgent"
+                value={stats.criticalTasks}
+                icon={AlertTriangle}
+                accent={stats.criticalTasks > 0 ? "destructive" : "default"}
+                hint="High-priority tasks"
+              />
+              <StatTile
+                label="Habits"
+                value={`${habitsDone}/${habits.length}`}
+                icon={Repeat}
+                accent="info"
+                hint="Done today"
+              />
+              <StatTile
+                label="Chores"
+                value={`${choresDoneToday}/${todayChores.length}`}
+                icon={ListTodo}
+                accent="primary"
+                hint="Done today"
+              />
             </div>
 
             {/* Today's To-Do List Dropdown (Master Plan) */}
@@ -817,11 +838,16 @@ export default function DashboardPage() {
 
             {/* Task views */}
             {incompleteTasks.length === 0 && completedTasks.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
-                <CheckCircle2 className="w-10 h-10 text-green-500 opacity-50" />
-                <p className="text-muted-foreground font-medium">Nothing planned yet.</p>
-                <a href="/plan" className="text-xs text-primary underline underline-offset-2">Go to Plan to set up your day →</a>
-              </div>
+              <EmptyState
+                icon={CheckCircle2}
+                title="Nothing planned yet"
+                description="Set up your day to see your tasks, habits, and chores here."
+                action={
+                  <Button asChild size="sm">
+                    <a href="/plan">Plan your day</a>
+                  </Button>
+                }
+              />
             ) : scheduleView === 'list' ? (
               <div className="space-y-0.5 max-w-2xl">
                 {incompleteTasks.map(item => <TaskItem key={item.id} item={item} />)}

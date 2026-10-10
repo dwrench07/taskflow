@@ -271,7 +271,7 @@ export default function SubtasksPage() {
           <ListChecks className="h-5 w-5" />
         </div>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold tracking-tight">Subtasks</h1>
+          <h1 className="text-xl font-semibold tracking-tight">Subtasks</h1>
           <p className="text-sm text-muted-foreground">
             Every subtask across your tasks — the smallest unit of work.
           </p>

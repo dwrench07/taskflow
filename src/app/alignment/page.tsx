@@ -131,8 +131,8 @@ export default function AlignmentPage() {
     <div className="container mx-auto px-4 py-8 max-w-6xl space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Alignment Engine</h1>
-          <p className="text-muted-foreground mt-1 text-lg">
+          <h1 className="text-xl font-semibold tracking-tight">Alignment Engine</h1>
+          <p className="text-sm text-muted-foreground mt-1">
             Connect your daily tasks to high-level life pillars and milestones.
           </p>
         </div>

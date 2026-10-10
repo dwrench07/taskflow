@@ -478,7 +478,7 @@ export default function PlanPage() {
       <div className="flex flex-col gap-6 max-w-xl animate-in fade-in slide-in-from-bottom-2">
         <div>
           {renderDateSelector()}
-          <h1 className="text-3xl font-bold tracking-tight">Agenda Ready</h1>
+          <h1 className="text-xl font-semibold tracking-tight">Agenda Ready</h1>
           <p className="text-muted-foreground text-sm mt-1">Your unified plan for {format(selectedDate, 'MMMM do')}.</p>
         </div>
 
@@ -529,7 +529,7 @@ export default function PlanPage() {
         <div className="flex items-start justify-between">
           <div>
             {renderDateSelector()}
-            <h1 className="text-3xl font-bold tracking-tight">Plan Your Day</h1>
+            <h1 className="text-xl font-semibold tracking-tight">Plan Your Day</h1>
             <p className="text-muted-foreground text-sm mt-1">Step 1: Organize your committed work</p>
           </div>
           <EnergyIndicator />
@@ -556,7 +556,7 @@ export default function PlanPage() {
     <div className="flex flex-col gap-6 max-w-xl animate-in fade-in slide-in-from-right-2">
       <div>
         {renderDateSelector()}
-        <h1 className="text-3xl font-bold tracking-tight">Enhance Plan</h1>
+        <h1 className="text-xl font-semibold tracking-tight">Enhance Plan</h1>
         <p className="text-muted-foreground text-sm mt-1">Step 2: Drag to prioritize and add extras.</p>
       </div>
 

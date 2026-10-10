@@ -430,11 +430,11 @@ export default function InterestsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
-            <Sparkles className="h-8 w-8 text-primary" />
+          <h1 className="text-xl font-semibold tracking-tight flex items-center gap-3">
+            <Sparkles className="h-5 w-5 text-primary" />
             Interest Graph
           </h1>
-          <p className="text-muted-foreground mt-1 text-lg">
+          <p className="text-sm text-muted-foreground mt-1">
             Map, connect, and prioritize your interests visually.
           </p>
         </div>

@@ -7,6 +7,7 @@ import { getAllTemplates, getAllTasks, addTask, updateTask as updateTaskInData, 
 import { useRefresh } from "@/context/RefreshContext";
 import { type Task, type Priority, type Subtask, type TaskTemplate, type Status, type Goal, type Milestone, type Pillar } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -845,18 +846,19 @@ function TasksPageContent() {
 
   return (
     <div className="h-full">
-      <div className="flex justify-between items-center mb-2 md:mb-4">
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold tracking-tight">Tasks</h1>
-          <p className="text-muted-foreground">Your central hub for all tasks.</p>
-        </div>
-        {isMobile && selectedTask && (
-          <Button variant="outline" onClick={handleBackToList}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-        )}
-      </div>
+      <PageHeader
+        icon={ListTodo}
+        title="Tasks"
+        description="Your central hub for all tasks."
+        actions={
+          isMobile && selectedTask ? (
+            <Button variant="outline" size="sm" onClick={handleBackToList}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back
+            </Button>
+          ) : undefined
+        }
+      />
       <div className="w-full min-w-0">
         <Card className="min-w-0 border-border shadow-sm w-full">
           <CardHeader className="flex flex-col gap-4 pb-4">

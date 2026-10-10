@@ -499,7 +499,7 @@ function HabitsPageContent() {
         <div className="h-full">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Habit Tracker</h1>
+                    <h1 className="text-xl font-semibold tracking-tight">Habit Tracker</h1>
                     <p className="text-muted-foreground">Stay consistent and build powerful habits.</p>
                 </div>
                 <div className="flex items-center gap-2">

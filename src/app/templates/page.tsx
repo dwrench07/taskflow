@@ -177,7 +177,7 @@ export default function TemplatesPage() {
         <div className="h-full">
             <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Task Templates</h1>
+                    <h1 className="text-xl font-semibold tracking-tight">Task Templates</h1>
                     <p className="text-muted-foreground">Create and manage reusable task structures.</p>
                 </div>
                 {selectedTemplate && isMobile && (
