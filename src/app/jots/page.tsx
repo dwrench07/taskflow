@@ -22,7 +22,7 @@ const CATEGORY_CONFIG: Record<JotCategory, { label: string; icon: React.ReactNod
     worry: { label: 'Worry', icon: <AlertTriangle className="h-3.5 w-3.5" />, color: 'text-red-400', bgColor: 'bg-red-500/10 border-red-500/30' },
     todo: { label: 'Todo', icon: <ListTodo className="h-3.5 w-3.5" />, color: 'text-blue-400', bgColor: 'bg-blue-500/10 border-blue-500/30' },
     idea: { label: 'Idea', icon: <Lightbulb className="h-3.5 w-3.5" />, color: 'text-yellow-400', bgColor: 'bg-yellow-500/10 border-yellow-500/30' },
-    random: { label: 'Random', icon: <MessageCircle className="h-3.5 w-3.5" />, color: 'text-slate-400', bgColor: 'bg-slate-500/10 border-slate-500/30' },
+    random: { label: 'Random', icon: <MessageCircle className="h-3.5 w-3.5" />, color: 'text-muted-foreground', bgColor: 'bg-slate-500/10 border-slate-500/30' },
     untagged: { label: 'Untagged', icon: <StickyNote className="h-3.5 w-3.5" />, color: 'text-muted-foreground', bgColor: 'bg-muted/30 border-border/50' },
 };
 

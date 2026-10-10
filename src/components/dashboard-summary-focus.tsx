@@ -27,15 +27,15 @@ export function FocusDetail({ sessions }: { sessions: FocusSession[] }) {
 
   return (
     <div className="divide-y divide-white/5">
-      <div className="p-4 grid grid-cols-2 gap-4 bg-white/5">
-        <div className="flex flex-col bg-background/40 p-3 rounded-xl border border-white/5">
+      <div className="p-4 grid grid-cols-2 gap-4 bg-muted/50">
+        <div className="flex flex-col bg-background/40 p-3 rounded-xl border border-border">
             <span className="text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-1">Total Time</span>
             <div className="flex items-end gap-1">
                 <span className="text-2xl font-black tracking-tighter text-primary">{totalMinutes}</span>
                 <span className="text-[11px] text-muted-foreground font-bold pb-1 underline decoration-primary/30">MINS</span>
             </div>
         </div>
-        <div className="flex flex-col bg-background/40 p-3 rounded-xl border border-white/5">
+        <div className="flex flex-col bg-background/40 p-3 rounded-xl border border-border">
             <span className="text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-1">Distractions</span>
             <div className="flex items-end gap-1">
                 <span className="text-2xl font-black tracking-tighter text-cyan-400">{totalDistractions}</span>
@@ -44,7 +44,7 @@ export function FocusDetail({ sessions }: { sessions: FocusSession[] }) {
         </div>
       </div>
       {todaySessions.map(session => (
-        <div key={session.id} className="p-4 flex items-center justify-between group/session hover:bg-white/5 transition-colors">
+        <div key={session.id} className="p-4 flex items-center justify-between group/session hover:bg-accent transition-colors">
           <div className="flex flex-col min-w-0 flex-1 mr-4">
             {session.taskId ? (
               <Link href={`/focus?taskId=${session.taskId}`} className="text-sm font-bold truncate group-hover/session:text-primary transition-colors hover:underline">{session.taskTitle || "General Focus"}</Link>

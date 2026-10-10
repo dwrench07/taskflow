@@ -174,7 +174,7 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
                                 const current = field.value || [];
                                 field.onChange(checked ? [...current, t.id] : current.filter(id => id !== t.id));
                               }}
-                              className="h-3 w-3 rounded border-gray-300 text-primary focus:ring-primary"
+                              className="h-3 w-3 rounded border-input text-primary focus:ring-primary"
                             />
                             <span className="truncate">{t.title}</span>
                           </label>
@@ -204,7 +204,7 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
                                 const current = field.value || [];
                                 field.onChange(checked ? [...current, t.id] : current.filter(id => id !== t.id));
                               }}
-                              className="h-3 w-3 rounded border-gray-300 text-primary focus:ring-primary"
+                              className="h-3 w-3 rounded border-input text-primary focus:ring-primary"
                             />
                             <span className="truncate">{t.title}</span>
                           </label>
@@ -219,7 +219,7 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
           </div>
 
           {/* Sidebar Meta Column */}
-          <div className="space-y-4 bg-muted/30 p-4 rounded-xl border border-white/5">
+          <div className="space-y-4 bg-muted/30 p-4 rounded-xl border border-border">
             <div className="grid grid-cols-2 gap-3">
               <FormField
                 control={form.control}
@@ -283,7 +283,7 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
                       type="checkbox"
                       checked={field.value}
                       onChange={field.onChange}
-                      className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                      className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
                     />
                   </FormControl>
                 </FormItem>
@@ -336,7 +336,7 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
               />
             </div>
 
-            <Separator className="bg-white/5" />
+            <Separator className="bg-muted/50" />
 
             <div className="space-y-3">
               <FormField
@@ -387,7 +387,7 @@ export function TaskForm({ task, allTags, onSubmit }: TaskFormProps) {
               />
             </div>
 
-            <Separator className="bg-white/5" />
+            <Separator className="bg-muted/50" />
 
             <div className="space-y-3">
               <FormField

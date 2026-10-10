@@ -102,7 +102,7 @@ export default function PillarDashboardPage() {
             )}
           </div>
 
-          <div className="bg-secondary/30 rounded-xl p-5 border border-white/5 min-w-[200px] flex flex-col justify-center">
+          <div className="bg-secondary/30 rounded-xl p-5 border border-border min-w-[200px] flex flex-col justify-center">
             <div className="flex justify-between items-end mb-2">
               <span className="text-sm font-medium text-muted-foreground">Overall Velocity</span>
               <span className="text-2xl font-bold">{progressPercent}%</span>
@@ -134,7 +134,7 @@ export default function PillarDashboardPage() {
                 const mProgress = mTasks.length > 0 ? Math.round((completeCount / mTasks.length) * 100) : 0;
 
                 return (
-                  <Card key={m.id} className="border border-white/5 hover:border-primary/20 transition-colors">
+                  <Card key={m.id} className="border border-border hover:border-primary/20 transition-colors">
                     <CardContent className="p-4">
                       <h4 className="font-semibold text-foreground/90">{m.title}</h4>
                       {m.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{m.description}</p>}
@@ -167,12 +167,12 @@ export default function PillarDashboardPage() {
             ) : (
               <div className="divide-y divide-white/5 overflow-y-auto max-h-[500px]">
                 {tasks.map(t => (
-                  <div key={t.id} className="p-4 hover:bg-white/5 transition-colors flex items-start gap-3">
+                  <div key={t.id} className="p-4 hover:bg-accent transition-colors flex items-start gap-3">
                     <div className="mt-1">
                       <Badge variant="outline" className={
                         t.status === 'done' ? 'bg-green-500/10 text-green-500 border-green-500/20' :
                         t.status === 'in-progress' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
-                        'bg-zinc-500/10 text-zinc-500 border-zinc-500/20'
+                        'bg-zinc-500/10 text-muted-foreground border-zinc-500/20'
                       }>
                         {t.status.toUpperCase()}
                       </Badge>

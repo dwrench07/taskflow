@@ -31,7 +31,7 @@ export function HabitDetail({ tasks }: { tasks: Task[] }) {
             : null;
 
         return (
-          <Link href={`/tasks?taskId=${habit.id}`} key={habit.id} className="p-4 flex items-center justify-between gap-4 group/habit hover:bg-white/5 transition-colors">
+          <Link href={`/tasks?taskId=${habit.id}`} key={habit.id} className="p-4 flex items-center justify-between gap-4 group/habit hover:bg-accent transition-colors">
             <div className="flex flex-col gap-1 min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <span className={cn("font-bold text-sm truncate", isDoneToday && "text-primary")}>{habit.title}</span>
@@ -57,7 +57,7 @@ export function HabitDetail({ tasks }: { tasks: Task[] }) {
                     <CheckCircle2 className="w-5 h-5 text-primary" />
                 </div>
                 ) : (
-                <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10 group-hover/habit:border-white/20 transition-all">
+                <div className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center border border-border group-hover/habit:border-border transition-all">
                     <Circle className="w-5 h-5 text-muted-foreground/20" />
                 </div>
                 )}

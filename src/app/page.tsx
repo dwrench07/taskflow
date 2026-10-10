@@ -59,6 +59,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { isSameDay, parseISO, startOfDay, format, differenceInDays } from "date-fns";
 import { getTodayEnergy } from "@/lib/energy";
+import { isChoreDue } from "@/lib/chores";
 import { cn } from "@/lib/utils";
 import { useGamification } from "@/context/GamificationContext";
 import { InventoryDock } from "@/components/InventoryDock";
@@ -375,18 +376,15 @@ export default function DashboardPage() {
     }
   };
 
-  const todayChores = useMemo(() => allChores.filter(c => {
-    if (c.frequency === 'daily') return true;
-    if (c.frequency === 'weekly') {
-      if (!c.lastCompleted) return true;
-      return differenceInDays(startOfDay(new Date()), startOfDay(parseISO(c.lastCompleted))) >= 7;
-    }
-    if (c.frequency === 'monthly') {
-      if (!c.lastCompleted) return true;
-      return differenceInDays(startOfDay(new Date()), startOfDay(parseISO(c.lastCompleted))) >= 30;
-    }
-    return true;
-  }), [allChores]);
+  const todayChores = useMemo(() => {
+    const now = new Date();
+    // A chore belongs in today's list if it is due today, or was already
+    // completed today (so it still shows as done in the daily count).
+    return allChores.filter(c =>
+      isChoreDue(c, now) ||
+      (!!c.lastCompleted && isSameDay(parseISO(c.lastCompleted), now))
+    );
+  }, [allChores]);
 
   const choresDoneToday = useMemo(() =>
     todayChores.filter(c => c.lastCompleted && isSameDay(parseISO(c.lastCompleted), new Date())).length,

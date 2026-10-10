@@ -15,7 +15,7 @@ const REASON_CONFIG: Record<PushReason, { label: string; icon: React.ReactNode; 
   'too-big': { label: 'Too Big', icon: <Maximize2 className="h-3.5 w-3.5" />, color: 'text-orange-500 bg-orange-500/10', insight: 'Break tasks into subtasks more often. Big = paralysis for you.' },
   'too-boring': { label: 'Too Boring', icon: <Coffee className="h-3.5 w-3.5" />, color: 'text-yellow-500 bg-yellow-500/10', insight: 'Batch boring tasks together or pair with music/rewards.' },
   'ran-out-of-time': { label: 'No Time', icon: <Clock className="h-3.5 w-3.5" />, color: 'text-blue-500 bg-blue-500/10', insight: 'Your daily plan may be too ambitious. Try planning fewer tasks.' },
-  'deprioritized': { label: 'Deprioritized', icon: <ChevronDown className="h-3.5 w-3.5" />, color: 'text-slate-600 dark:text-slate-400 bg-slate-500/10', insight: 'This is healthy prioritization — but check if these tasks should be dropped entirely.' },
+  'deprioritized': { label: 'Deprioritized', icon: <ChevronDown className="h-3.5 w-3.5" />, color: 'text-slate-600 dark:text-muted-foreground bg-slate-500/10', insight: 'This is healthy prioritization — but check if these tasks should be dropped entirely.' },
 };
 
 interface DashboardPushAnalyticsProps {

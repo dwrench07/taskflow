@@ -17,7 +17,7 @@ export function InventoryDock() {
     { id: 'predictionCrystals', icon: <Gem className="w-5 h-5 text-purple-400" />, count: inventory.predictionCrystals, label: "Prediction Crystals", desc: "Earned from conquering worries." },
     { id: 'freshStartTokens', icon: <Sparkles className="w-5 h-5 text-green-400" />, count: inventory.freshStartTokens, label: "Fresh Start Tokens", desc: "Forgives an overdue task without penalty." },
     { id: 'composureCoins', icon: <div className="w-5 h-5 rounded-full border-2 border-yellow-500 bg-yellow-500/20" />, count: inventory.composureCoins, label: "Composure Coins", desc: "Earned by keeping cool under pressure." },
-    { id: 'anchorWeights', icon: <Anchor className="w-5 h-5 text-slate-400" />, count: inventory.anchorWeights, label: "Anchor Weights", desc: "Heavy effort applied to oldest tasks." },
+    { id: 'anchorWeights', icon: <Anchor className="w-5 h-5 text-muted-foreground" />, count: inventory.anchorWeights, label: "Anchor Weights", desc: "Heavy effort applied to oldest tasks." },
     { id: 'stretchTokens', icon: <Zap className="w-5 h-5 text-orange-400" />, count: inventory.stretchTokens, label: "Stretch Tokens", desc: "Crushed a major task directly." },
     { id: 'timeBenderHourglasses', icon: <Clock className="w-5 h-5 text-amber-500" />, count: inventory.timeBenderHourglasses, label: "Time Bender Hourglass", desc: "Perfect time estimation." },
     { id: 'goldenBookmarks', icon: <BookOpen className="w-5 h-5 text-yellow-300" />, count: inventory.goldenBookmarks, label: "Golden Bookmarks", desc: "Synthesizing ideas during deep focus." },

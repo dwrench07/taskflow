@@ -736,7 +736,7 @@ export default function InterestsPage() {
                 maxZoom={2}
                 snapToGrid
                 snapGrid={[20, 20]}
-                className="bg-slate-50/50 dark:bg-slate-950/50"
+                className="bg-muted/30"
               >
                 <Background
                   variant={BackgroundVariant.Dots}

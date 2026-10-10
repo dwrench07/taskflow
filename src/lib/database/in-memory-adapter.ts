@@ -161,12 +161,17 @@ export class MemoryAdapter implements DatabaseAdapter {
     }
 
     async updateTask(task: any, userId?: string | null): Promise<any> {
-        const taskWithUserId = { ...task, userId: userId || task.userId };
+        const existing = this.tasks.get(task.id);
+        if (existing && userId && existing.userId !== userId) return existing;
+        const taskWithUserId = { ...task, userId: userId || task.userId || existing?.userId };
         this.tasks.set(taskWithUserId.id, taskWithUserId);
         return taskWithUserId;
     }
 
     async deleteTask(id: string, userId?: string | null): Promise<boolean> {
+        const existing = this.tasks.get(id);
+        if (!existing) return false;
+        if (userId && existing.userId !== userId) return false;
         return this.tasks.delete(id);
     }
 
@@ -221,10 +226,11 @@ export class MemoryAdapter implements DatabaseAdapter {
     }
 
     async updateFocusSession(session: any, userId?: string | null): Promise<void> {
-        const sessionWithUserId = { ...session, userId: userId || session.userId };
-        if (this.focusSessions.has(sessionWithUserId.id)) {
-            this.focusSessions.set(sessionWithUserId.id, sessionWithUserId);
-        }
+        const existing = this.focusSessions.get(session.id);
+        if (!existing) return;
+        if (userId && existing.userId !== userId) return;
+        const sessionWithUserId = { ...session, userId: userId || session.userId || existing.userId };
+        this.focusSessions.set(sessionWithUserId.id, sessionWithUserId);
     }
 
     async finalizeOrphanedSessions(userId?: string | null): Promise<void> {
@@ -271,12 +277,17 @@ export class MemoryAdapter implements DatabaseAdapter {
     }
 
     async updateGoal(goal: any, userId?: string | null): Promise<any> {
-        const goalWithId = { ...goal, userId: userId || goal.userId };
+        const existing = this.goals.get(goal.id);
+        if (existing && userId && existing.userId !== userId) return existing;
+        const goalWithId = { ...goal, userId: userId || goal.userId || existing?.userId };
         this.goals.set(goalWithId.id, goalWithId);
         return goalWithId;
     }
 
     async deleteGoal(id: string, userId?: string | null): Promise<boolean> {
+        const existing = this.goals.get(id);
+        if (!existing) return false;
+        if (userId && existing.userId !== userId) return false;
         return this.goals.delete(id);
     }
 
@@ -316,11 +327,16 @@ export class MemoryAdapter implements DatabaseAdapter {
         return pillarWithId;
     }
     async updatePillar(pillar: any, userId?: string | null): Promise<any> {
-        const pWithId = { ...pillar, userId: userId || pillar.userId };
+        const existing = this.pillars.get(pillar.id);
+        if (existing && userId && existing.userId !== userId) return existing;
+        const pWithId = { ...pillar, userId: userId || pillar.userId || existing?.userId };
         this.pillars.set(pWithId.id, pWithId);
         return pWithId;
     }
     async deletePillar(id: string, userId?: string | null): Promise<boolean> {
+        const existing = this.pillars.get(id);
+        if (!existing) return false;
+        if (userId && existing.userId !== userId) return false;
         return this.pillars.delete(id);
     }
 
@@ -339,11 +355,16 @@ export class MemoryAdapter implements DatabaseAdapter {
         return mWithId;
     }
     async updateMilestone(milestone: any, userId?: string | null): Promise<any> {
-        const mWithId = { ...milestone, userId: userId || milestone.userId };
+        const existing = this.milestones.get(milestone.id);
+        if (existing && userId && existing.userId !== userId) return existing;
+        const mWithId = { ...milestone, userId: userId || milestone.userId || existing?.userId };
         this.milestones.set(mWithId.id, mWithId);
         return mWithId;
     }
     async deleteMilestone(id: string, userId?: string | null): Promise<boolean> {
+        const existing = this.milestones.get(id);
+        if (!existing) return false;
+        if (userId && existing.userId !== userId) return false;
         return this.milestones.delete(id);
     }
 
@@ -362,11 +383,16 @@ export class MemoryAdapter implements DatabaseAdapter {
         return cWithId;
     }
     async updateChore(chore: any, userId?: string | null): Promise<any> {
-        const cWithId = { ...chore, userId: userId || chore.userId };
+        const existing = this.chores.get(chore.id);
+        if (existing && userId && existing.userId !== userId) return existing;
+        const cWithId = { ...chore, userId: userId || chore.userId || existing?.userId };
         this.chores.set(cWithId.id, cWithId);
         return cWithId;
     }
     async deleteChore(id: string, userId?: string | null): Promise<boolean> {
+        const existing = this.chores.get(id);
+        if (!existing) return false;
+        if (userId && existing.userId !== userId) return false;
         return this.chores.delete(id);
     }
 
@@ -385,11 +411,16 @@ export class MemoryAdapter implements DatabaseAdapter {
         return iWithId;
     }
     async updateInterest(interest: any, userId?: string | null): Promise<any> {
-        const iWithId = { ...interest, userId: userId || interest.userId };
+        const existing = this.interests.get(interest.id);
+        if (existing && userId && existing.userId !== userId) return existing;
+        const iWithId = { ...interest, userId: userId || interest.userId || existing?.userId };
         this.interests.set(iWithId.id, iWithId);
         return iWithId;
     }
     async deleteInterest(id: string, userId?: string | null): Promise<boolean> {
+        const existing = this.interests.get(id);
+        if (!existing) return false;
+        if (userId && existing.userId !== userId) return false;
         // Also delete any connections involving this interest
         for (const [connId, conn] of this.interestConnections.entries()) {
             if (conn.sourceId === id || conn.targetId === id) {
@@ -409,6 +440,9 @@ export class MemoryAdapter implements DatabaseAdapter {
         return cWithId;
     }
     async deleteInterestConnection(id: string, userId?: string | null): Promise<boolean> {
+        const existing = this.interestConnections.get(id);
+        if (!existing) return false;
+        if (userId && existing.userId !== userId) return false;
         return this.interestConnections.delete(id);
     }
 
@@ -428,11 +462,16 @@ export class MemoryAdapter implements DatabaseAdapter {
         return iWithId;
     }
     async updateBackOfMindItem(item: any, userId?: string | null): Promise<any> {
-        const iWithId = { ...item, userId: userId || item.userId, updatedAt: new Date().toISOString() };
+        const existing = this.backOfMind.get(item.id);
+        if (existing && userId && existing.userId !== userId) return existing;
+        const iWithId = { ...item, userId: userId || item.userId || existing?.userId, updatedAt: new Date().toISOString() };
         this.backOfMind.set(iWithId.id, iWithId);
         return iWithId;
     }
     async deleteBackOfMindItem(id: string, userId?: string | null): Promise<boolean> {
+        const existing = this.backOfMind.get(id);
+        if (!existing) return false;
+        if (userId && existing.userId !== userId) return false;
         return this.backOfMind.delete(id);
     }
 
@@ -464,11 +503,16 @@ export class MemoryAdapter implements DatabaseAdapter {
         return eWithId;
     }
     async updateMistakeLogEntry(entry: any, userId?: string | null): Promise<any> {
-        const eWithId = { ...entry, userId: userId || entry.userId };
+        const existing = this.mistakeLog.get(entry.id);
+        if (existing && userId && existing.userId !== userId) return existing;
+        const eWithId = { ...entry, userId: userId || entry.userId || existing?.userId };
         this.mistakeLog.set(eWithId.id, eWithId);
         return eWithId;
     }
     async deleteMistakeLogEntry(id: string, userId?: string | null): Promise<boolean> {
+        const existing = this.mistakeLog.get(id);
+        if (!existing) return false;
+        if (userId && existing.userId !== userId) return false;
         return this.mistakeLog.delete(id);
     }
 

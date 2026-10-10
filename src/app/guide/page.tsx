@@ -37,7 +37,7 @@ const GAME_RULES = {
   ],
   status: [
     { name: "Frozen State", icon: Snowflake, color: "text-blue-300", desc: "If you don't log in for 3 days, your 'Campfire' freezes. XP gains are reduced until you log a win.", fix: "Log into the app and complete any task or habit." },
-    { name: "Seasonal Reset", icon: RefreshCw, color: "text-slate-400", desc: "Every 30 days, your XP and Level reset to 1. Your top-tier badges are archived as Legacy Relics.", why: "Prevents numbers from getting too large and keeps the growth feeling fresh." },
+    { name: "Seasonal Reset", icon: RefreshCw, color: "text-muted-foreground", desc: "Every 30 days, your XP and Level reset to 1. Your top-tier badges are archived as Legacy Relics.", why: "Prevents numbers from getting too large and keeps the growth feeling fresh." },
     { name: "Twilight Lock", icon: Sunrise, color: "text-indigo-400", desc: "A nightly ritual mechanic. Complete your Wind Down chore before 11:30 PM for 3 nights in a row to earn a Dawn Diamond and the Energy Injection buff. Each qualifying night also earns +15 XP. The streak resets if you miss a night or complete Wind Down after 11:30 PM.", why: "Sleep consistency is the highest-leverage health habit. Twilight Lock creates a nightly accountability loop — the late-night reward (unlocking Dawn Diamonds) motivates early wind-down rather than late-night scrolling." },
   ]
 };

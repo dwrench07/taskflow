@@ -354,7 +354,7 @@ export default function LogsPage() {
                   </div>
                   
                   {/* Action or Resolution */}
-                  <div className="pt-4 border-t border-white/5">
+                  <div className="pt-4 border-t border-border">
                     {entry.actionTaken ? (
                       <div>
                         <h4 className="flex items-center gap-2 text-sm font-semibold text-emerald-500 tracking-wider">

@@ -53,7 +53,7 @@ export function PwaInstallPrompt() {
         <Button 
           variant="ghost" 
           size="icon" 
-          className="absolute top-2 right-2 h-8 w-8 rounded-full hover:bg-white/10"
+          className="absolute top-2 right-2 h-8 w-8 rounded-full hover:bg-accent"
           onClick={handleDismiss}
         >
           <X className="h-4 w-4" />
@@ -81,7 +81,7 @@ export function PwaInstallPrompt() {
           </Button>
           <Button 
             variant="outline" 
-            className="flex-1 rounded-xl font-medium border-white/10 hover:bg-white/5"
+            className="flex-1 rounded-xl font-medium border-border hover:bg-accent"
             onClick={handleDismiss}
           >
             Later
