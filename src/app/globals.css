@@ -4,53 +4,61 @@
 
 @layer base {
   :root {
-    /* Light mode (default) */
+    /* ===== Light theme ===== */
     --background: 0 0% 100%;
-    --foreground: 240 10% 8%;
+    --foreground: 222 24% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 8%;
+    --card-foreground: 222 24% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 8%;
+    --popover-foreground: 222 24% 12%;
 
-    --primary: 252 70% 55%; /* Tuned purple for light mode contrast */
+    --primary: 252 72% 54%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 240 10% 8%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 24% 12%;
 
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 5% 36%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 42%;
 
-    --accent: 199 89% 45%;
-    --accent-foreground: 0 0% 100%;
+    /* accent == subtle hover/active surface (shadcn semantics), NOT a brand color */
+    --accent: 220 14% 94%;
+    --accent-foreground: 222 24% 12%;
 
-    --destructive: 0 84% 55%;
+    --destructive: 0 72% 48%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 252 70% 55%;
+    --success: 142 71% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 35 92% 45%;
+    --warning-foreground: 40 100% 97%;
+    --info: 205 90% 45%;
+    --info-foreground: 0 0% 100%;
 
-    --chart-1: 252 70% 55%;
+    --border: 220 13% 90%;
+    --input: 220 13% 88%;
+    --ring: 252 72% 54%;
+
+    --chart-1: 252 72% 54%;
     --chart-2: 199 89% 45%;
-    --chart-3: 316 73% 50%;
-    --chart-4: 43 96% 48%;
-    --chart-5: 142 71% 38%;
+    --chart-3: 316 70% 50%;
+    --chart-4: 38 92% 48%;
+    --chart-5: 142 71% 40%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    --sidebar-background: 240 5% 98%;
-    --sidebar-foreground: 240 10% 8%;
-    --sidebar-primary: 252 70% 55%;
+    --sidebar-background: 220 16% 97%;
+    --sidebar-foreground: 222 20% 20%;
+    --sidebar-primary: 252 72% 54%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 5% 94%;
-    --sidebar-accent-foreground: 240 10% 8%;
-    --sidebar-border: 240 6% 90%;
-    --sidebar-ring: 252 70% 55%;
+    --sidebar-accent: 220 14% 92%;
+    --sidebar-accent-foreground: 222 24% 12%;
+    --sidebar-border: 220 13% 90%;
+    --sidebar-ring: 252 72% 54%;
 
-    /* Premium Category Gradients */
+    /* Premium category gradients (kept for feature chrome) */
     --urgent-gradient: linear-gradient(135deg, #ef4444 0%, #7f1d1d 100%);
     --tasks-gradient: linear-gradient(135deg, #3b82f6 0%, #172554 100%);
     --subtasks-gradient: linear-gradient(135deg, #6366f1 0%, #312e81 100%);
@@ -58,53 +66,103 @@
     --habits-gradient: linear-gradient(135deg, #22c55e 0%, #064e3b 100%);
     --focus-gradient: linear-gradient(135deg, #06b6d4 0%, #164e63 100%);
   }
-  .glass {
-    @apply bg-card border border-border shadow-md;
-  }
-  .glass-morphism {
-    @apply bg-card border border-border shadow-md;
-  }
-  .dark {
-    --background: 240 10% 4%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 6%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 6%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 252 87% 67%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 240 6% 15%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 6% 15%;
-    --muted-foreground: 240 5% 65%;
-    --accent: 199 89% 53%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 6% 15%;
-    --input: 240 6% 15%;
-    --ring: 252 87% 67%;
-    --chart-1: 252 87% 67%;
-    --chart-2: 199 89% 53%;
-    --chart-3: 316 73% 58%;
-    --chart-4: 43 96% 56%;
-    --chart-5: 142 71% 45%;
 
-    --sidebar-background: 240 10% 4%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 252 87% 67%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 6% 15%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 240 6% 15%;
-    --sidebar-ring: 252 87% 67%;
+  .dark {
+    /* ===== Dark theme (primary experience) — layered slate-black ===== */
+    --background: 222 18% 7%;
+    --foreground: 210 20% 92%;
+
+    --card: 222 16% 10%;
+    --card-foreground: 210 20% 92%;
+
+    --popover: 222 16% 11%;
+    --popover-foreground: 210 20% 92%;
+
+    --primary: 252 83% 68%;
+    --primary-foreground: 250 40% 10%;
+
+    --secondary: 222 14% 16%;
+    --secondary-foreground: 210 20% 92%;
+
+    --muted: 222 14% 14%;
+    --muted-foreground: 215 16% 62%;
+
+    --accent: 222 14% 17%;
+    --accent-foreground: 210 20% 95%;
+
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 66% 48%;
+    --success-foreground: 150 40% 8%;
+    --warning: 38 95% 56%;
+    --warning-foreground: 40 60% 10%;
+    --info: 199 89% 58%;
+    --info-foreground: 205 60% 10%;
+
+    --border: 222 13% 18%;
+    --input: 222 13% 20%;
+    --ring: 252 83% 68%;
+
+    --chart-1: 252 83% 68%;
+    --chart-2: 199 89% 58%;
+    --chart-3: 316 73% 62%;
+    --chart-4: 38 95% 60%;
+    --chart-5: 142 66% 50%;
+
+    --sidebar-background: 222 18% 9%;
+    --sidebar-foreground: 215 16% 70%;
+    --sidebar-primary: 252 83% 68%;
+    --sidebar-primary-foreground: 250 40% 10%;
+    --sidebar-accent: 222 14% 15%;
+    --sidebar-accent-foreground: 210 20% 95%;
+    --sidebar-border: 222 13% 15%;
+    --sidebar-ring: 252 83% 68%;
+  }
+
+  /* Legacy helpers kept so existing markup stays intact */
+  .glass,
+  .glass-morphism {
+    @apply bg-card border border-border shadow-sm;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground tracking-tight antialiased selection:bg-primary/30 selection:text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1, "cv01" 1;
+  }
+  /* Tabular numerals for data-dense surfaces */
+  .tabular-nums,
+  table,
+  [data-slot="stat"] {
+    font-variant-numeric: tabular-nums;
   }
 }
 
 @layer utilities {
-  /* Simplified utilities for solid form UI */
   .text-glow {
     text-shadow: 0 0 5px currentColor;
+  }
+
+  /* Thin, theme-aware scrollbars for dense panels */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
+    border-radius: 9999px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
   }
 }
 
@@ -113,14 +171,4 @@ html.capacitor,
 html.capacitor body {
   overscroll-behavior: none;
   overscroll-behavior-y: contain;
-}
-
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground tracking-tight selection:bg-primary/30 selection:text-primary-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
-  }
 }
