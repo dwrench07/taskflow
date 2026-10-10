@@ -42,6 +42,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           setUser(data.user ?? null);
         } else {
           setUser(null);
+          // A present-but-invalid token (expired, stale, or a leftover
+          // "dev-mode" cookie) passes the middleware's presence check but fails
+          // here. Left in place, middleware keeps bouncing /login back to / and
+          // the user is trapped on the loading placeholder. Clear it so the
+          // redirect to /login sticks. Skip on auth pages (nothing to break).
+          const onAuthPage =
+            typeof window !== "undefined" && isAuthPath(window.location.pathname);
+          if (!onAuthPage && (res.status === 401 || res.status === 403 || res.status === 404)) {
+            try {
+              await fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" });
+            } catch {
+              /* best-effort cookie clear */
+            }
+          }
         }
       } catch {
         if (active) setUser(null);

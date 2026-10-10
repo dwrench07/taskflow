@@ -8,9 +8,6 @@ import { getUserByEmailAsync } from './data-service';
  * Returns the userId string, or null when there is no valid session. Routes
  * should treat null as a 401 and must NOT fall back to a client-supplied
  * userId (query/body), which would allow cross-user access (IDOR).
- *
- * Note: in dev the AuthContext seeds a `dev-mode` token which verifyToken maps
- * to `user-1`, so authenticated routes keep working without an explicit login.
  */
 export async function getUserIdFromRequest(req: NextApiRequest): Promise<string | null> {
     const token = req.cookies.token;
