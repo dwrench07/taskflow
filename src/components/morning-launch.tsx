@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { EnergyIndicator } from "@/components/energy-check-in";
 import { getTodayEnergy, getEnergyMatch } from "@/lib/energy";
 import { calculateStreak } from "@/lib/habits";
+import { isChoreDue } from "@/lib/chores";
 import Link from "next/link";
 
 interface MorningLaunchProps {
@@ -58,14 +59,7 @@ export function MorningLaunch({ allTasks, allChores = [], onDismiss }: MorningLa
     );
 
     // Chores due today
-    const chores = allChores.filter(c => {
-      if (!c.lastCompleted) return true;
-      const last = parseISO(c.lastCompleted);
-      const diff = (today.getTime() - last.getTime()) / (1000 * 60 * 60 * 24);
-      return (c.frequency === 'daily' && diff >= 0.9) || 
-             (c.frequency === 'weekly' && diff >= 7) || 
-             (c.frequency === 'monthly' && diff >= 30);
-    });
+    const chores = allChores.filter(c => isChoreDue(c, today));
 
     return {
       topTasks: sorted.slice(0, 3),

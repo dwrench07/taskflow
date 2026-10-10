@@ -53,6 +53,7 @@ function createConfig(): AppConfig {
                 backOfMind: process.env.MONGODB_BACK_OF_MIND_COLLECTION || 'back_of_mind',
                 mistakeLog: process.env.MONGODB_MISTAKE_LOG_COLLECTION || 'mistake_log',
                 focusReminders: process.env.MONGODB_FOCUS_REMINDERS_COLLECTION || 'focus_reminders',
+                userProgress: process.env.MONGODB_USER_PROGRESS_COLLECTION || 'user_progress',
             },
         };
     } else {
@@ -75,6 +76,7 @@ function createConfig(): AppConfig {
                 backOfMind: 'back_of_mind',
                 mistakeLog: 'mistake_log',
                 focusReminders: 'focus_reminders',
+                userProgress: 'user_progress',
             },
         };
     }
