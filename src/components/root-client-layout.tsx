@@ -8,6 +8,7 @@ import { ReminderManager } from '@/components/reminder-manager';
 import { PwaInstallPrompt } from '@/components/pwa-install-prompt';
 import { GamificationProvider } from '@/context/GamificationContext';
 import { GroundingButton } from '@/components/grounding-button';
+import { DeepLinkHandler } from '@/components/deep-link-handler';
 import { RefreshProvider, useRefresh } from '@/context/RefreshContext';
 
 function VisibilityRefresh() {
@@ -67,6 +68,7 @@ export function RootClientLayout({
           <AuthProvider>
             <GamificationProvider>
               <VisibilityRefresh />
+              <DeepLinkHandler />
               <AppLayout>
                 <React.Suspense fallback={<div>Loading...</div>}>
                   {children}

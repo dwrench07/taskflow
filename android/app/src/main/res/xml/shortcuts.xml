@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Google App Action capability for Dash.
+
+  Maps the built-in "create thing" intent (what Assistant/Gemini fire for
+  "Hey Google, add a reminder in Dash to call mom tomorrow at 5pm") to a deep
+  link into the app. The spoken text arrives as the `thing.name` parameter and
+  is passed to the webview as dash://quick-add?text=<spoken text>, where
+  DeepLinkHandler sends it to /api/quick-add.
+
+  NOTE: shipping this for real requires publishing the app to the Play Store
+  and Google approving the capability — see GOOGLE_ASSISTANT.md.
+-->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <capability android:name="actions.intent.CREATE_THING">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.dash.productivity"
+            android:targetClass="com.dash.productivity.MainActivity">
+            <url-template android:value="dash://quick-add{?text}" />
+            <parameter
+                android:name="thing.name"
+                android:key="text"
+                android:required="true" />
+        </intent>
+    </capability>
+</shortcuts>
