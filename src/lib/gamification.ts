@@ -58,6 +58,8 @@ export function calculateTodayXP(allTasks: Task[], focusSessions: FocusSession[]
                       (task.endDate && isSameDay(parseISO(task.endDate), today));
       if (isToday) {
         xp += calculateTaskXP(task);
+        // Include subtask XP so today's figure matches calculateTotalXP's accounting.
+        xp += (task.subtasks?.filter(s => s.completed).length || 0) * XP_VALUES.subtaskComplete;
       }
     }
   }
@@ -107,7 +109,8 @@ export interface BadgeDefinition {
 
 export interface EarnedBadge {
   id: string;
-  tier: BadgeTier;
+  /** Highest tier actually earned, or null when progress is below the first threshold. */
+  tier: BadgeTier | null;
   progress: number;
   nextTier?: { tier: BadgeTier; threshold: number } | null;
 }
@@ -255,7 +258,9 @@ export function checkBadges(tasks: Task[], sessions: FocusSession[]): EarnedBadg
 
     earned.push({
       id: badge.id,
-      tier: highestTier || 'bronze',
+      // null (not 'bronze') when nothing is earned yet, so consumers don't treat an
+      // unreached badge as already at bronze.
+      tier: highestTier,
       progress,
       nextTier: highestTier ? nextTier : badge.tiers[0],
     });

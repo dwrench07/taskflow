@@ -1,6 +1,12 @@
+import { format, parseISO } from 'date-fns';
 import { EnergyLevel } from './types';
 
 const ENERGY_LOG_KEY = 'dash-energy-log';
+
+// Local calendar day (yyyy-MM-dd). Using the local date — not toISOString(), which
+// is UTC — keeps the "today" checks aligned with the user's clock near midnight and
+// consistent with the habit code, which also keys off the local calendar date.
+const localDateStr = (d: Date = new Date()): string => format(d, 'yyyy-MM-dd');
 
 export interface EnergyEntry {
   date: string;       // YYYY-MM-DD
@@ -25,7 +31,7 @@ function saveEnergyLog(log: EnergyEntry[]): void {
 export function logEnergy(level: EnergyLevel): void {
   const now = new Date();
   const entry: EnergyEntry = {
-    date: now.toISOString().split('T')[0],
+    date: localDateStr(now),
     time: `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`,
     level,
   };
@@ -35,7 +41,7 @@ export function logEnergy(level: EnergyLevel): void {
 }
 
 export function getTodayEnergy(): EnergyLevel | null {
-  const today = new Date().toISOString().split('T')[0];
+  const today = localDateStr();
   const log = getEnergyLog();
   const todayEntries = log.filter(e => e.date === today);
   if (todayEntries.length === 0) return null;
@@ -83,7 +89,10 @@ export function getEnergyPatterns(): EnergyPattern | null {
     if (!hourCounts[hour]) hourCounts[hour] = { high: 0, medium: 0, low: 0 };
     hourCounts[hour][entry.level]++;
 
-    const dayOfWeek = new Date(entry.date).getDay();
+    // parseISO treats a date-only string as local midnight, so getDay() returns the
+    // correct local weekday. new Date(entry.date) would parse it as UTC midnight and
+    // could report the previous day in negative-offset timezones.
+    const dayOfWeek = parseISO(entry.date).getDay();
     const score = levelToNum[entry.level];
     if (dayOfWeek === 0 || dayOfWeek === 6) {
       weekendScores.push(score);

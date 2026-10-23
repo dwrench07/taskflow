@@ -15,6 +15,7 @@ import {
   startOfMonth,
   startOfWeek,
   subDays,
+  subMonths,
 } from 'date-fns';
 import type { Task } from './types';
 
@@ -48,9 +49,12 @@ export function calculateStreak(habit: Task): number {
       sub: (date: Date, num: number) => startOfWeek(subDays(date, num * 7), { weekStartsOn: 1 }),
     },
     monthly: {
-      isCurrent: (date: Date) => isWithinInterval(date, {start: startOfMonth(subDays(today, 30)), end: endOfMonth(today)}),
+      // Use calendar-month arithmetic (subMonths), not a 30-day approximation:
+      // subDays(date, 30) does not reliably land in the previous calendar month
+      // (e.g. Mar 31 - 30d = Mar 1), which miscounts monthly streaks.
+      isCurrent: (date: Date) => isWithinInterval(date, {start: startOfMonth(subMonths(today, 1)), end: endOfMonth(today)}),
       diff: (d1: Date, d2: Date) => differenceInCalendarMonths(d1, d2),
-      sub: (date: Date, num: number) => startOfMonth(subDays(date, num * 30)),
+      sub: (date: Date, num: number) => startOfMonth(subMonths(date, num)),
     }
   }
   
